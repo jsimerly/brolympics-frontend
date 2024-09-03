@@ -14,8 +14,6 @@ import Notification, { useNotification } from './components/Util/Notification.js
 import { AuthContext } from './context/AuthContext.jsx';
 import LeagueRouter from './components/brolympics/league/LeagueRouter.jsx';
 import ResetPassword from './components/login_page/ResetPassword.jsx';
-import ResetInfo from './components/login_page/ResetInfo.jsx';
-
 
 function App() {
     const [leagues, setLeagues] = useState([])

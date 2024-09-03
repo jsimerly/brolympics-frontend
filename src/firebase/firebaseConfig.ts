@@ -2,14 +2,16 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from 'firebase/auth'
 import { getAnalytics } from "firebase/analytics";
 
+const env = import.meta.env
+
 const firebaseConfig = {
-  apiKey: "AIzaSyD6fyhPFQdGZiRDsC-Q4Dgwp5eZcYetBqI",
-  authDomain: "brolympics-7368d.firebaseapp.com",
-  projectId: "brolympics-7368d",
-  storageBucket: "brolympics-7368d.appspot.com",
-  messagingSenderId: "708202517048",
-  appId: "1:708202517048:web:649cae520ccb1f46340ccd",
-  measurementId: "G-PSBC27DYLG"
+  apiKey: env.VITE_FB_API_KEY,
+  authDomain: env.VITE_FB_AUTH_DOMAIN,
+  projectId: env.VITE_PROJECT_ID,
+  storageBucket: env.VITE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_MESSAGING_SENDER_ID,
+  appId: env.VITE_APP_ID,
+  measurementId: env.VITE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
