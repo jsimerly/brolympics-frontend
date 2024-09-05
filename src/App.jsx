@@ -40,6 +40,18 @@ function App() {
     }
   }, [firebaseUser]);
 
+  console.log("Environment Variables:", {
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    VITE_FRONTEND_URL: import.meta.env.VITE_FRONTEND_URL,
+    VITE_FB_API_KEY: import.meta.env.VITE_FB_API_KEY,
+    VITE_FB_AUTH_DOMAIN: import.meta.env.VITE_FB_AUTH_DOMAIN,
+    VITE_PROJECT_ID: import.meta.env.VITE_PROJECT_ID,
+    VITE_STORAGE_BUCKET: import.meta.env.VITE_STORAGE_BUCKET,
+    VITE_MESSAGING_SENDER_ID: import.meta.env.VITE_MESSAGING_SENDER_ID,
+    VITE_APP_ID: import.meta.env.VITE_APP_ID,
+    VITE_MEASUREMENT_ID: import.meta.env.VITE_MEASUREMENT_ID,
+  });
+
   return (
     <div className="min-h-screen text-white bg-neutral">
       <Navbar leagues={leagues} />
