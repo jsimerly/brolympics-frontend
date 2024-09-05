@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {fetchBrolympicsInvite, fetchJoinBrolympics} from '../../api/fetchInvites.js'
+import {fetchBrolympicsInvite, fetchJoinBrolympics} from '../../api/invites.js'
 import InviteWrapper from "./InviteWrapper.jsx";
 
 

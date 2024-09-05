@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default {
+const commonConfig: UserConfig = {
   plugins: [react()],
   resolve: {
     alias: {
@@ -9,3 +9,5 @@ export default {
     },
   },
 }
+
+export default commonConfig

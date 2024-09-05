@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from 'firebase/auth'
-import { getAnalytics } from "firebase/analytics";
 
 const env = import.meta.env
 
@@ -15,8 +14,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
-const analytics = getAnalytics(app);
 
-export { auth, analytics }
+export { auth, app }
+export default app;

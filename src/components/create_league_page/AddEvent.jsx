@@ -27,14 +27,12 @@ const EventComp = ({header, events, setter}) => {
   )
 }
 
-
 const AddEvent = ({step, h2hEvents, indEvents, teamEvents, setH2hEvents, setIndEvents, setTeamEvents, createAll, setLink}) => {
     const handleCreateClicked = () => {
         createAll()
     }
     const [buttonText, setButtonText] = useState('Skip')
     const [isEventAdded, setIsEventAdded] = useState(false)
-    
     
     useEffect(() => {
       const totalEvents = h2hEvents.length + indEvents.length + teamEvents.length;

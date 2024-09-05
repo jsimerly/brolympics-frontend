@@ -1,5 +1,5 @@
 import InviteWrapper from "./InviteWrapper.jsx";
-import {fetchLeagueInviteInfo, fetchJoinLeague} from '../../api/fetchInvites.js'
+import {fetchLeagueInviteInfo, fetchJoinLeague} from '../../api/invites.js'
 
 const LeagueInvite = () => {
 

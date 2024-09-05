@@ -1,61 +1,110 @@
-import  {useEffect, useState, useContext} from 'react'
-import { Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import SignUp from './components/login_page/SignUp.jsx';
-import Navbar from './components/navbar/Navbar.jsx';
-import StartLeague from './components/create_league_page/StartLeague.jsx';
-import Brolympics from './components/brolympics/Brolympics.jsx';
-import League from './components/brolympics/league/League.jsx';
-import Leagues from './components/brolympics/league/Leagues.jsx';
-import VerifyPhone from './components/login_page/VerifyPhone.jsx';
-import Invites from './components/invites/Invites.jsx';
-import {fetchLeagues} from './api/fetchLeague.js'
-import Notification, { useNotification } from './components/Util/Notification.jsx';
-import { AuthContext } from './context/AuthContext.jsx';
-import LeagueRouter from './components/brolympics/league/LeagueRouter.jsx';
-import ResetPassword from './components/login_page/ResetPassword.jsx';
+import Navbar from "./components/navbar/Navbar.jsx";
+import StartLeague from "./components/create_league_page/StartLeague.jsx";
+import Brolympics from "./components/brolympics/Brolympics.jsx";
+import Leagues from "./components/brolympics/league/Leagues.jsx";
+import Invites from "./components/invites/Invites.jsx";
+import { fetchLeagues } from "./api/league.js";
+import Notification, {
+  useNotification,
+} from "./components/Util/Notification.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
+import LeagueRouter from "./components/brolympics/league/LeagueRouter.jsx";
+import AuthRouter from "./components/auth/AuthRouter.jsx";
+import ProtectedRoute from "./routing/ProtectedRoutes.jsx";
+
+import "./firebase/firebaseConfig";
+import { fetchCSRFToken } from "./api/axios.js";
+import About from "./components/home/About.jsx";
+fetchCSRFToken();
 
 function App() {
-    const [leagues, setLeagues] = useState([])
-    const { notification, showNotification } = useNotification()
-    const { currentUser } = useContext(AuthContext)
+  const [leagues, setLeagues] = useState([]);
+  const { notification, showNotification } = useNotification();
+  const { firebaseUser } = useAuth();
 
-    useEffect(()=> {
-      const getLeagues = async () => {
-          const response = await fetchLeagues()
-          if (response.ok){
-              const data = await response.json()
-              setLeagues(data)
-          } 
+  useEffect(() => {
+    const getLeagues = async () => {
+      try {
+        const data = await fetchLeagues();
+        setLeagues(data);
+      } catch (error) {
+        console.log(error.message);
       }
+    };
 
-      if(currentUser){
-        getLeagues()
-      }
-    },[currentUser])
+    if (firebaseUser) {
+      getLeagues();
+    }
+  }, [firebaseUser]);
 
   return (
-    <div className='min-h-screen text-white bg-neutral'>
-      <Navbar leagues={leagues}/>
-      {notification.show &&
+    <div className="min-h-screen text-white bg-neutral">
+      <Navbar leagues={leagues} />
+      {notification.show && (
         <Notification
           message={notification.message}
           className={notification.className}
-          onClose={() => showNotification('', '', false)}
+          onClose={() => showNotification("", "", false)}
         />
-      }
+      )}
       <Routes>
-        <Route path='/sign-up/*' element={<SignUp/>}/>
-        <Route path='/sign-up/verify' element={<VerifyPhone/>}/>
-        <Route path='/start-league' element={<StartLeague/>}/>
-        <Route path='/reset-password/*' element={<ResetPassword/>}/>
-        <Route path='/' element={<Leagues leagues={leagues}/>}/>
-        <Route path='/league/:uuid/*' element={<LeagueRouter/>}/>
-        <Route path='/b/:uuid/*' element={<Brolympics/>}></Route>
-        <Route path='/invite/*' element={<Invites/>}/>
+        {/* Public routes */}
+        {/* <Route path="/home" element={<Home />} /> */}
+        <Route
+          path="/auth/*"
+          element={firebaseUser ? <Navigate to="/" replace /> : <AuthRouter />}
+        />
+        <Route path="/about" element={<About />} />
+
+        {/* Protected routes */}
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <Leagues leagues={leagues} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/start-league"
+          element={
+            <ProtectedRoute>
+              <StartLeague />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/league/:uuid/*"
+          element={
+            <ProtectedRoute>
+              <LeagueRouter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/b/:uuid/*"
+          element={
+            <ProtectedRoute>
+              <Brolympics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/invite/*"
+          element={
+            <ProtectedRoute>
+              <Invites />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/about" replace />} />
       </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

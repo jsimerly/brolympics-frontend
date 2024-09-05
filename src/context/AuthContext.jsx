@@ -1,57 +1,103 @@
-import { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {fetchLoginUser, handleLogout, fetchUserInformation, fetchCreateUser } from '../api/fetchUser.js'
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { getAuth, getIdToken } from "firebase/auth";
+import {
+  signInUserWithEmail,
+  signInWithPhone,
+  confirmPhoneSignIn,
+  signInWithGoogle,
+  createUserWithEmail,
+  logoutFirebase,
+  passwordReset,
+  clearRecaptcha,
+} from "../firebase/loginMethods";
+import { getUser } from "../api/auth";
 
+const AuthContext = createContext();
 
-export const AuthContext = createContext();
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const navigate = useNavigate()
+export function AuthProvider({ children }) {
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const auth = getAuth();
 
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        const response = await fetchUserInformation();
-        if (response.ok) {
-          const data = await response.json();
-          setCurrentUser(data);
-        } else {
-          setCurrentUser(null);
-          navigate('/sign-up')
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      setFirebaseUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const data = await getUser();
+          setUser(data);
+        } catch (error) {
+          console.error("Error fetching Django user:", error);
         }
-      } catch (error) {
-        setCurrentUser(null);
-        navigate('/sign-up')
+      } else {
+        setUser(null);
       }
-    };
-    getUser();
-  }, []);
+      setLoading(false);
+    });
 
-  const login = async (phone, password) => {
-    const response = await fetchLoginUser(phone, password)
-    return response
-  
-  }
+    return unsubscribe;
+  }, [auth]);
 
-  const logout = () => {
-    handleLogout()
-    setCurrentUser(null)
-  }
+  const login = async (method, credentials) => {
+    switch (method) {
+      case "email":
+        return signInUserWithEmail(
+          auth,
+          credentials.email,
+          credentials.password
+        );
+      case "phone":
+        if (credentials.verificationId && credentials.verificationCode) {
+          return confirmPhoneSignIn(
+            auth,
+            credentials.verificationId,
+            credentials.verificationCode
+          );
+        } else {
+          return signInWithPhone(
+            auth,
+            credentials.phoneNumber,
+            credentials.buttonId
+          );
+        }
+      case "google":
+        return signInWithGoogle(auth);
+      default:
+        throw new Error(`Unsupported login method: ${method}`);
+    }
+  };
 
-  const createUser = async (phoneNumber, firstName, lastName, password) => {
-    const response = await fetchCreateUser(
-        phoneNumber, firstName, lastName, password
-    )
-    return response
-  } 
+  const signUp = async (email, password) => {
+    return createUserWithEmail(auth, email, password);
+  };
 
+  const logout = async () => {
+    await logoutFirebase(auth);
+    setFirebaseUser(null);
+  };
 
+  const resetPassword = async (email) => {
+    return passwordReset(auth, email);
+  };
 
-  // Then provide the current user in the context
+  const value = {
+    firebaseUser,
+    user,
+    login,
+    signUp,
+    logout,
+    resetPassword,
+    clearRecaptcha,
+  };
+
   return (
-    <AuthContext.Provider value={{currentUser, login, logout, createUser, setCurrentUser}}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
+}

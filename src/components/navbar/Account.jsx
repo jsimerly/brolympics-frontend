@@ -1,150 +1,181 @@
-import {useState, useContext} from 'react'
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import LogoutIcon from '@mui/icons-material/Logout';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { AuthContext } from '../../context/AuthContext'
+import React, { useState, useEffect } from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import { useAuth } from "../../context/AuthContext";
+import ImageCropper, { readImageFile } from "../Util/ImageCropper";
+import { updateUserImg, updateUserInfo } from "../../api/auth";
 
+const Account = ({ setView }) => {
+  const { user, logout } = useAuth();
+  const [userInfo, setUserInfo] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [cropping, setCropping] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    setUserInfo(user);
+    setImageSrc(user.img || null);
+    setImageError(false);
+  }, [user]);
 
-const Account = ({setView}) => {
-    const {currentUser, logout} = useContext(AuthContext)
-    const [userInfo, setUserInfo] = useState(currentUser)
-    const handleFirstNameChange = (e) => {
-        setUserInfo(prevState => ({
-          ...prevState,
-          first_name: e.target.value
-        }));
-      };
-    const handleLastNameChange = (e) => {
-        setUserInfo(prevState => ({
-            ...prevState,
-            last_name: e.target.value
-        }));
-    };
-    const handleEmailChange = (e) => {
-        setUserInfo(prevState => ({
-            ...prevState,
-            email: e.target.value
-        }));
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserInfo((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handlePhotoChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      let imageDataUrl = await readImageFile(file);
+      setImageSrc(imageDataUrl);
+      setCropping(true);
     }
+  };
 
-    const handleSave = () => {
-        console.log(userInfo)
-        setOpenName(false)
-    }
+  const setCroppedImage = async (croppedImage) => {
+    try {
+      const response = await fetch(croppedImage);
+      const blob = await response.blob();
+      const file = new File([blob], "profile_image.jpg", {
+        type: "image/jpeg",
+      });
 
-    const handleLogout = () => {
-        console.log('logout')
-        logout()
+      await updateUserImg(file);
+      setImageSrc(croppedImage);
+      setImageError(false);
+      setCropping(false);
+    } catch (error) {
+      console.error("Error updating user image:", error);
     }
+  };
 
-    const [openName, setOpenName] = useState(false)
-    const handleEditClick = () => {
-        setOpenName(true)
-    }
-    
+  const handleCloseCropper = () => {
+    setCropping(false);
+    setImageSrc(user.img || null);
+  };
 
-    const goBack = () => {
-        setView('leagues')
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateUserInfo(userInfo);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating user info:", error);
     }
- 
+  };
+
+  const handleLogout = () => {
+    logout();
+    location.reload();
+  };
+
+  const goBack = () => {
+    setView("leagues");
+  };
+
   return (
-    <div className='flex flex-col h-[calc(100vh-80px)] bg-neutral text-white opacity-[99%] px-6 py-3 gap-3'>
-        <div onClick={goBack}> <ArrowBackIcon/> Back </div>
-        <div 
-            className='flex flex-wrap items-center justify-center w-full p-6 border rounded-md border-primary'
-        >
-            { openName ?
-                <div className='flex items-center gap-3'>
-                    <input
-                        className='w-1/2 p-1 rounded-md bg-neutralLight'
-                        value={userInfo.first_name}
-                        placeholder='First Name'
-                        onChange={handleFirstNameChange}
-                    />
-                    <input
-                        className='w-1/2 p-1 rounded-md bg-neutralLight'
-                        value={userInfo.last_name}
-                        placeholder='Last Name'
-                        onChange={handleLastNameChange}
-                    />
-                    <div onClick={handleSave}>
-                        <SaveIcon className='text-primary'/>
-                    </div>
-                    
-                </div>
-                :
-                <div className='w-full'>
-                    <h2 className='font-bold text-[26px] flex leading-none items-center justify-start gap-3' >
-                        {userInfo.first_name} {userInfo.last_name} 
-                        <EditIcon 
-                            sx={{fontSize: 20}}
-                            onClick={handleEditClick}
-                        />
-                    </h2>
-                    
-                </div>
-            }
-            <span className='text-[14px] w-full text-start pt-2'>Account Owner</span>
-        </div>
-        <h1 className='text-[20px] font-bold'>
-                Account Information
-        </h1>
-        <div>
-            <h3>Phone</h3>
-            <div className='text-[20px] flex gap-2 items-end'>
-                {userInfo.phone}
-                <span className='text-[10px] p-1 text-primary flex items-center gap-1'>
-                    <TaskAltIcon sx={{fontSize: 15}}/>
-                    Verified
-                </span>
+    <div className="flex flex-col h-[calc(100vh-80px)] bg-neutral text-white opacity-[99%] px-6 py-3 gap-3">
+      <div onClick={goBack} className="cursor-pointer">
+        <ArrowBackIcon /> Back
+      </div>
+      <div className="flex flex-col items-center justify-center w-full p-6 border rounded-md border-primary">
+        <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-md">
+          {imageSrc && !imageError ? (
+            <img
+              src={imageSrc}
+              alt="Profile"
+              className="object-cover w-full h-full"
+              onError={handleImageError}
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full bg-neutralLight">
+              <CameraAltIcon className="text-neutral" sx={{ fontSize: 60 }} />
             </div>
+          )}
+          <label
+            htmlFor="photo-upload"
+            className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
+          >
+            <CameraAltIcon className="text-white" />
+          </label>
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="hidden"
+          />
         </div>
-        <div className='flex flex-col gap-2'>
-            <h3>Email</h3>
-            <div className='flex items-end gap-2'>
-                <input
-                    className='p-1 rounded-md bg-neutralLight'
-                    value={userInfo.email || ''}
-                    placeholder='Email'
-                    onChange={handleEmailChange}
-                />
-                <SaveIcon 
-                    className='text-primary'
-                    onClick={handleSave}
-                />
-                {!currentUser &&
-                    <div>
-                        {userInfo.email_verified ? 
-                        <span className='text-[10px] p-1 text-primary flex items-center gap-1'>
-                            <TaskAltIcon sx={{fontSize: 15}}/>
-                            Verified
-                        </span>
-                        :
-                        <span className='text-[10px] p-1 text-errorRedLight flex items-center gap-1'>
-                            <HighlightOffIcon sx={{fontSize: 15}}/>
-                            Not Verified
-                        </span>
-                        }
-                    </div>
-                }
-
-            </div>
-            <div className='underline text-[12px]'>Send Verification Email</div>
-        </div>
-        <button 
-            className='flex items-center justify-between w-full p-2 mt-6 font-bold text-white rounded-md bg-errorRed'
-            onClick={handleLogout}
-        >
-            <div/>
-            Logout
-            <LogoutIcon/>
-        </button>
+        {isEditing ? (
+          <div className="flex flex-col items-center w-full gap-3">
+            <input
+              className="w-full p-2 rounded-md bg-neutralLight"
+              name="first_name"
+              value={userInfo.first_name || ""}
+              placeholder="First Name"
+              onChange={handleInputChange}
+            />
+            <input
+              className="w-full p-2 rounded-md bg-neutralLight"
+              name="last_name"
+              value={userInfo.last_name || ""}
+              placeholder="Last Name"
+              onChange={handleInputChange}
+            />
+            <input
+              className="w-full p-2 rounded-md bg-neutralLight"
+              name="display_name"
+              value={userInfo.display_name || ""}
+              placeholder="Display Name"
+              onChange={handleInputChange}
+            />
+            <button
+              onClick={handleSave}
+              className="flex items-center justify-center w-full p-2 mt-2 rounded-md bg-primary"
+            >
+              <SaveIcon className="mr-2" /> Save Changes
+            </button>
+          </div>
+        ) : (
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">
+              {userInfo.display_name ||
+                `${userInfo.first_name} ${userInfo.last_name}`}
+            </h2>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center justify-center w-full p-2 mt-4 rounded-md bg-primary"
+            >
+              <EditIcon className="mr-2" /> Edit Profile
+            </button>
+          </div>
+        )}
+      </div>
+      <button
+        className="flex items-center justify-center w-full p-2 mt-6 font-bold text-white rounded-md bg-errorRed"
+        onClick={handleLogout}
+      >
+        <LogoutIcon className="mr-2" /> Logout
+      </button>
+      {cropping && (
+        <ImageCropper
+          img={imageSrc}
+          setCroppedImage={setCroppedImage}
+          handleCloseCropper={handleCloseCropper}
+        />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Account
+export default Account;
