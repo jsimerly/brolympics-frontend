@@ -6,8 +6,9 @@ on:
       - main
 
 env:
-  PROJECT_ID: brolympics-7368d  # Updated to match VITE_PROJECT_ID
+  PROJECT_ID: brolympics-7368d
   SERVICE_NAME: brolympics-frontend
+  REGION: us-central1
 
 jobs:
   build-and-deploy:
@@ -56,5 +57,19 @@ jobs:
         gcloud run deploy $SERVICE_NAME \
           --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
           --platform managed \
-          --region us-central1 \
-          --allow-unauthenticated
+          --region $REGION \
+          --allow-unauthenticated \
+          --set-env-vars VITE_API_URL=${{ secrets.VITE_API_URL }},VITE_FRONTEND_URL=${{ secrets.VITE_FRONTEND_URL }},VITE_FB_API_KEY=${{ secrets.VITE_FB_API_KEY }},VITE_FB_AUTH_DOMAIN=${{ secrets.VITE_FB_AUTH_DOMAIN }},VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID }},VITE_STORAGE_BUCKET=${{ secrets.VITE_STORAGE_BUCKET }},VITE_MESSAGING_SENDER_ID=${{ secrets.VITE_MESSAGING_SENDER_ID }},VITE_APP_ID=${{ secrets.VITE_APP_ID }},VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID }} \
+
+    - name: Set up Cloud Storage bucket for logs
+      run: |
+        gsutil mb -p $PROJECT_ID -l $REGION gs://$PROJECT_ID-cloudbuild-logs || true
+        gsutil iam ch serviceAccount:$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")@cloudbuild.gserviceaccount.com:objectCreator gs://$PROJECT_ID-cloudbuild-logs
+
+    - name: Update Cloud Run service to use logs bucket
+      run: |
+        gcloud run services update $SERVICE_NAME \
+          --region $REGION \
+          --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT_ID \
+          --update-labels=gcb-build-id=$GITHUB_SHA \
+          --set-build-env-vars=CLOUD_LOGGING_ONLY=true,BUILD_ID=$GITHUB_SHA,PROJECT_ID=$PROJECT_ID,LOGS_BUCKET=gs://$PROJECT_ID-cloudbuild-logs
