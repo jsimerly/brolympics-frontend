@@ -6,6 +6,9 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import App from "./App.jsx";
 import "./index.css";
 
+console.log("We're in main.jsx");
+console.log(import.meta.env.VITE_API_URL);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Router>
