@@ -15,7 +15,7 @@ import LeagueRouter from "./components/brolympics/league/LeagueRouter.jsx";
 import AuthRouter from "./components/auth/AuthRouter.jsx";
 import ProtectedRoute from "./routing/ProtectedRoutes.jsx";
 
-import "./firebase/firebaseConfig";
+// import "./firebase/firebaseConfig";
 import { fetchCSRFToken } from "./api/axios.js";
 import About from "./components/home/About.jsx";
 fetchCSRFToken();

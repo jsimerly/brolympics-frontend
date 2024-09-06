@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { HashRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import { NotificationProvider } from "./components/Util/Notification.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import App from "./App.jsx";
