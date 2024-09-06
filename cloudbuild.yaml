@@ -8,19 +8,21 @@ steps:
         env
 
   # Debug: Try to access and print secrets
-  - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        echo "Attempting to access secrets:"
-        echo "VITE_API_URL: $$_VITE_API_URL"
-        echo "VITE_FRONTEND_URL: $$_VITE_FRONTEND_URL"
-        echo "VITE_FB_API_KEY: $$_VITE_FB_API_KEY"
-    secretEnv:
-      - _VITE_API_URL
-      - _VITE_FRONTEND_URL
-      - _VITE_FB_API_KEY
+  - name: 'gcr.io/cloud-builders/gcloud'
+      entrypoint: 'bash'
+      args:
+        - '-c'
+        - |
+          echo "Attempting to access secrets:"
+          echo "VITE_API_URL: $$VITE_API_URL"
+          echo "VITE_FRONTEND_URL: $$VITE_FRONTEND_URL"
+          echo "VITE_FB_API_KEY: $$VITE_FB_API_KEY"
+
+      secretEnv:
+        - VITE_API_URL
+        - VITE_FRONTEND_URL
+        - VITE_FB_API_KEY
+
 
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
@@ -29,9 +31,8 @@ steps:
         "build",
         "-t",
         "gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA",
-        "--build-arg",
-        "VITE_API_URL=${_VITE_API_URL}",
-        "--build-arg",
+        "--build-arg VITE_API_URL="$$VITE_API_URL",
+        "--build-arg"
         "VITE_FRONTEND_URL=${_VITE_FRONTEND_URL}",
         "--build-arg",
         "VITE_FB_API_KEY=${_VITE_FB_API_KEY}",
@@ -88,18 +89,18 @@ options:
 availableSecrets:
   secretManager:
     - versionName: projects/$PROJECT_ID/secrets/VITE_API_URL/versions/latest
-      env: "_VITE_API_URL"
+      env: "VITE_API_URL"
     - versionName: projects/$PROJECT_ID/secrets/VITE_FRONTEND_URL/versions/latest
-      env: "_VITE_FRONTEND_URL"
+      env: "VITE_FRONTEND_URL"
     - versionName: projects/$PROJECT_ID/secrets/VITE_FB_API_KEY/versions/latest
-      env: "_VITE_FB_API_KEY"
+      env: "VITE_FB_API_KEY"
     - versionName: projects/$PROJECT_ID/secrets/VITE_FB_AUTH_DOMAIN/versions/latest
-      env: "_VITE_FB_AUTH_DOMAIN"
+      env: "VITE_FB_AUTH_DOMAIN"
     - versionName: projects/$PROJECT_ID/secrets/VITE_PROJECT_ID/versions/latest
-      env: "_VITE_PROJECT_ID"
+      env: "VITE_PROJECT_ID"
     - versionName: projects/$PROJECT_ID/secrets/VITE_STORAGE_BUCKET/versions/latest
-      env: "_VITE_STORAGE_BUCKET"
+      env: "VITE_STORAGE_BUCKET"
     - versionName: projects/$PROJECT_ID/secrets/VITE_MESSAGING_SENDER_ID/versions/latest
-      env: "_VITE_MESSAGING_SENDER_ID"
+      env: "VITE_MESSAGING_SENDER_ID"
     - versionName: projects/$PROJECT_ID/secrets/VITE_MEASUREMENT_ID/versions/latest
-      env: "_VITE_MEASUREMENT_ID"
+      env: "VITE_MEASUREMENT_ID"
