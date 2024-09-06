@@ -14,9 +14,9 @@ steps:
       - '-c'
       - |
         echo "Attempting to access secrets:"
-        echo "VITE_API_URL: $$VITE_API_URL"
-        echo "VITE_FRONTEND_URL: $$VITE_FRONTEND_URL"
-        echo "VITE_FB_API_KEY: $$VITE_FB_API_KEY"
+        echo "VITE_API_URL: $$_VITE_API_URL"
+        echo "VITE_FRONTEND_URL: $$_VITE_FRONTEND_URL"
+        echo "VITE_FB_API_KEY: $$_VITE_FB_API_KEY"
     secretEnv:
       - VITE_API_URL
       - VITE_FRONTEND_URL
