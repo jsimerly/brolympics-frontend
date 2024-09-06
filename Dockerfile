@@ -1,14 +1,19 @@
-# Build stage
-FROM node:18-alpine as build-stage
+# Use Node.js 18 Alpine as the base image
+FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
+# Copy package.json and package-lock.json
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
-# Add these lines to use build args
+# Declare build arguments
 ARG VITE_API_URL
 ARG VITE_FRONTEND_URL
 ARG VITE_FB_API_KEY
@@ -17,16 +22,6 @@ ARG VITE_PROJECT_ID
 ARG VITE_STORAGE_BUCKET
 ARG VITE_MESSAGING_SENDER_ID
 ARG VITE_MEASUREMENT_ID
-
-# Echo the environment variables
-RUN echo "VITE_API_URL: $VITE_API_URL"
-RUN echo "VITE_FRONTEND_URL: $VITE_FRONTEND_URL"
-RUN echo "VITE_FB_API_KEY: $VITE_FB_API_KEY"
-RUN echo "VITE_FB_AUTH_DOMAIN: $VITE_FB_AUTH_DOMAIN"
-RUN echo "VITE_PROJECT_ID: $VITE_PROJECT_ID"
-RUN echo "VITE_STORAGE_BUCKET: $VITE_STORAGE_BUCKET"
-RUN echo "VITE_MESSAGING_SENDER_ID: $VITE_MESSAGING_SENDER_ID"
-RUN echo "VITE_MEASUREMENT_ID: $VITE_MEASUREMENT_ID"
 
 # Set environment variables
 ENV VITE_API_URL=$VITE_API_URL
@@ -38,30 +33,24 @@ ENV VITE_STORAGE_BUCKET=$VITE_STORAGE_BUCKET
 ENV VITE_MESSAGING_SENDER_ID=$VITE_MESSAGING_SENDER_ID
 ENV VITE_MEASUREMENT_ID=$VITE_MEASUREMENT_ID
 
+# Echo the environment variables for debugging
+RUN echo "VITE_API_URL: $VITE_API_URL"
+RUN echo "VITE_FRONTEND_URL: $VITE_FRONTEND_URL"
+RUN echo "VITE_FB_API_KEY: $VITE_FB_API_KEY"
+RUN echo "VITE_FB_AUTH_DOMAIN: $VITE_FB_AUTH_DOMAIN"
+RUN echo "VITE_PROJECT_ID: $VITE_PROJECT_ID"
+RUN echo "VITE_STORAGE_BUCKET: $VITE_STORAGE_BUCKET"
+RUN echo "VITE_MESSAGING_SENDER_ID: $VITE_MESSAGING_SENDER_ID"
+RUN echo "VITE_MEASUREMENT_ID: $VITE_MEASUREMENT_ID"
+
+# Build the application
 RUN npm run build
-
-# Production stage
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY --from=build-stage /app/dist ./dist
-COPY --from=build-stage /app/package*.json ./
-
-RUN npm install --only=production
 
 # Install serve to run the application
 RUN npm install -g serve
 
-# Echo the environment variables again in the final stage
-RUN echo "Final VITE_API_URL: $VITE_API_URL"
-RUN echo "Final VITE_FRONTEND_URL: $VITE_FRONTEND_URL"
-RUN echo "Final VITE_FB_API_KEY: $VITE_FB_API_KEY"
-RUN echo "Final VITE_FB_AUTH_DOMAIN: $VITE_FB_AUTH_DOMAIN"
-RUN echo "Final VITE_PROJECT_ID: $VITE_PROJECT_ID"
-RUN echo "Final VITE_STORAGE_BUCKET: $VITE_STORAGE_BUCKET"
-RUN echo "Final VITE_MESSAGING_SENDER_ID: $VITE_MESSAGING_SENDER_ID"
-RUN echo "Final VITE_MEASUREMENT_ID: $VITE_MEASUREMENT_ID"
+# Expose the port the app runs on
+EXPOSE 8080
 
-# Run the app
-CMD serve -s dist -l 8080
+# Command to run the application
+CMD ["serve", "-s", "dist", "-l", "8080"]
