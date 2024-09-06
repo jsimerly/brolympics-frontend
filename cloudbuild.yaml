@@ -1,27 +1,4 @@
 steps:
-  - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        echo "Debugging environment variables:"
-        env
-
-  # Debug: Try to access and print secrets
-  - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        echo "Attempting to access secrets:"
-        echo "VITE_API_URL: $$VITE_API_URL"
-        echo "VITE_FRONTEND_URL: $$VITE_FRONTEND_URL"
-        echo "VITE_FB_API_KEY: $$VITE_FB_API_KEY"
-    secretEnv:
-      - VITE_API_URL
-      - VITE_FRONTEND_URL
-      - VITE_FB_API_KEY
-
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
     entrypoint: "bash"
@@ -39,7 +16,7 @@ steps:
           --build-arg VITE_MEASUREMENT_ID="$$VITE_MEASUREMENT_ID" \
           -t "gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA" \
           .
-          
+
     secretEnv:
       - VITE_API_URL
       - VITE_FRONTEND_URL
