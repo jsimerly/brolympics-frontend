@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "dotenv -e .env.dev -- vite",
-    "build": "dotenv -e .env.prod -- vite build",
+    "dev": "dotenv -e .env -- vite",
+    "build": "dotenv -e .env -- vite build",
     "preview": "vite preview"
   },
   "dependencies": {
