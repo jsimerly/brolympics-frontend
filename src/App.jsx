@@ -20,9 +20,6 @@ import { fetchCSRFToken } from "./api/axios.js";
 import About from "./components/home/About.jsx";
 fetchCSRFToken();
 
-console.log("We're in App.jsx");
-console.log(import.meta.env.VITE_FRONTEND_URL);
-
 function App() {
   const [leagues, setLeagues] = useState([]);
   const { notification, showNotification } = useNotification();
