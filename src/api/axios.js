@@ -58,6 +58,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.log(`Error Response Status: ${error.response.status}`);
+    } else if (error.request) {
+      console.log("No response received:", error.request);
     }
     return Promise.reject(error);
   }
