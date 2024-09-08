@@ -31,8 +31,6 @@ function getCookie(name) {
 
 api.interceptors.request.use(
   async (config) => {
-    console.log(`Request URL: ${config.url}`);
-
     const csrfToken = getCookie("csrftoken");
     if (csrfToken) {
       config.headers["X-CSRFToken"] = csrfToken;
@@ -52,15 +50,13 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    console.log(`Response Status: ${response.status}`);
     return response;
   },
   (error) => {
     if (error.response) {
       console.log(`Error Response Status: ${error.response.status}`);
-    } else if (error.request) {
-      console.log("No response received:", error.request);
     }
+
     return Promise.reject(error);
   }
 );
