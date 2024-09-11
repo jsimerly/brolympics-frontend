@@ -175,7 +175,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
         </button>
         {editing && (
           <button
-            className="p-1 px-2 text-white rounded-md bg-errorRed text-[12px] mt-3 absolute bottom-2 right-2"
+            className="p-1 px-2  rounded-md bg-errorRed text-[12px] mt-3 absolute bottom-2 right-2"
             onClick={deleteClicked}
           >
             Delete Team
@@ -257,7 +257,7 @@ const ManageTeams = ({ teams, broUUID }) => {
       )}
 
       <button
-        className="flex gap-3  text-[16px] text-neutralLight"
+        className="flex gap-3  text-[16px]"
         onClick={toggleAddingTeam}
       >
         Add Team
@@ -273,7 +273,7 @@ const ManageTeams = ({ teams, broUUID }) => {
             className="w-full p-2 border rounded-md outline-none border-primary"
           />
           <button
-            className="w-full p-3 mt-3 font-semibold text-white rounded-md bg-primary"
+            className="w-full p-3 mt-3 font-semibold  rounded-md bg-primary"
             onClick={handleCreateTeamClicked}
           >
             Create Team

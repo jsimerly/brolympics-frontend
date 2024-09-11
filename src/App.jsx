@@ -41,7 +41,7 @@ function App() {
   }, [firebaseUser]);
 
   return (
-    <div className="min-h-screen text-white bg-neutral">
+    <div className="min-h-screen">
       <Navbar leagues={leagues} />
       {notification.show && (
         <Notification

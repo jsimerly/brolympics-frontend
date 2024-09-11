@@ -119,7 +119,7 @@ const InCompetition_ind = () => {
                   <input
                     value={player1Score}
                     onChange={handlePlayer1ScoreChange}
-                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md bg-neutralLight border outline-primary"
+                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md border outline-primary"
                   />
                 </div>
               </div>
@@ -132,7 +132,7 @@ const InCompetition_ind = () => {
                   <input
                     value={player2Score}
                     onChange={handlePlayer2ScoreChange}
-                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md bg-neutralLight border outline-primary"
+                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md border outline-primary"
                   />
                 </div>
               </div>

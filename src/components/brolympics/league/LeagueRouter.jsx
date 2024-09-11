@@ -26,7 +26,7 @@ const LeagueRouter = () => {
   }, [uuid]);
 
   return (
-    <div className="min-h-[calc(100vh-80px)]">
+    <div className="h-screen-minus-nav">
       <Routes>
         <Route path="*" element={<League leagueInfo={leagueInfo} />} />
         <Route

@@ -49,7 +49,7 @@ const CreateBrolympicsManager = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start w-full h-[calc(100vh-60px)] overflow-x-hidden bg-offWhite text-neutralDark">
+    <div className="flex flex-col items-center justify-start w-full h-[calc(100vh-60px)] overflow-x-hidden">
       <div
         className={`transition ease-in-out duration-200 flex
             w-full`}

@@ -59,60 +59,62 @@ const CreateBrolympics = ({ step, nextStep, setBrolympics }) => {
 
   return (
     <CreateWrapper
-      button_text={"Create Brolympics"}
+      color="primary"
+      button_text="Create Brolympics"
       step={step}
       submit={handleCreateClicked}
-      title={"Create a Brolympics"}
-      description={
-        "A Brolympics is a group of events and competitions that are battled out between teams of 2."
-      }
+      title="Create a Brolympics"
+      description="A Brolympics is a group of events and competitions that are battled out between teams of 2."
     >
-      <div className="flex flex-col w-full gap-3">
+      <div className="flex flex-col w-full gap-6">
         <div>
-          <h3 className="ml-1">Name *</h3>
+          <label htmlFor="name" className="form-label">
+            Name *
+          </label>
           <input
+            id="name"
             type="text"
             value={brolympics.name}
             onChange={handleNameChange}
             placeholder="Ex: Summer 2023"
-            className="w-full p-2 border border-gray-200 rounded-md"
+            className="w-full input-primary"
           />
         </div>
         <div>
-          <h3 className="ml-1">
-            Start Date <span className="text-[12px]"> (Optional)</span>
-          </h3>
+          <label htmlFor="date" className="form-label">
+            Start Date <span className="text-sm text-light">(Optional)</span>
+          </label>
           <input
+            id="date"
             type="datetime-local"
             value={brolympics.date}
             onChange={handleDateChange}
-            className="w-full p-2 border border-gray-200 rounded-md"
+            className="w-full input-primary"
           />
         </div>
         <div>
-          <h3 className="ml-1">
-            Upload a Logo <span className="text-[12px]"> (Optional)</span>
-          </h3>
+          <label htmlFor="file_bro" className="form-label">
+            Upload a Logo <span className="text-sm text-light">(Optional)</span>
+          </label>
           <input
             type="file"
             accept="image/*"
             id="file_bro"
             onChange={handleImageUpload}
-            hidden
+            className="hidden"
           />
           <label
             htmlFor="file_bro"
-            className="inline-flex bg-white border rounded-md cursor-pointer"
+            className="w-32 h-32 transition-all duration-300 border-2 border-dashed cursor-pointer flex-center rounded-border border-primary hover:border-primary-dark"
           >
             {brolympics.img ? (
-              <img src={brolympics.img} className="max-w-[100px] rounded-md" />
+              <img
+                src={brolympics.img}
+                className="object-cover w-full h-full rounded-md"
+                alt="Brolympics logo"
+              />
             ) : (
-              <div className="w-[100px] h-[100px] rounded-md flex items-center justify-center">
-                <CameraAltIcon
-                  className="bg-white w-[100px] text-neutral"
-                  sx={{ fontSize: 60 }}
-                />
-              </div>
+              <CameraAltIcon className="text-primary" size={48} />
             )}
           </label>
           {cropping && (

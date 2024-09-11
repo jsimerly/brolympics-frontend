@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
@@ -33,11 +32,11 @@ const Toolbar = ({
     navigate(`/b/${uuid}/${route}`);
   };
 
-  const PageButton = ({ route, text, icon, path }) => (
+  const PageButton = ({ route, text, icon, path, color }) => (
     <div
       onClick={() => handleIconClick(route)}
       className={`${
-        pathRoute === path && "text-primary"
+        pathRoute === path && `text-${color}`
       } flex flex-col items-center justify-center flex-1`}
     >
       {icon}
@@ -47,29 +46,33 @@ const Toolbar = ({
   return (
     <>
       <div className="h-[60px] -z-20" />
-      <div className="fixed bottom-0 left-0 h-[60px] bg-neutral w-full border-t border-neutralLight flex justify-around items-center px-3">
+      <div className="fixed bottom-0 left-0 h-[60px] bg-white w-full border-t flex justify-around items-center px-3">
         <PageButton
           route="home"
           text="Home"
           path="home"
+          color="primary"
           icon={<HomeOutlinedIcon sx={{ fontSize: 30 }} />}
         />
         <PageButton
           route={`team/${default_team_uuid || `team/`}`}
           path="team"
           text="Teams"
+          color="tertiary"
           icon={<PeopleAltOutlinedIcon sx={{ fontSize: 30 }} />}
         />
         <PageButton
           route={`event/${default_event_type}/${default_event_uuid || ""}`}
           text="Events"
           path="event"
+          color="secondary"
           icon={<ScoreboardOutlinedIcon sx={{ fontSize: 30 }} />}
         />
         <PageButton
           route="standings"
           text="Standings"
           path="standings"
+          color="red"
           icon={<EmojiEventsOutlinedIcon sx={{ fontSize: 30 }} />}
         />
         {is_owner && (
@@ -77,6 +80,7 @@ const Toolbar = ({
             route="manage"
             text="Manage"
             path="manage"
+            color="primary"
             icon={<SettingsSuggestIcon sx={{ fontSize: 30 }} />}
           />
         )}

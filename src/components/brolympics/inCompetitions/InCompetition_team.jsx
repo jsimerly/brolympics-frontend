@@ -82,7 +82,7 @@ const InCompetition_team = () => {
             <input
               value={teamScore}
               onChange={handleTeamScoreChange}
-              className="min-w-[80px] w-1/2 h-[60px] p-2 mx-6 rounded-md bg-neutralLight border outline-primary text-center text-[20px] font-semibold"
+              className="min-w-[80px] w-1/2 h-[60px] p-2 mx-6 rounded-md border outline-primary text-center text-[20px] font-semibold"
             />
           </div>
         </div>

@@ -18,7 +18,6 @@ const LeagueInvite = () => {
     </div>
   )
 
-   
   return (
     <InviteWrapper
       fetchInfo={fetchLeagueInviteInfo}

@@ -14,13 +14,15 @@ const Options = ({ user, setView }) => {
     location.reload();
   };
 
-  const ButtonCard = ({ Icon, text, to }) => (
+  const ButtonCard = ({ Icon, text, to, color }) => (
     <button
       onClick={() => clickButton(to)}
       className="flex flex-col items-center justify-center"
     >
-      <Icon sx={{ fontSize: 35 }} />
-      <span className="text-[10px] opacity-60 flex-wrap max-w-[60px] text-center">
+      <Icon sx={{ fontSize: 35 }} className={`text-${color}`} />
+      <span
+        className={`text-[10px] opacity-60 flex-wrap max-w-[60px] text-center`}
+      >
         {text}
       </span>
     </button>
@@ -28,7 +30,7 @@ const Options = ({ user, setView }) => {
 
   const AccountIcon = ({ img }) => (
     <div
-      className="h-[100px] w-[100px] rounded-md absolute -bottom-[35px] flex items-center justify-center text-neutralDark bg-neutralLight overflow-hidden"
+      className="h-[100px] w-[100px] rounded-md absolute -bottom-[35px] flex items-center justify-center overflow-hidden"
       onClick={clickAccount}
     >
       {img ? (
@@ -40,7 +42,7 @@ const Options = ({ user, setView }) => {
   );
 
   return (
-    <div className="fixed flex justify-between items-center bottom-0 w-full h-[100px] bg-gradient-to-b from-neutralDark to-neutralLight text-white p-6">
+    <div className="fixed flex justify-between items-center bottom-0 w-full h-[100px] border-t bg-gradient-to-b bg-[#f2f4f7]  p-6">
       {user !== null ? (
         <div className="relative">
           <AccountIcon img={user.img} />
@@ -52,8 +54,8 @@ const Options = ({ user, setView }) => {
       )}
 
       <div className="flex items-start gap-7">
-        <ButtonCard Icon={Info} text="About" to="/about" />
-        <ButtonCard Icon={SettingsIcon} text="Settings" />
+        <ButtonCard Icon={Info} text="About" to="/about" color="primary" />
+        <ButtonCard Icon={SettingsIcon} text="Settings" color="tertiary" />
       </div>
     </div>
   );

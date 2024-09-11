@@ -59,12 +59,10 @@ const VerifyPhone = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="mb-6 text-2xl font-bold text-center text-white">
-        Verify Phone Number
-      </h2>
-      <p className="mb-4 text-center text-gray-300">
-        Enter the 6-digit code sent to {phoneNumber}
+    <div className="p-3">
+      <h2 className="text-center header-2">Verify Phone Number</h2>
+      <p className="mb-4 text-center text-near-black">
+        Enter the 6-digit code sent to <br /> {phoneNumber}
       </p>
       {error && (
         <p className="mb-4 text-sm text-center text-red-500">{error}</p>
@@ -77,7 +75,7 @@ const VerifyPhone = () => {
               ref={(el) => (inputRefs.current[index] = el)}
               type="text"
               maxLength={6}
-              className="w-12 h-12 text-xl text-center text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-12 h-12 text-xl text-center border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={verCode[index]}
               onChange={(e) => handleCodeChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
@@ -95,10 +93,13 @@ const VerifyPhone = () => {
       <button
         type="button"
         onClick={handleConfirmCode}
-        className="w-full px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        className="w-full primary-btn"
       >
         Confirm Code
       </button>
+      <p className="mt-4 text-[12px] text-center">
+        Didn't get a code? Touch luck, just try again later.
+      </p>
     </div>
   );
 };

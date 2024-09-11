@@ -46,7 +46,7 @@ const ManageEvents = ({ events, setEvents }) => {
         {compEvents &&
           compEvents.map((event, i) => (
             <div key={i + "_comp_events"}>
-              {i !== 0 && <div className="w-full h-[1px] bg-neutralLight" />}
+              {i !== 0 && <div className="w-full h-[1px]" />}
               {React.cloneElement(CompToType[event.type], {
                 key: i + "_eventCard",
                 event: event,
@@ -55,7 +55,7 @@ const ManageEvents = ({ events, setEvents }) => {
           ))}
       </div>
       <button
-        className="flex gap-3  text-[16px] text-neutralLight"
+        className="flex gap-3  text-[16px]"
         onClick={toggleAddEvent}
       >
         Add Event

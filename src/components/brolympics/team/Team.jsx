@@ -1,4 +1,5 @@
-import TeamsDropdown from "./TeamsDropdown";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -7,141 +8,161 @@ import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import Event_h2h from "./events/Event_h2h";
 import Event_ind from "./events/Event_ind";
 import Event_team from "./events/Event_team";
-
 import { fetchTeamInfo } from "../../../api/activeBro/teams";
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 const Team = ({ teams, default_uuid }) => {
-  let { teamUuid } = useParams();
-  let navigate = useNavigate();
-  const [selectedTeam, setSelectedTeam] = useState();
-  const [teamInfo, setTeamInfo] = useState();
+  const { uuid, teamUuid } = useParams();
+  const navigate = useNavigate();
+  const [teamInfo, setTeamInfo] = useState(null);
+  const [selectedTeamId, setSelectedTeamId] = useState(
+    teamUuid || teams[0]?.uuid || ""
+  );
 
   useEffect(() => {
     if (!teamUuid && default_uuid) {
-      navigate(`/team/${default_uuid}`);
+      navigate(`/b/${uuid}/team/${default_uuid}`);
+    }
+  }, [teamUuid, default_uuid, navigate, uuid]);
+
+  useEffect(() => {
+    if (teamUuid) {
+      setSelectedTeamId(teamUuid);
     }
   }, [teamUuid]);
 
   useEffect(() => {
     const getTeamInfo = async () => {
       try {
-        const data = await fetchTeamInfo(teamUuid);
+        const data = await fetchTeamInfo(selectedTeamId);
         setTeamInfo(data);
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching team info:", error);
       }
     };
-    getTeamInfo();
-  }, [teamUuid]);
+    if (selectedTeamId) {
+      getTeamInfo();
+    }
+  }, [selectedTeamId]);
 
-  const TeamInfo = ({ team, player_1, player_2 }) => {
-    const getOrdinalSuffix = (number) => {
-      let suffix = "";
-      if (number % 100 >= 11 && number % 100 <= 13) {
-        suffix = "th";
-      } else {
-        switch (number % 10) {
-          case 1:
-            suffix = "st";
-            break;
-          case 2:
-            suffix = "nd";
-            break;
-          case 3:
-            suffix = "rd";
-            break;
-          default:
-            suffix = "th";
-            break;
-        }
-      }
-      return suffix;
-    };
+  const handleTeamChange = (e) => {
+    const selectedTeam = teams.find((team) => team.uuid === e.target.value);
+    if (selectedTeam) {
+      localStorage.setItem("selectedTeamUuid", selectedTeam.uuid);
+      navigate(`/b/${uuid}/team/${selectedTeam.uuid}`);
+    }
+  };
 
-    return (
-      <div className="flex items-center justify-center w-full gap-3 px-6">
-        <div className="flex flex-col items-center justify-center w-full p-3 border rounded-md border-primary">
-          <div className="flex justify-around w-3/4 py-3 pb-6">
-            <span className="font-bold text-[18px] text-center">
+  const getOrdinalSuffix = (number) => {
+    if (number === undefined || number === null) return "";
+    const suffixes = ["th", "st", "nd", "rd"];
+    const v = number % 100;
+    return number + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+  };
+
+  const TeamInfo = ({ team }) => (
+    <div className="p-4 mb-6 card">
+      <div className="flex flex-col justify-between mb-4 md:flex-row">
+        <div className="flex items-center justify-start space-x-6">
+          <div>
+            <img src={team.img} className="rounded-md w-[60px] h-[60px]" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold">
               {team.player_1?.full_name || "Player 1"}
             </span>
-            <span className="font-bold text-[18px] text-center">
+            <span className="text-lg font-bold">
               {team.player_2?.full_name || "Player 2"}
             </span>
           </div>
-          <div className="flex justify-center w-full gap-6">
-            <div className="flex">
-              <NumbersOutlinedIcon className="text-primary" />
-              <span className="text-[16px] font-bold pl-3 flex">
-                {team.overall_ranking?.rank}
-                <span className="text-[10px] flex items-start ml-[1px] mt-[2px]">
-                  {getOrdinalSuffix(team.overall_ranking?.rank)}
-                </span>
-              </span>
-            </div>
-            <div className="flex">
-              <DiamondOutlinedIcon className="text-primary" />
-              <span className="text-[16px] font-bold pl-3">
-                {team.overall_ranking?.total_points} pts
-              </span>
-            </div>
-            <div className="flex">
-              <EmojiEventsOutlinedIcon className="text-primary" />
-              <span className="text-[16px] font-bold pl-3">
-                {team.overall_ranking?.event_wins}
-              </span>
-            </div>
-            <div className="flex">
-              <LeaderboardOutlinedIcon className="text-primary" />
-              {/* <img src={Podium} className="text-white h-[26px] w-[26px]"/> */}
-              <span className="text-[16px] font-bold pl-3">
-                {team.overall_ranking?.event_podiums}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
-    );
-  };
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="flex items-center">
+          <NumbersOutlinedIcon className="mr-2 text-tertiary" />
+          {team.overall_ranking?.rank && (
+            <span className="font-bold">
+              {getOrdinalSuffix(team.overall_ranking.rank)}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center">
+          <DiamondOutlinedIcon className="mr-2 text-tertiary" />
+          {team.overall_ranking?.total_points !== undefined && (
+            <span className="font-bold">
+              {team.overall_ranking.total_points} pts
+            </span>
+          )}
+        </div>
+        <div className="flex items-center">
+          <EmojiEventsOutlinedIcon className="mr-2 text-tertiary" />
+          {team.overall_ranking?.event_wins !== undefined && (
+            <span className="font-bold">
+              {team.overall_ranking.event_wins} wins
+            </span>
+          )}
+        </div>
+        <div className="flex items-center">
+          <LeaderboardOutlinedIcon className="mr-2 text-tertiary" />
+          {team.overall_ranking?.event_podiums !== undefined && (
+            <span className="font-bold">
+              {team.overall_ranking.event_podiums} podiums
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   const getEventComponent = (type, props) => {
     switch (type) {
       case "h2h":
-        return <Event_h2h {...props} team={teamUuid} />;
+        return <Event_h2h {...props} team={selectedTeamId} />;
       case "ind":
         return <Event_ind {...props} team={teamInfo.team} />;
       case "team":
         return <Event_team {...props} team={teamInfo.team} />;
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="w-full">
-      {teams && (
-        <TeamsDropdown
-          teams={teams}
-          selectedTeam={selectedTeam}
-          setSelectedTeam={setSelectedTeam}
-        />
-      )}
-      {teamInfo && <TeamInfo {...teamInfo} />}
+    <div className="max-w-4xl mx-auto container-padding">
+      <div className="mb-4">
+        <label
+          htmlFor="team-select"
+          className="block mb-2 text-sm font-medium text-gray-700"
+        >
+          Select a team:
+        </label>
+        <select
+          id="team-select"
+          value={selectedTeamId}
+          onChange={handleTeamChange}
+          className="block w-full p-2 text-2xl bg-white border rounded-md shadow-sm border-tertiary focus:outline-none focus:ring-tertiary focus:border-tertiary"
+        >
+          {teams.map((team) => (
+            <option className="text-sm" key={team.uuid} value={team.uuid}>
+              {team.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {teamInfo && <TeamInfo team={teamInfo.team} />}
 
-      <div className="py-3">
-        <h2 className="text-[20px] font-bold px-6">Events</h2>
-        {teamInfo &&
-          teamInfo.events.map((event, i) => (
-            <div key={i + "_teams"}>
-              {i !== 0 && (
-                <div className="w-full px-6">
-                  <div className="w-full h-[1px] bg-neutralLight" />
-                </div>
-              )}
+      {teamInfo && teamInfo.events && teamInfo.events.length > 0 && (
+        <div className="p-4 card">
+          <h2 className="mb-4 header-3">Events</h2>
+          {teamInfo.events.map((event, i) => (
+            <div
+              key={i}
+              className={i !== 0 ? "mt-4 pt-4 border-t border-gray-200" : ""}
+            >
               {getEventComponent(event.type, event)}
             </div>
           ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

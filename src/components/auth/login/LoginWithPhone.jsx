@@ -58,25 +58,25 @@ const LoginWithPhone = ({ setError }) => {
   };
 
   return (
-    <form onSubmit={handleSendCode} className="mb-4">
-      <span className="block mb-2 text-sm font-bold text-gray-300">
-        By Phone
-      </span>
-      <div className="mb-4">
+    <form onSubmit={handleSendCode} className="space-y-4">
+      <div>
+        <label htmlFor="phone" className="form-label">
+          Phone Number
+        </label>
         <input
-          type="tel"
           id="phone"
+          type="tel"
           placeholder="(555) 555-5555"
           value={phone}
           onChange={(e) => handlePhoneChange(e.target.value)}
-          className="w-full p-2 mb-3 text-white bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full input-tertiary"
           required
         />
       </div>
       <button
         id="send-code-button"
         type="submit"
-        className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full tertiary-btn"
       >
         Login with Phone
       </button>

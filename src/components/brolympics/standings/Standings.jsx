@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchStandings } from "../../../api/activeBro/standings.js";
 
-const Standings = () => {
+const Standings = ({status}) => {
   const { uuid } = useParams();
   const [standingData, setStandingData] = useState();
 
@@ -42,16 +42,16 @@ const Standings = () => {
     <div className="px-6 py-3">
       <div>
         <h2 className="text-[20px] font-bold pb-2">Overall Standings</h2>
-        <table className="w-full border border-neutralLight">
+        <table className="w-full border ">
           <thead>
-            <tr className="border text-primary border-neutralLight">
-              <th className="border border-neutralLight w-[60px] p-2">
+            <tr className="border text-primary ">
+              <th className="border  w-[60px] p-2">
                 <NumbersOutlinedIcon />
               </th>
-              <th className="pl-6 border border-neutralLight text-start text-[20px]">
+              <th className="pl-6 border  text-start text-[20px]">
                 Team
               </th>
-              <th className="border border-neutralLight w-[80px]">
+              <th className="border  w-[80px]">
                 <DiamondOutlinedIcon />
               </th>
             </tr>
@@ -62,10 +62,10 @@ const Standings = () => {
                 .sort((a, b) => a.rank - b.rank)
                 .map((ranking, i) => (
                   <tr key={i + "_row"}>
-                    <td className="p-3 font-semibold text-center text-[18px] border-r border-neutralLight">
+                    <td className="p-3 font-semibold text-center text-[18px] border-r ">
                       {ranking.rank}
                     </td>
-                    <td className="pl-3 text-start text-[20px] border-r border-neutralLight">
+                    <td className="pl-3 text-start text-[20px] border-r ">
                       <div className="flex items-center gap-2">
                         <img
                           src={ranking.team.img}
@@ -78,7 +78,7 @@ const Standings = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="p-2 text-center border-r text-[18px] border-neutralLight">
+                    <td className="p-2 text-center border-r text-[18px] ">
                       {Number.isInteger(ranking?.total_points)
                         ? ranking.total_points
                         : ranking.total_points.toFixed(1)}

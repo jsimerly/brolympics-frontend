@@ -10,15 +10,18 @@ const LeagueCard = ({ name, img, founded, is_owner, uuid }) => {
   };
 
   return (
-    <div className="flex items-center px-3 py-6" onClick={onLeagueClick}>
-      <img className="h-[60px] min-w-[60px] w-[60px] rounded-md" src={img} />
-      <div className="flex flex-col items-center justify-center w-full">
-        <h2 className="text-[30px] font-bold w-full text-center"> {name}</h2>
-        <span className=" text-center text-[14px]">Founded: {founded}</span>
+    <div
+      className="flex items-center gap-4 p-4 card-clickable"
+      onClick={onLeagueClick}
+    >
+      <img className="object-cover w-16 h-16 rounded-lg" src={img} alt={name} />
+      <div className="flex flex-col flex-grow">
+        <h2 className="header-4 text-near-black">{name}</h2>
+        <span className="text-sm text-light">Founded: {founded}</span>
       </div>
       {is_owner && (
         <div className="text-primary">
-          <AutoAwesomeIcon sx={{ fontSize: 30 }} />
+          <AutoAwesomeIcon sx={{ fontSize: 24 }} />
         </div>
       )}
     </div>
@@ -32,31 +35,26 @@ const Leagues = ({ leagues }) => {
     navigate("/start-league");
   };
 
-  const onSettingsClicks = () => {
-    navigate("settings");
-  };
-
   return (
-    <div className="bg-neutral relative text-white min-h-[calc(100vh-80px)]">
-      <div className="p-6">
-        <h1 className="text-[26px] font-bold leading-none py-3">Leagues</h1>
-        {leagues.map((league, i) => (
-          <div key={i}>
-            <LeagueCard {...league} />
-            {i !== 0 && <div className="w-full h-[1px] bg-neutralLight" />}
-          </div>
-        ))}
-        {leagues.length === 0 && "You are not in any leagues yet."}
+    <div className="flex flex-col min-h-[calc(100vh-80px)]">
+      <div className="flex-grow container-padding">
+        <h1 className="my-6 header">Leagues</h1>
+        <div className="space-y-4">
+          {leagues.length > 0 ? (
+            leagues.map((league, i) => <LeagueCard key={i} {...league} />)
+          ) : (
+            <p className="text-light">You are not in any leagues yet.</p>
+          )}
+        </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 flex justify-between w-screen p-6 ">
+      <div className="py-6 container-padding">
         <button
-          className="flex justify-between w-full p-3 px-6 rounded-md bg-primary"
+          className="flex items-center justify-center w-full gap-2 btn primary-btn"
           onClick={createLeagueClicked}
         >
           <AddCircleOutlineIcon />
-          <span> Create League </span>
-          <div />
+          <span>Create League</span>
         </button>
       </div>
     </div>

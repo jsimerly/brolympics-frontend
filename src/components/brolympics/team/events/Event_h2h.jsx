@@ -24,7 +24,7 @@ const Matchup = ({team, team_1, team_1_score, team_2, team_2_score, winner, is_a
             team_1_text = 'text-errorRedLight'
             break
         default:
-            team_1_text = 'text-white';
+            team_1_text = '';
     }
 
     let team_2_text;
@@ -36,7 +36,7 @@ const Matchup = ({team, team_1, team_1_score, team_2, team_2_score, winner, is_a
             team_2_text = 'text-errorRedLight'
             break
         default:
-            team_2_text = 'text-white';
+            team_2_text = '';
     }
 
 
@@ -66,7 +66,7 @@ const Matchup = ({team, team_1, team_1_score, team_2, team_2_score, winner, is_a
     
 
 const EventDropdown_H2h = ({decimal_places, score_for, score_against, sos_wins, sos_losses, comps, is_active, team}) => (
-    <div className={`py-2 border-t ${is_active ? 'border-neutral' : 'border-neutralLight'} `}>
+    <div className={`py-2 border-t`}>
         <div className='flex justify-between'>
             <div className='w-1/2'>
                 <h3 className='font-semibold'>Margin</h3>

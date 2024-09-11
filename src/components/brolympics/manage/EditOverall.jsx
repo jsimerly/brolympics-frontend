@@ -60,7 +60,7 @@ const EditOverall = () => {
             ))}
           </ul>
           <button
-            className="w-full p-2 font-semibold text-white rounded-md bg-primary"
+            className="w-full p-2 font-semibold  rounded-md bg-primary"
             onClick={onUpdateClick}
           >
             Update Rankings

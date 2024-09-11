@@ -61,7 +61,7 @@ const H2hComp = ({ team_1, team_1_score, team_2, team_2_score, uuid }) => {
         />
       </div>
       <button
-        className="absolute px-2 py-1 text-white rounded-md bottom-2 right-2 bg-primary"
+        className="absolute px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update
@@ -121,7 +121,7 @@ const IndComp = ({ team, player_1_score, player_2_score, uuid }) => {
         />
       </div>
       <button
-        className="absolute px-2 py-1 text-white rounded-md bottom-2 right-2 bg-primary"
+        className="absolute px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update
@@ -160,7 +160,7 @@ const TeamComp = ({ team, team_score, uuid }) => {
         />
       </div>
       <button
-        className="px-2 py-1 text-white rounded-md bottom-2 right-2 bg-primary"
+        className="px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update

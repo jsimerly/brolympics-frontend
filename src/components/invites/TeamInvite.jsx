@@ -1,20 +1,35 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React from "react";
 import { fetchTeamInvite, fetchJoinTeam } from "../../api/invites.js";
 import InviteWrapper from "./InviteWrapper.jsx";
 
 const TeamInvite = () => {
   const Card = ({ info }) => (
-    <div className="flex flex-col items-center justify-center w-full h-full gap-3">
-      <h2 className="text-[20px] text-center">
-        You've been invited to join the team {info.name}.
+    <div className="w-full max-w-md p-6 mx-auto">
+      <h2 className="mb-6 text-center header-3">
+        You've been invited to join the team
       </h2>
-      <div className="flex items-center justify-start w-full gap-6 px-6">
-        <img src={info.img} className="rounded-md w-[80px] h-[80px]" />
+      <div className="flex items-center gap-6 mb-6">
+        <img
+          src={info.img}
+          alt={`${info.name} team logo`}
+          className="object-cover w-24 h-24 rounded-md"
+        />
         <div>
-          <div className="text-[40px] font-bold">{info.name}</div>
-          {info.player_1 && <span>{info.player_1.full_name}</span>}
-          {info.player_2 && <span>{info.player_2.full_name}</span>}
+          <h3 className="header-2">{info.name}</h3>
+          <div className="text-sm text-light">
+            {info.player_1 && (
+              <p className="mb-1">
+                <span className="font-semibold">Player 1:</span>{" "}
+                {info.player_1.full_name}
+              </p>
+            )}
+            {info.player_2 && (
+              <p>
+                <span className="font-semibold">Player 2:</span>{" "}
+                {info.player_2.full_name}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -24,7 +39,7 @@ const TeamInvite = () => {
     <InviteWrapper
       fetchInfo={fetchTeamInvite}
       fetchJoin={fetchJoinTeam}
-      joinText={"Join Team"}
+      joinText="Join Team"
     >
       <Card />
     </InviteWrapper>

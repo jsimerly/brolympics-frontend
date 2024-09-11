@@ -1,46 +1,56 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import {fetchBrolympicsInvite, fetchJoinBrolympics} from '../../api/invites.js'
+import React from "react";
+import {
+  fetchBrolympicsInvite,
+  fetchJoinBrolympics,
+} from "../../api/invites.js";
 import InviteWrapper from "./InviteWrapper.jsx";
 
-
-const Card = ({info}) => (
-  <div className="flex flex-col items-center justify-center w-full h-full gap-3">
-    <h2 className="text-[20px] text-center max-w-[280px]">
-      You've been invited to join: <span className="font-semibold">{info.league_owner}</span>
-    </h2>
-    <div className="flex flex-col w-full gap-3 p-3 border rounded-md border-primary">
-      <div className="flex gap-3">
-        <img src={info.img} className="rounded-md w-[80px] h-[80px]"/>
-        <div className="flex flex-col items-start justify-center h-full">
-          <h2 className="text-[30px] leading-none font-bold">{info.name}</h2>
-        </div>
+const Card = ({ info }) => (
+  <div className="flex flex-col items-center w-full">
+    <h2 className="mb-6 text-center header-3">You've been invited to join:</h2>
+    <p className="mb-6 text-xl font-semibold">
+      {info.league_owner.display_name}'s Brolympics
+    </p>
+    <div className="w-full p-4 mb-6 card">
+      <div className="flex items-center gap-4 mb-4">
+        {info.img && (
+          <img
+            src={info.img}
+            alt={`${info.name} logo`}
+            className="object-cover w-24 h-24 rounded-md"
+          />
+        )}
+        <h3 className="header-2 text-light">{info.name}</h3>
       </div>
-      {info.events.length > 0 &&
-          <div className="flex">
-            <span className="py-1 font-semibold">Events:</span>
-            <ul className="flex gap-2 ml-2">
-              {info.events.map((event, i) => (
-                <div key={i+'_invite_events'} className="px-2 py-1 border rounded-md border-primary">{event.name}</div>
-              ))}
-            </ul>
+      {info.events.length > 0 && (
+        <div>
+          <h4 className="mb-2 header-4 text-tertiary">Events:</h4>
+          <div className="flex flex-wrap gap-2">
+            {info.events.map((event, i) => (
+              <span
+                key={i + "_invite_events"}
+                className="px-2 py-1 text-sm text-white rounded-md bg-primary-light"
+              >
+                {event.name}
+              </span>
+            ))}
           </div>
-      }
+        </div>
+      )}
     </div>
   </div>
-)
+);
 
 const BrolympicsInvite = () => {
-
   return (
     <InviteWrapper
       fetchInfo={fetchBrolympicsInvite}
       fetchJoin={fetchJoinBrolympics}
-      joinText={'Join Brolympics'}
+      joinText="Join Brolympics"
     >
-      <Card/>
+      <Card />
     </InviteWrapper>
-  )
-}
+  );
+};
 
-export default BrolympicsInvite
+export default BrolympicsInvite;

@@ -5,20 +5,57 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#339989",
-        primaryLight: "#7DE2D1",
-        secondary: "#FAF3C5", 
-        secondaryLight: '#ffffff',
-        neutralDark: '#131515',
-        neutral: '#2B2C28',
-        neutralLight: '#53564E',
-        offWhite: '#FFFAFB',
-        errorRed: '#C76C63',
-        errorRedLight : '#d9928d'
+        primary: {
+          light: "#33a1d6",
+          DEFAULT: "#0081C8",
+          dark: "#006396",
+        },
+        secondary: {
+          light: "#fcc55a",
+          DEFAULT: "#FCB131",
+          dark: "#fa9d04",
+        },
+        tertiary: {
+          light: "#33b774",
+          DEFAULT: "#00A651",
+          dark: "#007d3d",
+        },
+        red: {
+          light: "#f15c72",
+          DEFAULT: "#EE334E",
+          dark: "#e60f2e",
+        },
+        errorRed: {
+          light: "#d9928d",
+          DEFAULT: "#C76C63",
+          dark: "#b5463b",
+        },
       },
       fontFamily: {
-        roboto : ['Roboto', 'serif'],
-        londrina: ['Londrina Solid', 'sans-serif']
+        sans: [
+          "Roboto",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Helvetica Neue",
+          "Arial",
+          "Noto Sans",
+          "sans-serif",
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol",
+          "Noto Color Emoji",
+        ],
+        roboto: ["Roboto", "sans-serif"],
+      },
+      textColor: {
+        DEFAULT: "#333333",
+        "near-black": "#111111", // Corrected from "#11111"
+        light: "#666666",
+        primary: "#0081C8",
+        muted: "#AAAAAA",
       },
     },
     screens: {
@@ -33,4 +70,3 @@ module.exports = {
   },
   plugins: [],
 };
-

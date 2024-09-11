@@ -30,16 +30,13 @@ const ImageCropper = ({ img, setCroppedImage, handleCloseCropper }) => {
       <div className="flex items-center justify-center w-full">
         <div className="absolute z-40 flex justify-center w-full gap-3 px-3 bottom-40">
           <button
-            className="w-1/2 font-bold bg-white border rounded-md text-neutralDark border-errorRed"
+            className="w-1/2 font-bold bg-white border rounded-md border-red"
             onClick={handleCloseCropper}
           >
             Cancel
           </button>
 
-          <button
-            className="w-1/2 p-2 font-bold text-white rounded-md bg-primary"
-            onClick={handleCrop}
-          >
+          <button className="w-1/2 p-2 primary-btn" onClick={handleCrop}>
             Crop
           </button>
         </div>

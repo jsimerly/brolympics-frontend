@@ -76,7 +76,7 @@ const MatchupCard = ({ uuid, team_1, team_1_score, team_2, team_2_score }) => {
         />
       </div>
       <button
-        className="absolute px-2 py-1 text-white rounded-md bottom-2 right-2 bg-primary"
+        className="absolute px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update

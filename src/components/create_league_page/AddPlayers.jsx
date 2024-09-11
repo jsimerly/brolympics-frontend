@@ -15,6 +15,7 @@ const AddPlayers = ({ step, nextStep, link }) => {
 
   return (
     <CreateWrapper
+      color="red"
       button_text="Complete Set Up"
       step={step}
       submit={handleCreateClicked}

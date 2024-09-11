@@ -183,7 +183,7 @@ const ManageBro = ({ name, startDate, endDate, img }) => {
         </div>
       </div>
       <button
-        className="w-full p-2 mt-6 font-semibold text-white rounded-md bg-primary"
+        className="w-full p-2 mt-6 font-semibold rounded-md bg-primary"
         onClick={handleUpdateClicked}
       >
         Update Brolympics
@@ -191,7 +191,7 @@ const ManageBro = ({ name, startDate, endDate, img }) => {
       <div>
         <h4 className="pt-6 text-[16px] font-semibold">Danger Zone</h4>
         <button
-          className="w-full p-2 mt-6 font-semibold text-white rounded-md bg-errorRed"
+          className="w-full p-2 mt-6 font-semibold rounded-md bg-errorRed"
           onClick={onDeleteClicked}
         >
           Delete Brolympics

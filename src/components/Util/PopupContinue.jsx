@@ -33,7 +33,7 @@ const PopupContinue = ({ open, setOpen, header, desc, continueText, continueFunc
                 Cancel
             </button>
             <button 
-                className="min-w-[100px] p-2 font-semibold text-white rounded  bg-errorRed"
+                className="min-w-[100px] p-2 font-semibold rounded  bg-errorRed"
                 onClick={continueClicked}
             >
             {continueText}

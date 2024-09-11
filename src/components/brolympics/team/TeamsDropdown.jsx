@@ -20,7 +20,7 @@ const TeamsDropdown = ({teams, selectedTeam, setSelectedTeam}) => {
     <div className='relative flex flex-col items-center justify-center w-full py-3 '>
         <div>
           <div 
-            className=' flex justify-between items-center w-[200px] text-[20px] font-semibold  border-neutralLight'
+            className=' flex justify-between items-center w-[200px] text-[20px] font-semibold '
             onClick={handleDropdownClicked}
           >
             <h2 className='flex items-center justify-center w-full text-center'>
@@ -30,7 +30,7 @@ const TeamsDropdown = ({teams, selectedTeam, setSelectedTeam}) => {
           </div>
           {isOpen && (
             <ul 
-              className='absolute top-[50px] border p-2 rounded-md shadow-lg w-[200px] z-10 bg-neutral'
+              className='absolute top-[50px] border p-2 rounded-md shadow-lg w-[200px] z-10'
               ref={dropdownNode}
             >
               {teams

@@ -6,36 +6,41 @@ import VerifyPhone from "./login/VerifyPhone";
 
 const AuthRouter = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/auth/login";
+  const isCreatePage = location.pathname === "/auth/create-account";
 
   return (
-    <div className="max-w-md pt-6 pb-3 mx-auto bg-gray-800 rounded-lg shadow-xl">
-      <div className="flex justify-around w-full mb-6 text-lg font-semibold">
-        <Link
-          to="/auth/login"
-          className={`w-1/3 text-center ${
-            isLoginPage ? "text-blue-500" : "text-gray-400 hover:text-blue-500"
-          }`}
-        >
-          Login
-        </Link>
-        <span className="text-gray-500">|</span>
-        <Link
-          to="/auth/create-account"
-          className={`w-1/3 text-center${
-            !isLoginPage ? "text-blue-500" : "text-gray-400 hover:text-blue-500"
-          }`}
-        >
-          Create Account
-        </Link>
-      </div>
+    <div className="max-w-md pt-8 mx-auto h-screen-minus-nav container-padding bg-neutral-100">
+      <div className="p-6 card">
+        <div className="mb-6 text-lg font-semibold flex-between">
+          <Link
+            to="/auth/login"
+            className={`w-1/2 text-center py-2 ${
+              !isCreatePage
+                ? "text-primary border-b-2 border-primary"
+                : "text-gray-400 hover:text-primary"
+            }`}
+          >
+            Login
+          </Link>
+          <Link
+            to="/auth/create-account"
+            className={`w-1/2 text-center py-2 ${
+              isCreatePage
+                ? "text-primary border-b-2 border-primary"
+                : "text-gray-400 hover:text-primary"
+            }`}
+          >
+            Create Account
+          </Link>
+        </div>
 
-      <Routes>
-        <Route path="create-account" element={<CreateAccount />} />
-        <Route path="login" element={<Login />} />
-        <Route path="verify-phone" element={<VerifyPhone />} />
-        <Route path="*" element={<Navigate to="login" replace />} />
-      </Routes>
+        <Routes>
+          <Route path="create-account" element={<CreateAccount />} />
+          <Route path="login" element={<Login />} />
+          <Route path="verify-phone" element={<VerifyPhone />} />
+          <Route path="*" element={<Navigate to="login" replace />} />
+        </Routes>
+      </div>
     </div>
   );
 };

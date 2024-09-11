@@ -14,7 +14,7 @@ import { fetchHome } from "../../../api/activeBro/home.js";
 const CurrentEventCard = ({ name, percent_complete }) => (
   <div className="pb-1 rounded-md ">
     <h3 className="pb-2">{name}</h3>
-    <div className="relative h-[2px] w-full bg-gray-200 rounded-full ">
+    <div className="relative h-[2px] w-full rounded-full ">
       <div
         className="absolute top-0 left-0 w-full h-full duration-200 ease-in-out rounded-full transition-width bg-primary"
         style={{ width: `${percent_complete}%` }}
@@ -71,9 +71,7 @@ const EventBlock = ({ title, items, component: Component, component_func }) => {
                   <Component {...item} />
                 ) : (
                   <div>
-                    {i !== 0 && (
-                      <div className="w-full h-[1px] bg-neutralLight my-2" />
-                    )}
+                    {i !== 0 && <div className="w-full h-[1px] my-2" />}
                     {React.cloneElement(component_func(item.type, item), {
                       key: i,
                     })}
@@ -99,21 +97,11 @@ const AdminSwitch = ({ adminView, setAdminView }) => {
 
   return (
     <div className="flex items-center justify-center w-full pb-3 font-semibold">
-      <button
-        className={`${
-          adminView ? "text-neutralLight" : "text-white opacity-60"
-        }`}
-        onClick={homeClick}
-      >
+      <button className={""} onClick={homeClick}>
         Home
       </button>
       <span className="px-6 opacity-60">|</span>
-      <button
-        className={`${
-          !adminView ? "text-neutralLight" : "text-white opacity-60"
-        }`}
-        onClick={adminClick}
-      >
+      <button className="" onClick={adminClick}>
         Admin
       </button>
     </div>

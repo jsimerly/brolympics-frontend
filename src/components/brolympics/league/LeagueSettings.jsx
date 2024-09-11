@@ -3,6 +3,7 @@ import ImageCropper from "../../Util/ImageCropper";
 import { useNotification } from "../../Util/Notification";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   updateLeague,
   updateLeagueImg,
@@ -12,7 +13,7 @@ import PopupContinue from "../../Util/PopupContinue";
 import { useNavigate } from "react-router-dom";
 
 const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
-  if (!leagueInfo) return <div>Loading</div>;
+  if (!leagueInfo) return <div className="p-4 text-center">Loading...</div>;
   const [name, setName] = useState(leagueInfo.name);
   const [img, setImg] = useState(leagueInfo.img);
   const [cropping, setCropping] = useState(false);
@@ -100,59 +101,74 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md p-6 mx-auto space-y-4 rounded-lg bg-neutral">
-      <div className="relative w-32 h-32 overflow-hidden rounded-md">
-        {img && !imageError ? (
-          <img
-            src={img}
-            alt="League"
-            className="object-cover w-full h-full"
-            onError={handleImageError}
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full bg-gray-200">
-            <CameraAltIcon className="text-gray-400" size={48} />
+    <div className="max-w-md mx-auto container-padding">
+      <h1 className="my-6 text-center header">League Settings</h1>
+      <div className="p-6 space-y-2 card">
+        <div className="flex flex-col items-center">
+          <div className="relative w-32 h-32 overflow-hidden rounded-md">
+            {img && !imageError ? (
+              <img
+                src={img}
+                alt="League"
+                className="object-cover w-full h-full"
+                onError={handleImageError}
+              />
+            ) : (
+              <div className="flex items-center justify-center w-full h-full bg-gray-200">
+                <CameraAltIcon
+                  className="text-gray-400"
+                  sx={{ fontSize: 48 }}
+                />
+              </div>
+            )}
+            <label
+              htmlFor="photo-upload"
+              className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
+            >
+              <CameraAltIcon className="text-white" sx={{ fontSize: 24 }} />
+            </label>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
           </div>
-        )}
-        <label
-          htmlFor="photo-upload"
-          className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
+        </div>
+
+        <div>
+          <label htmlFor="league-name" className="form-label">
+            League Name
+          </label>
+          <input
+            id="league-name"
+            className="w-full input-primary"
+            value={name}
+            onChange={handleNameChange}
+            placeholder="Enter league name"
+          />
+        </div>
+
+        <button
+          onClick={handleSave}
+          className="flex items-center justify-center w-full btn primary-btn"
         >
-          <CameraAltIcon className="text-white" size={24} />
-        </label>
-        <input
-          id="photo-upload"
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoChange}
-          className="hidden"
-        />
+          <SaveIcon className="mr-2" sx={{ fontSize: 18 }} /> Save Changes
+        </button>
+
+        <button
+          onClick={handleDelete}
+          className="flex items-center justify-center w-full btn red-btn"
+        >
+          <DeleteIcon className="mr-2" sx={{ fontSize: 18 }} /> Delete League
+        </button>
       </div>
-
-      <input
-        className="w-full p-2 text-lg text-center text-gray-500 bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-        value={name}
-        onChange={handleNameChange}
-        placeholder="League Name"
-      />
-
-      <button
-        onClick={handleSave}
-        className="flex items-center justify-center w-full p-2 text-white transition-colors rounded-md bg-primary hover:bg-primary-dark"
-      >
-        <SaveIcon className="mr-2" size={18} /> Save Changes
-      </button>
-
-      <button
-        onClick={handleDelete}
-        className="flex items-center justify-center w-full p-2 text-white rounded-md bg-errorRed"
-      >
-        Delete League
-      </button>
 
       {imageError &&
         showNotification(
-          "There was an error loading the image. Please try again."
+          "There was an error loading the image. Please try again.",
+          "error"
         )}
 
       {cropping && (
@@ -163,16 +179,14 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
         />
       )}
 
-      <div className="text-neutralDark">
-        <PopupContinue
-          open={isDeletePopupOpen}
-          setOpen={setIsDeletePopupOpen}
-          header="Delete League"
-          desc="Are you sure you want to delete this league? This action cannot be undone."
-          continueText="Delete"
-          continueFunc={confirmDelete}
-        />
-      </div>
+      <PopupContinue
+        open={isDeletePopupOpen}
+        setOpen={setIsDeletePopupOpen}
+        header="Delete League"
+        desc="Are you sure you want to delete this league? This action cannot be undone."
+        continueText="Delete"
+        continueFunc={confirmDelete}
+      />
     </div>
   );
 };

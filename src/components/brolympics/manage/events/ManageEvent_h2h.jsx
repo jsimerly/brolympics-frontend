@@ -183,13 +183,13 @@ const ManageEvent_h2h = ({ event }) => {
           handleInputChange={handleInputChange}
         />
         <button
-          className="w-full p-2 mt-3 font-semibold text-white rounded-md bg-primary"
+          className="w-full p-2 mt-3 font-semibold  rounded-md bg-primary"
           onClick={handleUpdateClicked}
         >
           Update {event.name}
         </button>
         <button
-          className="w-full p-2 mt-3 font-semibold text-white rounded-md bg-errorRed"
+          className="w-full p-2 mt-3 font-semibold  rounded-md bg-errorRed"
           onClick={handleDeleteClicked}
         >
           Delete

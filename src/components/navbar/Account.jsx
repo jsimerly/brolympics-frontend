@@ -69,6 +69,9 @@ const Account = ({ setView }) => {
     try {
       await updateUserInfo(userInfo);
       setIsEditing(false);
+      if (!user.account_complete) {
+        location.reload();
+      }
     } catch (error) {
       console.error("Error updating user info:", error);
     }
@@ -84,7 +87,7 @@ const Account = ({ setView }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] bg-neutral text-white opacity-[99%] px-6 py-3 gap-3">
+    <div className="flex flex-col h-[calc(100vh-80px)] opacity-[99%] px-6 py-3 gap-3 bg-gray-100">
       {!user.account_complete && (
         <h2>
           Please complete your account by filling out your first name, last
@@ -96,7 +99,7 @@ const Account = ({ setView }) => {
           <ArrowBackIcon /> Back
         </div>
       )}
-      <div className="flex flex-col items-center justify-center w-full p-6 border rounded-md border-primary">
+      <div className="flex flex-col items-center justify-center w-full p-4 border card">
         <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-md">
           {imageSrc && !imageError ? (
             <img
@@ -106,15 +109,15 @@ const Account = ({ setView }) => {
               onError={handleImageError}
             />
           ) : (
-            <div className="flex items-center justify-center w-full h-full bg-neutralLight">
+            <div className="flex items-center justify-center w-full h-full">
               <CameraAltIcon className="text-neutral" sx={{ fontSize: 60 }} />
             </div>
           )}
           <label
             htmlFor="photo-upload"
-            className="absolute inset-0 flex items-center justify-center transition-opacity bg-black bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
+            className="absolute inset-0 flex items-center justify-center transition-opacity bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
           >
-            <CameraAltIcon className="text-white" />
+            <CameraAltIcon className="" />
           </label>
           <input
             id="photo-upload"
@@ -127,21 +130,21 @@ const Account = ({ setView }) => {
         {isEditing ? (
           <div className="flex flex-col items-center w-full gap-3">
             <input
-              className="w-full p-2 rounded-md bg-neutralLight"
+              className="w-full input-primary"
               name="first_name"
               value={userInfo.first_name || ""}
               placeholder="First Name"
               onChange={handleInputChange}
             />
             <input
-              className="w-full p-2 rounded-md bg-neutralLight"
+              className="w-full input-primary"
               name="last_name"
               value={userInfo.last_name || ""}
               placeholder="Last Name"
               onChange={handleInputChange}
             />
             <input
-              className="w-full p-2 rounded-md bg-neutralLight"
+              className="w-full input-primary"
               name="display_name"
               value={userInfo.display_name || ""}
               placeholder="Display Name"
@@ -149,7 +152,7 @@ const Account = ({ setView }) => {
             />
             <button
               onClick={handleSave}
-              className="flex items-center justify-center w-full p-2 mt-2 rounded-md bg-primary"
+              className="flex items-center justify-center w-full mt-2 rounded-md primary-btn"
             >
               <SaveIcon className="mr-2" /> Save Changes
             </button>
@@ -162,7 +165,7 @@ const Account = ({ setView }) => {
             </h2>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center justify-center w-full p-2 mt-4 rounded-md bg-primary"
+              className="flex items-center justify-center w-full mt-2 primary-btn"
             >
               <EditIcon className="mr-2" /> Edit Profile
             </button>
@@ -170,7 +173,7 @@ const Account = ({ setView }) => {
         )}
       </div>
       <button
-        className="flex items-center justify-center w-full p-2 mt-6 font-bold text-white rounded-md bg-errorRed"
+        className="flex items-center justify-center w-full p-2 mt-2 font-bold rounded-md red-btn"
         onClick={handleLogout}
       >
         <LogoutIcon className="mr-2" /> Logout

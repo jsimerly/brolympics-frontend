@@ -13,7 +13,7 @@ const EventWrapper = ({name, rank, points, display_score, is_active, is_final, c
   }
   
 return (
-  <div className={`${is_active && 'bg-neutral'} px-6`}>
+  <div className={`px-6`}>
       <div 
           className={`flex justify-between w-full h-full py-3`}
           onClick={handleClick}

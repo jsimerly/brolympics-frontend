@@ -6,7 +6,7 @@ import AddPlayers from "./AddPlayers.jsx";
 import { createAllLeague } from "../../api/league.js";
 import { useNotification } from "../Util/Notification.jsx";
 
-const StepManager = ({ step, nextStep, prevStep }) => {
+const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
   const [league, setLeague] = useState({});
   const [brolympics, setBrolympics] = useState({});
   const [h2hEvents, setH2hEvents] = useState([]);
@@ -35,7 +35,7 @@ const StepManager = ({ step, nextStep, prevStep }) => {
   return (
     <div
       className={`transition ease-in-out duration-200 flex
-            w-full
+            w-full bg-gray-100
         `}
       style={{ transform: `translateX(-${100 * (step - 1)}%` }}
     >

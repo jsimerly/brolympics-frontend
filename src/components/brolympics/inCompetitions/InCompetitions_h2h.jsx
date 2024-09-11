@@ -114,7 +114,7 @@ const InCompetitions_h2h = ({}) => {
                   <input
                     value={team1Score || ""}
                     onChange={handleTeam1ScoreChange}
-                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md bg-neutralLight border outline-primary text-center text-[20px] font-semibold"
+                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md border outline-primary text-center text-[20px] font-semibold"
                   />
                 </div>
               </div>
@@ -135,7 +135,7 @@ const InCompetitions_h2h = ({}) => {
                   <input
                     value={team2Score || ""}
                     onChange={handleTeam2ScoreChange}
-                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md bg-neutralLight border outline-primary text-center text-[20px] font-semibold"
+                    className="min-w-[80px] w-[80px] h-[60px] p-2 mx-6 rounded-md  border outline-primary text-center text-[20px] font-semibold"
                   />
                 </div>
               </div>

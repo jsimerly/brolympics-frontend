@@ -6,7 +6,7 @@ const Competition = ({player_1_name, player_1_score, player_2_name, player_2_sco
   return(
     <div 
       className={`flex items-center px-3 py-2 border rounded-md 
-      bg-neutral ${is_active && 'border-[3px]'} ${(!is_active && rank<=4) ?'border-primary' : null}
+      ${is_active && 'border-[3px]'} ${(!is_active && rank<=4) ?'border-primary' : null}
       `}
     >
         <div className="grid grid-cols-2 ">
@@ -19,7 +19,7 @@ const Competition = ({player_1_name, player_1_score, player_2_name, player_2_sco
 }
 
 const EventDropdown_Ind = ({comps, decimcal_places, is_active, rank}) => (
-  <div className={`pb-2 border-t ${is_active ? 'border-neutral' : 'border-neutralLight'} `}>
+  <div className={`pb-2 border-t`}>
       <h4 className='pt-2 font-bold'>Competitions</h4>  
       <div className='flex flex-col gap-1 py-1'>
           {comps.map((comp, i) => (

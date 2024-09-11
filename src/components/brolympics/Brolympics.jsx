@@ -25,36 +25,6 @@ const Brolympics = () => {
   const { uuid } = useParams();
   const { firebaseUser } = useAuth();
   const [status, setStatus] = useState("active");
-
-  useEffect(() => {
-    const getBrolympicsInfo = async () => {
-      try {
-        const data = await fetchBrolympicsHome(uuid);
-        setBroInfo(data);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    getBrolympicsInfo();
-  }, []);
-
-  useEffect(() => {
-    if (broInfo) {
-      broInfo.is_active && setStatus("active");
-      !broInfo.is_active &&
-        !broInfo.is_complete &&
-        broInfo.is_owner &&
-        setStatus("pre_admin");
-      !broInfo.is_active &&
-        !broInfo.is_complete &&
-        !broInfo.is_owner &&
-        setStatus("pre");
-      broInfo.is_complete && setStatus("post");
-    }
-  }, [broInfo]);
-
-  console.log(broInfo);
-
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.split("/")[3];
@@ -66,103 +36,128 @@ const Brolympics = () => {
   });
 
   useEffect(() => {
-    if (broInfo && broInfo.is_active) {
-      const getIsAvailable = async () => {
+    const getBrolympicsInfo = async () => {
+      try {
+        const data = await fetchBrolympicsHome(uuid);
+        setBroInfo(data);
+      } catch (error) {
+        console.error("Error fetching Brolympics info:", error.message);
+      }
+    };
+    getBrolympicsInfo();
+  }, [uuid]);
+
+  useEffect(() => {
+    if (broInfo) {
+      if (broInfo.is_active) setStatus("active");
+      else if (!broInfo.is_complete && broInfo.is_owner) setStatus("pre_admin");
+      else if (!broInfo.is_complete && !broInfo.is_owner) setStatus("pre");
+      else if (broInfo.is_complete) setStatus("post");
+    }
+  }, [broInfo]);
+
+  useEffect(() => {
+    const checkActiveCompetition = async () => {
+      if (broInfo && broInfo.is_active && firebaseUser) {
         try {
           const data = await fetchInCompetition();
-          if (!data.is_available) {
-            if (activeComp.is_available) {
-              setActiveComp(data);
-            }
+          setActiveComp(data);
 
-            if (
-              !location.pathname.includes(
-                `/b/${uuid}/competition/${data.comp_uuid}`
-              )
-            ) {
-              navigate(`/b/${uuid}/competition/${data.comp_uuid}`);
-            }
-          }
-
-          if (data.is_available) {
-            if (!activeComp.is_available) {
-              setActiveComp(data);
-            }
-
-            if (location.pathname.includes(`/b/${uuid}/competition/`)) {
-              navigate(`/b/${uuid}/home`);
-            }
+          if (
+            !data.is_available &&
+            !location.pathname.includes(
+              `/b/${uuid}/competition/${data.comp_uuid}`
+            )
+          ) {
+            navigate(`/b/${uuid}/competition/${data.comp_uuid}`);
+          } else if (
+            data.is_available &&
+            location.pathname.includes(`/b/${uuid}/competition/`)
+          ) {
+            navigate(`/b/${uuid}/home`);
           }
         } catch (error) {
-          console.log(error.message);
+          console.error("Error checking active competition:", error.message);
         }
-      };
-      if (firebaseUser) {
-        getIsAvailable();
       }
-    }
-  }, [location, broInfo, firebaseUser]);
+    };
+
+    checkActiveCompetition();
+  }, [location, broInfo, firebaseUser, uuid, navigate]);
+
+  if (!broInfo) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-neutral min-h-[calc(100vh-80px)] text-white">
-      <div
-        className={`w-full p-3 text-center 
-         ${
-           page === "manage" || (status === "pre_admin" && page === "home")
-             ? "bg-offWhite text-neutralDark"
-             : "border-b border-neutralLight"
-         } `}
-      >
-        <h1 className="w-full font-bold leading-none text-[30px] ">
-          Summer 2023
+    <div className="flex flex-col min-h-screen">
+      <header className="w-full px-6 pt-4 text-center">
+        <h1 className="py-4 text-3xl font-bold">
+          {broInfo.name || "Name Missing"}
         </h1>
-        <span>Stuck in Highschool</span>
-      </div>
-      <Routes>
-        <Route
-          path="home"
-          element={
-            <Home brolympics={broInfo} status={status} setStatus={setStatus} />
-          }
-        />
-        <Route path="standings" element={<Standings />} />
-        <Route
-          path="team/:teamUuid"
-          element={
-            <Team
-              teams={broInfo?.teams}
-              default_uuid={broInfo?.user_team?.uuid || ""}
-            />
-          }
-        />
-        <Route
-          path="event/:eventType/:eventUuid"
-          element={
-            <Events
-              events={broInfo?.events}
-              default_uuid={broInfo?.events?.[0]?.uuid}
-              default_type={broInfo?.events?.[0]?.type}
-            />
-          }
-        />
-        <Route
-          path="competition/:compUuid"
-          element={<InCompetition activeComp={activeComp} />}
-        />
-        <Route
-          path="manage/*"
-          element={<ManageRouter brolympics={broInfo} />}
-        />
-        <Route path="*" element={<Navigate to={`/b/${uuid}/home`} />} />
-      </Routes>
+        <p className="text-sm">{broInfo.league_name || ""}</p>
+      </header>
+
+      <main className="flex-grow container-padding">
+        <Routes>
+          <Route
+            path="home"
+            element={
+              <Home
+                brolympics={broInfo}
+                status={status}
+                setStatus={setStatus}
+              />
+            }
+          />
+          <Route path="standings" element={<Standings status={status} />} />
+          <Route
+            path="team/:teamUuid"
+            element={
+              <Team
+                teams={broInfo.teams}
+                default_uuid={broInfo.user_team?.uuid || ""}
+                status={status}
+              />
+            }
+          />
+          <Route
+            path="event/:eventType/:eventUuid"
+            element={
+              <Events
+                events={broInfo.events}
+                default_uuid={broInfo.events?.[0]?.uuid}
+                default_type={broInfo.events?.[0]?.type}
+                status={status}
+              />
+            }
+          />
+          <Route
+            path="competition/:compUuid"
+            element={<InCompetition activeComp={activeComp} />}
+          />
+          <Route
+            path="manage/*"
+            element={<ManageRouter brolympics={broInfo} />}
+          />
+          <Route path="*" element={<Navigate to={`/b/${uuid}/home`} />} />
+        </Routes>
+      </main>
+
       {activeComp.is_available && (
-        <Toolbar
-          status={status}
-          is_owner={broInfo?.is_owner}
-          default_team_uuid={broInfo?.user_team?.uuid || ""}
-          default_event_type={broInfo?.events?.[0]?.type || ""}
-          default_event_uuid={broInfo?.events?.[0]?.uuid || ""}
-        />
+        <footer className="bg-gray-100">
+          <Toolbar
+            status={status}
+            is_owner={broInfo.is_owner}
+            default_team_uuid={broInfo.user_team?.uuid || ""}
+            default_event_type={broInfo.events?.[0]?.type || ""}
+            default_event_uuid={broInfo.events?.[0]?.uuid || ""}
+          />
+        </footer>
       )}
     </div>
   );

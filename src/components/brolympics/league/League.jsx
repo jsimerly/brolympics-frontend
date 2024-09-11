@@ -29,19 +29,17 @@ const BrolympicsCard_Upcoming = ({
   };
 
   return (
-    <div
-      className="p-3 border rounded-md border-primary"
-      onClick={handleGoToBrolympics}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex gap-3 item-center">
+    <div className="p-4 card-clickable" onClick={handleGoToBrolympics}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4">
           <img
             src={img}
-            className="bg-white h-[80px] w-[80px] rounded-lg text-black"
+            alt={name}
+            className="object-cover w-20 h-20 bg-white rounded-lg"
           />
           <div className="flex flex-col justify-center">
-            <h3 className="text-[20px] font-bold flex items-center">{name}</h3>
-            <div className="text-[12px] flex items-start justify-start">
+            <h3 className="header-4 text-near-black">{name}</h3>
+            <div className="text-sm text-light">
               {projected_start_date && formatDate(projected_start_date)}
               {projected_start_date && projected_end_date && " - "}
               {projected_end_date && formatDate(projected_end_date)}
@@ -49,34 +47,40 @@ const BrolympicsCard_Upcoming = ({
           </div>
         </div>
       </div>
-      <div className="flex pt-6 text-[14px]">
-        <div className="pr-2 text-[16px] flex  justify-center">Events:</div>
-        <div className="flex flex-wrap gap-2">
-          {events.map((event, i) => (
-            <div
-              className="p-1 border rounded-md border-primaryLight"
-              key={i + "bro_card_event"}
-            >
-              {event.name}
-            </div>
-          ))}
-        </div>
-      </div>
-      {teams.length > 0 && (
-        <div className="flex pt-6 text-[14px]">
-          <div className="pr-2 text-[16px]">Teams:</div>
-          <div className="flex flex-wrap gap-2">
-            {teams.map((team, i) => (
-              <div
-                className="p-1 border rounded-md border-primaryLight"
-                key={i + "bro_card_team"}
-              >
-                {team.name}
+      <div className="space-y-4">
+        <div className="flex flex-col">
+          {events.length > 0 && (
+            <>
+              <div className="mb-2 header-sm">Events:</div>
+              <div className="flex flex-wrap gap-2">
+                {events.map((event, i) => (
+                  <div
+                    className="px-2 py-1 text-sm border rounded-md border-primary"
+                    key={i + "bro_card_event"}
+                  >
+                    {event.name}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
-      )}
+        {teams.length > 0 && (
+          <div className="flex flex-col">
+            <div className="mb-2 header-sm">Teams:</div>
+            <div className="flex flex-wrap gap-2">
+              {teams.map((team, i) => (
+                <div
+                  className="px-2 py-1 text-sm border rounded-md border-tertiary"
+                  key={i + "bro_card_team"}
+                >
+                  {team.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -89,35 +93,36 @@ const BrolympicsCard_Completed = ({
   second,
   third,
 }) => (
-  <div className="p-3 border rounded-md border-primary">
-    <div className="flex items-center justify-between">
-      <div className="flex gap-3 item-center">
+  <div className="p-4 card">
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-4">
         <img
           src={img}
-          className="bg-white h-[80px] w-[80px] rounded-lg text-black"
+          alt={name}
+          className="object-cover w-20 h-20 bg-white rounded-lg"
         />
-        <h3 className="text-[20px] font-bold flex items-center">{name}</h3>
+        <h3 className="header-4 text-near-black">{name}</h3>
       </div>
-      <div className="text-[12px] flex items-end justify-end">{end_date}</div>
+      <div className="text-sm text-light">{end_date}</div>
     </div>
-    <div className="flex flex-col justify-center gap-3 px-2 pt-4">
-      <div className="flex gap-1">
-        <img src={Gold} className="h-[20px]" />
-        {winner}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <img src={Gold} alt="Gold" className="h-5" />
+        <span className="text-near-black">{winner}</span>
       </div>
-      <div className="flex gap-1">
-        <img src={Silver} className="h-[20px]" />
-        {second}
+      <div className="flex items-center gap-2">
+        <img src={Silver} alt="Silver" className="h-5" />
+        <span className="text-light">{second}</span>
       </div>
-      <div className="flex gap-1">
-        <img src={Bronze} className="h-[20px]" />
-        {third}
+      <div className="flex items-center gap-2">
+        <img src={Bronze} alt="Bronze" className="h-5" />
+        <span className="text-light">{third}</span>
       </div>
     </div>
   </div>
 );
 
-const League = ({leagueInfo}) => {
+const League = ({ leagueInfo }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -127,11 +132,11 @@ const League = ({leagueInfo}) => {
   const isOwner = leagueInfo?.league_owner === user.uid;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] px-6 py-3 text-white bg-neutral flex flex-col justify-between">
-      <div>
+    <div className="min-h-[calc(100vh-80px)] container-padding flex flex-col justify-between">
+      <div className="space-y-6">
         <div className="flex items-center justify-between w-full">
           <div>
-            <h1 className="text-[26px] font-bold leading-none pt-3">
+            <h1 className="text-[36px] font-bold leading-none pt-3 text-primary">
               {leagueInfo?.name || "No Name"}
             </h1>
             <span className="text-[12px]">
@@ -140,44 +145,52 @@ const League = ({leagueInfo}) => {
           </div>
           {isOwner && (
             <Link to="settings">
-              <SettingsIcon sx={{ fontSize: 40 }} />
+              <SettingsIcon sx={{ fontSize: 40 }} className="text-light" />
             </Link>
           )}
         </div>
-        <div>
-          <h2 className="py-3 ml-1 font-bold"> Upcoming Brolympics </h2>
-          <div className="flex flex-col gap-3">
-            {leagueInfo &&
-              leagueInfo.upcoming_brolympics.map((brolympic, i) => (
-                <BrolympicsCard_Upcoming
-                  {...brolympic}
-                  key={i + "_upcoming_bro_card"}
-                />
-              ))}
-            {leagueInfo &&
-              leagueInfo.upcoming_brolympics.length === 0 &&
-              "You have do not have any upcoming Brolympics."}
-          </div>
-          <h2 className="py-3 ml-1 font-bold"> Completed Brolympics </h2>
-          <div className="flex flex-col gap-3">
-            {leagueInfo &&
-              leagueInfo.completed_brolympics.map((brolympic, i) => (
-                <BrolympicsCard_Completed
-                  {...brolympic}
-                  key={i + "_complete_bro_card"}
-                />
-              ))}
-            {leagueInfo &&
-              leagueInfo.completed_brolympics.length === 0 &&
-              "You have not completed any Brolympics."}
-          </div>
+        <div className="space-y-6">
+          <section>
+            <h2 className="mb-4 header-3">Upcoming Brolympics</h2>
+            <div className="space-y-4">
+              {leagueInfo && leagueInfo.upcoming_brolympics.length > 0 ? (
+                leagueInfo.upcoming_brolympics.map((brolympic, i) => (
+                  <BrolympicsCard_Upcoming
+                    {...brolympic}
+                    key={i + "_upcoming_bro_card"}
+                  />
+                ))
+              ) : (
+                <p className="text-light">
+                  You do not have any upcoming Brolympics.
+                </p>
+              )}
+            </div>
+          </section>
+          <section>
+            <h2 className="header-3">Completed Brolympics</h2>
+            <div className="space-y-4">
+              {leagueInfo && leagueInfo.completed_brolympics.length > 0 ? (
+                leagueInfo.completed_brolympics.map((brolympic, i) => (
+                  <BrolympicsCard_Completed
+                    {...brolympic}
+                    key={i + "_complete_bro_card"}
+                  />
+                ))
+              ) : (
+                <p className="ml-1 text-sm text-light">
+                  You have not completed any Brolympics.
+                </p>
+              )}
+            </div>
+          </section>
         </div>
       </div>
       <button
-        className="w-full p-2 rounded-md bg-primary"
+        className="w-full p-3 my-6 btn primary-btn"
         onClick={onCreateClick}
       >
-        Create Brolymipcs
+        Create Brolympics
       </button>
       <Routes>
         <Route path="/league-settings" />
