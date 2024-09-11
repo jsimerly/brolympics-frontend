@@ -35,7 +35,6 @@ const Leagues = ({ leagues }) => {
   const onSettingsClicks = () => {
     navigate("settings");
   };
-  console.log(leagues);
 
   return (
     <div className="bg-neutral relative text-white min-h-[calc(100vh-80px)]">

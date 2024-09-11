@@ -35,6 +35,10 @@ const Slideout = ({ open, leagues, setOpen }) => {
 
   useEffect(() => {}, [firebaseUser]);
 
+  if (user && !user.account_complete) {
+    return <Account setView={setView} />;
+  }
+
   return (
     <>
       {open && (

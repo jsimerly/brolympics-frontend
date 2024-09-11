@@ -85,9 +85,17 @@ const Account = ({ setView }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] bg-neutral text-white opacity-[99%] px-6 py-3 gap-3">
-      <div onClick={goBack} className="cursor-pointer">
-        <ArrowBackIcon /> Back
-      </div>
+      {!user.account_complete && (
+        <h2>
+          Please complete your account by filling out your first name, last
+          name, and your display name.
+        </h2>
+      )}
+      {user.account_complete && (
+        <div onClick={goBack} className="cursor-pointer">
+          <ArrowBackIcon /> Back
+        </div>
+      )}
       <div className="flex flex-col items-center justify-center w-full p-6 border rounded-md border-primary">
         <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-md">
           {imageSrc && !imageError ? (

@@ -24,8 +24,19 @@ const Brolympics = () => {
   const [broInfo, setBroInfo] = useState();
   const { uuid } = useParams();
   const { firebaseUser } = useAuth();
-
   const [status, setStatus] = useState("active");
+
+  useEffect(() => {
+    const getBrolympicsInfo = async () => {
+      try {
+        const data = await fetchBrolympicsHome(uuid);
+        setBroInfo(data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    getBrolympicsInfo();
+  }, []);
 
   useEffect(() => {
     if (broInfo) {
@@ -42,17 +53,7 @@ const Brolympics = () => {
     }
   }, [broInfo]);
 
-  useEffect(() => {
-    const getBrolympicsInfo = async () => {
-      try {
-        const data = await fetchBrolympicsHome(uuid);
-        setBroInfo(data);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
-    getBrolympicsInfo();
-  }, []);
+  console.log(broInfo);
 
   const navigate = useNavigate();
   const location = useLocation();

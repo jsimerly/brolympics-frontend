@@ -14,7 +14,6 @@ const ManageEvents = ({ events, setEvents }) => {
   const [addingEvent, setAddingEvent] = useState(false);
   const [compEvents, setCompEvents] = useState(events);
   const { uuid } = useParams();
-  console.log(events);
 
   const toggleAddEvent = () => {
     setAddingEvent((addingEvent) => !addingEvent);
