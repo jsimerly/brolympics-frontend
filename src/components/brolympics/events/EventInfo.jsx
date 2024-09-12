@@ -3,6 +3,42 @@ import { format, parseISO } from "date-fns";
 import HeadToHead from "./eventInfo/H2hInfo";
 import Individual from "./eventInfo/IndInfo";
 import TeamEvent from "./eventInfo/TeamInfo";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+const QuillDisplay = ({ content }) => {
+  return (
+    <>
+      <style>
+        {`
+          .quill-display-container .quill {
+            border: none;
+          }
+          .quill-display-container .ql-container {
+            border: none;
+          }
+          .quill-display-container .ql-editor {
+            padding: 0;
+          }
+          .quill-display-container .ql-editor p {
+            margin-bottom: 1em;
+          }
+        `}
+      </style>
+      <div className="quill-display-container">
+        <h2 className="mb-4 header-3">Rules</h2>
+        <ReactQuill
+          value={content}
+          readOnly={true}
+          theme="snow"
+          modules={{ toolbar: false }}
+        />
+      </div>
+    </>
+  );
+};
+
+export default QuillDisplay;
 
 export const EventInfo = ({ event }) => {
   const formatDateTime = (dateString) => {
@@ -44,11 +80,7 @@ export const EventInfo = ({ event }) => {
 
         {/* Rules */}
         <div className="p-4 card">
-          <h2 className="mb-4 header-3">Rules</h2>
-          <div
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: event.rules }}
-          />
+          <QuillDisplay content={event.rules} />
         </div>
 
         {/* Event Settings */}
