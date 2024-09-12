@@ -157,7 +157,7 @@ const Brolympics = () => {
             status={status}
             is_owner={broInfo.is_owner}
             default_team_uuid={
-              broInfo.user_team?.uuid || broInfo.teams?.[0].uuid || ""
+              broInfo.user_team?.uuid || broInfo.teams?.[0]?.uuid || ""
             }
             default_event_type={broInfo.events?.[0]?.type || ""}
             default_event_uuid={broInfo.events?.[0]?.uuid || ""}
