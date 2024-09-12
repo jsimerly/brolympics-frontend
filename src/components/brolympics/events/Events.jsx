@@ -12,24 +12,47 @@ const Events = ({ events, default_uuid, default_type, status }) => {
   const { eventUuid, eventType, uuid } = useParams();
 
   useEffect(() => {
-    const savedEventUuid = localStorage.getItem("selectedEventUuid");
-    const savedEventType = localStorage.getItem("selectedEventType");
+    const selectEvent = (eventUuid, eventType) => {
+      if (events.some((event) => event.uuid === eventUuid)) {
+        setSelectedEventId(eventUuid);
+        localStorage.setItem("selectedEventUuid", eventUuid);
+        localStorage.setItem("selectedEventType", eventType);
+        navigate(`/b/${uuid}/event/${eventType}/${eventUuid}`);
+      }
+    };
 
     if (eventUuid && eventType) {
-      setSelectedEventId(eventUuid);
-    } else if (savedEventUuid && savedEventType) {
-      navigate(`/b/${uuid}/event/${savedEventType}/${savedEventUuid}`);
-    } else if (default_uuid && default_type) {
-      navigate(`/b/${uuid}/event/${default_type}/${default_uuid}`);
-    } else if (events.length > 0) {
-      const firstEvent = events[0];
-      navigate(`/b/${uuid}/event/${firstEvent.type}/${firstEvent.uuid}`);
+      selectEvent(eventUuid, eventType);
+    } else {
+      const savedEventUuid = localStorage.getItem("selectedEventUuid");
+      const savedEventType = localStorage.getItem("selectedEventType");
+
+      if (
+        savedEventUuid &&
+        savedEventType &&
+        events.some((event) => event.uuid === savedEventUuid)
+      ) {
+        selectEvent(savedEventUuid, savedEventType);
+      } else if (default_uuid && default_type) {
+        selectEvent(default_uuid, default_type);
+      } else if (events.length > 0) {
+        const firstEvent = events[0];
+        selectEvent(firstEvent.uuid, firstEvent.type);
+      }
     }
-  }, [eventUuid, eventType, uuid]);
+  }, [
+    events,
+    eventUuid,
+    eventType,
+    uuid,
+    default_uuid,
+    default_type,
+    navigate,
+  ]);
 
   useEffect(() => {
     const getEventInfo = async () => {
-      if (selectedEventId) {
+      if (selectedEventId && eventType) {
         try {
           const data = await fetchEventInfo(selectedEventId, eventType);
           setEventInfo(data);
@@ -44,6 +67,7 @@ const Events = ({ events, default_uuid, default_type, status }) => {
   const handleEventChange = (e) => {
     const selectedEvent = events.find((event) => event.uuid === e.target.value);
     if (selectedEvent) {
+      setSelectedEventId(selectedEvent.uuid);
       localStorage.setItem("selectedEventUuid", selectedEvent.uuid);
       localStorage.setItem("selectedEventType", selectedEvent.type);
       navigate(`/b/${uuid}/event/${selectedEvent.type}/${selectedEvent.uuid}`);

@@ -43,7 +43,7 @@ const EnterPhone = ({ onSendCode, phone, setPhone }) => {
 const EnterCode = ({ onVerifyCode, verificationCode, setVerificationCode }) => {
   return (
     <form onSubmit={onVerifyCode} className="space-y-4">
-      <div>
+      <div className="flex flex-col items-center justify-center w-full space-y-3">
         <label htmlFor="verificationCode" className="form-label">
           Verification Code
         </label>
@@ -53,17 +53,17 @@ const EnterCode = ({ onVerifyCode, verificationCode, setVerificationCode }) => {
           placeholder="Enter verification code"
           value={verificationCode}
           onChange={(e) => setVerificationCode(e.target.value)}
-          className="w-full input-tertiary"
+          className="w-1/2 input-tertiary"
           required
         />
+        <button
+          id="verify-code-button"
+          type="submit"
+          className="w-1/2 tertiary-btn"
+        >
+          Verify Code
+        </button>
       </div>
-      <button
-        id="verify-code-button"
-        type="submit"
-        className="w-full tertiary-btn"
-      >
-        Verify Code
-      </button>
     </form>
   );
 };
