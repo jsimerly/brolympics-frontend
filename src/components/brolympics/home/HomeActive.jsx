@@ -131,9 +131,10 @@ const HomeActive = ({ is_owner }) => {
                   getComponent(type, props, false)
                 }
               />
+              <div className="w-full h-[1px] rounded-md bg-gray-200 mt-6" />
             </>
           )}
-          <div className="pt-6 mt-6 border-t">
+          <div className="mt-6">
             <Schedule events={homeData.upcoming_events || []} />
           </div>
         </div>

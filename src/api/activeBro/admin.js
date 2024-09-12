@@ -76,7 +76,10 @@ export async function fetchBracketData(bro_uuid) {
 
 export async function fetchUpdateBracketMatch(data) {
   try {
-    const response = await api.put("/api/brolympics/update-bracket-comp/");
+    const response = await api.put(
+      "/api/brolympics/update-bracket-comp/",
+      data
+    );
     return response.data;
   } catch (error) {
     throw error;

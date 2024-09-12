@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
@@ -61,7 +60,7 @@ const H2hComp = ({ team_1, team_1_score, team_2, team_2_score, uuid }) => {
         />
       </div>
       <button
-        className="absolute px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
+        className="absolute px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update
@@ -121,7 +120,7 @@ const IndComp = ({ team, player_1_score, player_2_score, uuid }) => {
         />
       </div>
       <button
-        className="absolute px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
+        className="absolute px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update
@@ -160,7 +159,7 @@ const TeamComp = ({ team, team_score, uuid }) => {
         />
       </div>
       <button
-        className="px-2 py-1  rounded-md bottom-2 right-2 bg-primary"
+        className="px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
         onClick={handleUpdateClicked}
       >
         Update
@@ -189,11 +188,13 @@ const EditComp = () => {
   const [h2hEvents, setH2hEvents] = useState([]);
   const [indEvents, setIndEvents] = useState([]);
   const [teamEvents, setTeamEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { uuid } = useParams();
   const { showNotification } = useNotification();
 
   useEffect(() => {
     const getComps = async () => {
+      setIsLoading(true);
       try {
         const data = await fetchAllCompData(uuid);
         setH2hEvents(data["h2h"]);
@@ -201,10 +202,20 @@ const EditComp = () => {
         setTeamEvents(data["team"]);
       } catch (error) {
         showNotification("Unable to connect to get your competition data.");
+      } finally {
+        setIsLoading(false);
       }
     };
     getComps();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-xl font-semibold">Loading competition data...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
