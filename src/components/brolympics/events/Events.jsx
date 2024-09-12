@@ -55,9 +55,10 @@ const Events = ({ events, default_uuid, default_type, status }) => {
       if (selectedEventId && eventType) {
         try {
           const data = await fetchEventInfo(selectedEventId, eventType);
-          setEventInfo(data);
+          setEventInfo(data); // Set the eventInfo state with the fetched data
         } catch (error) {
           console.error("Error fetching event info:", error);
+          setEventInfo(null); // Reset eventInfo on error
         }
       }
     };
@@ -116,7 +117,11 @@ const Events = ({ events, default_uuid, default_type, status }) => {
           ))}
         </select>
       </div>
-      {renderEventComponent()}
+      {eventInfo ? (
+        renderEventComponent()
+      ) : (
+        <div>Loading event information...</div>
+      )}
     </div>
   );
 };

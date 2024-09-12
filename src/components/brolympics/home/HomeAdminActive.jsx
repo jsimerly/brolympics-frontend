@@ -7,6 +7,9 @@ import { useLocation } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 
 function formatProjectedStartDate(isoDateString) {
+  if (isoDateString === null) {
+    return "Not scheduled";
+  }
   const date = parseISO(isoDateString);
   return format(date, "MMM d, 'at' h:mm a");
 }
