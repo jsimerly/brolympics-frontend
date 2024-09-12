@@ -8,9 +8,6 @@ const ScoringSettings = ({ formValues, setFormValues, handleInputChange }) => {
     });
   };
 
-  console.log(formValues.projected_start_date);
-  console.log(formValues.projected_end_date);
-
   return (
     <>
       <h2 className="py-2">Scoring Settings</h2>

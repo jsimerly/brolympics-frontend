@@ -123,7 +123,6 @@ export const confirmPhoneSignIn = async (
   verificationCode
 ) => {
   try {
-    console.log("confirmPhoneSignin");
     const credential = PhoneAuthProvider.credential(
       verificationId,
       verificationCode

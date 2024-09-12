@@ -1,14 +1,37 @@
-import EventDropdown from "./EventDropdown";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
+import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
+import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Bracket from "./Bracket";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import Comp_ind from "./Competitions/Comp_ind.jsx";
 import Comp_team from "./Competitions/Comp_team.jsx";
-import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import { EventInfo } from "./EventInfo.jsx";
 
 const EventActive = ({ events, eventInfo }) => {
+  const { uuid, type, eventUuid } = useParams();
+  const navigate = useNavigate();
+  const [selectedEventId, setSelectedEventId] = useState(
+    eventUuid || events[0]?.uuid || ""
+  );
+  const [showEventInfo, setShowEventInfo] = useState(false);
+
+  useEffect(() => {
+    if (!eventUuid && events[0]?.uuid) {
+      const firstEvent = events[0];
+      navigate(`/b/${uuid}/event/${firstEvent.type}/${firstEvent.uuid}`);
+    }
+  }, [eventUuid, events, navigate, uuid]);
+
+  useEffect(() => {
+    if (eventUuid) {
+      setSelectedEventId(eventUuid);
+    }
+  }, [eventUuid]);
+
   const componentMap = {
     h2h: Comp_h2h,
     ind: Comp_ind,
@@ -19,64 +42,66 @@ const EventActive = ({ events, eventInfo }) => {
 
   const getFontSize = (name) => {
     if (name) {
-      if (name.length <= 12) {
-        return "18px";
-      } else if (name.length <= 16) {
-        return "16px";
-      } else if (name.length <= 20) {
-        return "14px";
-      } else {
-        return "14px";
-      }
+      if (name.length <= 12) return "18px";
+      if (name.length <= 16) return "16px";
+      return "14px";
     }
   };
 
   const getDisplayInfo = (ranking) => {
-    if (eventInfo.type === "h2h") {
-      return `${ranking.wins}-${ranking.losses} 
-          ${ranking.ties != 0 ? `${ranking.ties}` : ""}`;
-    } else if (eventInfo.type === "ind") {
-      return ranking.score;
-    } else if (eventInfo.type === "team") {
+    if (eventInfo?.type === "h2h") {
+      return `${ranking.wins}-${ranking.losses} ${
+        ranking.ties != 0 ? `${ranking.ties}` : ""
+      }`;
+    } else if (eventInfo?.type === "ind" || eventInfo?.type === "team") {
       return ranking.score;
     }
   };
 
+  const handleEventInfoClick = () => {
+    setShowEventInfo(true);
+  };
+
+  const handleCloseEventInfo = () => {
+    setShowEventInfo(false);
+  };
+
+  if (!eventInfo) return <div>Loading...</div>;
+
   return (
-    <div className="">
-      <EventDropdown events={events} />
-      <div className="">
-        <div className="flex items-center justify-between px-6 pb-2">
+    <div className="max-w-4xl">
+      <div className="px-4">
+        <div className="flex items-center justify-between pb-2">
           <h2 className="font-bold text-[20px] flex items-center">
             Standings
-            {eventInfo?.is_complete && (
-              <span className="ml-2 pt-2 text-primary text-[10px] flex items-center gap-1">
+            {eventInfo.is_complete && (
+              <span className="ml-2 pt-2 text-secondary text-[10px] flex items-center gap-1">
                 Final <TaskAltIcon sx={{ fontSize: 14 }} />
               </span>
             )}
           </h2>
-          <div className="flex flex-col items-start justify-center">
+          <button
+            className="flex flex-col items-start justify-center"
+            onClick={handleEventInfoClick}
+          >
             <MenuBookOutlinedIcon sx={{ fontSize: 30 }} />
-          </div>
+          </button>
         </div>
-        <div className="px-6">
+        <div className="">
           <table className="w-full border">
             <thead>
-              <tr
-                className={`border ${eventInfo?.is_complete && "text-primary"}`}
-              >
+              <tr className={`border ${eventInfo.is_complete && "font-bold"}`}>
                 <th className="border w-[60px] p-2">
                   <NumbersOutlinedIcon />
                 </th>
                 <th className="pl-3 border text-start text-[20px]">Team</th>
-                <th className="border  w-[80px]">
+                <th className="border w-[80px]">
                   <DiamondOutlinedIcon />
                 </th>
               </tr>
             </thead>
             <tbody>
-              {eventInfo &&
-                eventInfo.standings &&
+              {eventInfo.standings &&
                 eventInfo.standings
                   .sort((a, b) => a.rank - b.rank)
                   .map((ranking, i) => (
@@ -89,6 +114,7 @@ const EventActive = ({ events, eventInfo }) => {
                           <img
                             src={ranking.team.img}
                             className="w-[30px] h-[30px] rounded-md"
+                            alt={ranking.team.name}
                           />
                           <div className="flex flex-col justify-center">
                             <span
@@ -116,14 +142,12 @@ const EventActive = ({ events, eventInfo }) => {
         </div>
       </div>
       <div className="py-3">
-        {eventInfo && eventInfo?.type === "h2h" && (
-          <Bracket {...eventInfo.bracket} />
-        )}
+        {eventInfo.type === "h2h" && <Bracket {...eventInfo.bracket} />}
       </div>
-      {eventInfo && eventInfo.competitions && (
+      {eventInfo.competitions && (
         <div className="pb-6">
           <h2 className="font-bold text-[20px] px-6">Competitions</h2>
-          <div>
+          <div className="space-y-2">
             {eventInfo.competitions.map((comp, i) => (
               <div key={i + "_events"}>
                 {i !== 0 && (
@@ -134,6 +158,19 @@ const EventActive = ({ events, eventInfo }) => {
                 <CompComp {...comp} key={i} />
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {showEventInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <EventInfo event={eventInfo} />
+            <button
+              onClick={handleCloseEventInfo}
+              className="px-4 py-2 mt-4 text-white rounded bg-secondary hover:bg-secondary-dark"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

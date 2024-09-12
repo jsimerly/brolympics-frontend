@@ -12,7 +12,6 @@ const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
     const getinfo = async () => {
       try {
         const data = await fetchInfo(uuid);
-        console.log(data);
         setInfo(data);
       } catch (error) {
         if (error.status === 404) {

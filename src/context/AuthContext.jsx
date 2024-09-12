@@ -124,6 +124,7 @@ export function AuthProvider({ children }) {
   const value = {
     firebaseUser,
     user,
+    auth,
     login,
     signUp,
     logout,

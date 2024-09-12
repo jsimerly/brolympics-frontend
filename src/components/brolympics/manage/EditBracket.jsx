@@ -48,7 +48,6 @@ const MatchupCard = ({ uuid, team_1, team_1_score, team_2, team_2_score }) => {
 
   const handleUpdateClicked = async () => {
     try {
-      console.log(compData);
       const data = await fetchUpdateBracketMatch(compData);
       showNotification("This competition has been updated.", "!border-primary");
     } catch (error) {

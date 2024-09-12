@@ -20,7 +20,6 @@ const CreateBrolympicsManager = () => {
     if (step < 3) {
       setStep((step) => step + 1);
     }
-    console.log("next");
   };
 
   const prevStep = () => {

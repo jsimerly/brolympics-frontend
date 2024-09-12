@@ -5,7 +5,7 @@ const Competition = ({ team_score, is_active, rank }) => {
     <div
       className={`flex items-center px-3 py-2 border rounded-md 
        ${is_active && "border-[3px]"} ${
-        !is_active && rank <= 4 ? "border-primary" : null
+        !is_active && rank <= 4 ? "border-tertiary" : null
       }
       `}
     >

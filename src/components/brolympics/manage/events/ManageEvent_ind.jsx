@@ -42,7 +42,6 @@ const ManageEvent_ind = ({ event }) => {
 
   const handleUpdateClicked = async () => {
     try {
-      console.log(formValues);
       const data = await fetchUpdateEvent(formValues);
       showNotification(`${event.name} has been updated.`, "!border-primary");
     } catch (error) {

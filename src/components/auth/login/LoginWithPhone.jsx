@@ -86,7 +86,6 @@ const LoginWithPhone = ({ setError }) => {
   };
 
   const handleSendCode = async (e) => {
-    console.log("send code");
     e.preventDefault();
     setError("");
 

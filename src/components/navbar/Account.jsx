@@ -7,14 +7,16 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAuth } from "../../context/AuthContext";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
 import { updateUserImg, updateUserInfo } from "../../api/auth";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 const Account = ({ setView }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, auth } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [cropping, setCropping] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
   const [imageError, setImageError] = useState(false);
+  const [resetPasswordStatus, setResetPasswordStatus] = useState("");
 
   useEffect(() => {
     setUserInfo(user);
@@ -77,6 +79,21 @@ const Account = ({ setView }) => {
     }
   };
 
+  const handleResetPassword = async () => {
+
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setResetPasswordStatus(
+        "Password reset email sent. Please check your inbox."
+      );
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      setResetPasswordStatus(
+        "Failed to send password reset email. Please try again."
+      );
+    }
+  };
+
   const handleLogout = () => {
     logout();
     location.reload();
@@ -100,7 +117,7 @@ const Account = ({ setView }) => {
         </div>
       )}
       <div className="flex flex-col items-center justify-center w-full p-4 border card">
-        <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-md">
+        <div className="relative w-32 h-32 mb-4 overflow-hidden border rounded-md">
           {imageSrc && !imageError ? (
             <img
               src={imageSrc}
@@ -172,6 +189,29 @@ const Account = ({ setView }) => {
           </div>
         )}
       </div>
+      {user.provider === "password" && (
+        <div className="flex flex-col items-center w-full gap-3 p-4 mt-4 border card">
+          <h3 className="text-xl font-bold">Reset Password</h3>
+          <p>Click the button below to receive a password reset email.</p>
+          {resetPasswordStatus && (
+            <p
+              className={
+                resetPasswordStatus.includes("Failed")
+                  ? "text-red-500"
+                  : "text-green-500"
+              }
+            >
+              {resetPasswordStatus}
+            </p>
+          )}
+          <button
+            onClick={handleResetPassword}
+            className="flex items-center justify-center w-full mt-2 rounded-md primary-btn"
+          >
+            Send Password Reset Email
+          </button>
+        </div>
+      )}
       <button
         className="flex items-center justify-center w-full p-2 mt-2 font-bold rounded-md red-btn"
         onClick={handleLogout}
