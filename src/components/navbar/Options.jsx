@@ -36,7 +36,9 @@ const Options = ({ user, setView }) => {
       {img ? (
         <img src={img} alt="Profile" className="rounded-md h-100 w-100" />
       ) : (
-        <PersonIcon sx={{ fontSize: 125, mt: 2 }} />
+        <div className="bg-gray-300 rounded-md h-100 w-100">
+          <PersonIcon sx={{ fontSize: 125, mt: 2 }} />
+        </div>
       )}
     </div>
   );

@@ -34,14 +34,11 @@ const HomeAdminPre = ({
   };
 
   return (
-    <div className="min-h-[calc(100vh-220px)] p-6 flex flex-col gap-3">
+    <div className="min-h-[calc(100vh-220px)] p-4 flex flex-col gap-3">
       <div className="w-full p-3 border rounded-md border-primary">
         <h3 className="w-full font-semibold text-center">Ready to Go?</h3>
         <div className="flex items-center justify-center w-full mt-3">
-          <button
-            className="w-1/2 p-2 font-bold rounded-md bg-primary"
-            onClick={onStartClick}
-          >
+          <button className="w-1/2 p-2 primary-btn" onClick={onStartClick}>
             Start Brolympics
           </button>
         </div>

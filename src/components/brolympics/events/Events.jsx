@@ -33,10 +33,10 @@ const Events = ({ events, default_uuid, default_type, status }) => {
     getEventInfo();
   }, [eventUuid]);
 
-  if (status == "pre") {
+  if (status === "pre" || status === "pre_admin") {
     return <EventPre events={events} />;
   }
-  if (status == "active") {
+  if (status === "active") {
     return <EventActive events={events} eventInfo={eventInfo} />;
   }
   return <EventActive events={events} eventInfo={eventInfo} />;

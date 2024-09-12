@@ -1,5 +1,5 @@
 import api from "./axios";
-const FRONTEND_ADDRESS = import.meta.env.VITE_FRONTEND_ADDRESS;
+const FRONTEND_ADDRESS = import.meta.env.VITE_FRONTEND_URL;
 
 export const getInviteLinkLeague = (uuid) => {
   return `${FRONTEND_ADDRESS}/invite/league/${uuid}`;

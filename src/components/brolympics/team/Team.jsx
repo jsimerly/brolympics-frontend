@@ -10,7 +10,7 @@ import Event_ind from "./events/Event_ind";
 import Event_team from "./events/Event_team";
 import { fetchTeamInfo } from "../../../api/activeBro/teams";
 
-const Team = ({ teams, default_uuid }) => {
+const Team = ({ status, teams, default_uuid }) => {
   const { uuid, teamUuid } = useParams();
   const navigate = useNavigate();
   const [teamInfo, setTeamInfo] = useState(null);
@@ -59,59 +59,77 @@ const Team = ({ teams, default_uuid }) => {
     return number + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
   };
 
-  const TeamInfo = ({ team }) => (
-    <div className="p-4 mb-6 card">
-      <div className="flex flex-col justify-between mb-4 md:flex-row">
-        <div className="flex items-center justify-start space-x-6">
-          <div>
-            <img src={team.img} className="rounded-md w-[60px] h-[60px]" />
+  const TeamInfo = ({ team }) => {
+    const isPre = status === "pre" || status === "pre_admin";
+
+    const StatItem = ({ icon, value, description }) => (
+      <div className="flex flex-col items-start">
+        <div className="flex items-center mb-1">
+          {React.cloneElement(icon, { className: "mr-2 text-tertiary" })}
+          <span className="font-bold">{value}</span>
+        </div>
+        {isPre && <span className="text-sm text-light">{description}</span>}
+      </div>
+    );
+
+    return (
+      <div className="p-4 mb-6 card">
+        <div className="flex flex-col justify-between mb-4 md:flex-row">
+          <div className="flex items-center justify-start space-x-6">
+            <div>
+              <img src={team.img} className="rounded-md w-[60px] h-[60px]" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold">
+                {team.player_1?.full_name || "Player 1"}
+              </span>
+              <span className="text-lg font-bold">
+                {team.player_2?.full_name || "Player 2"}
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold">
-              {team.player_1?.full_name || "Player 1"}
-            </span>
-            <span className="text-lg font-bold">
-              {team.player_2?.full_name || "Player 2"}
-            </span>
-          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <StatItem
+            icon={<NumbersOutlinedIcon />}
+            value={
+              team.overall_ranking?.rank
+                ? getOrdinalSuffix(team.overall_ranking.rank)
+                : "-"
+            }
+            description="Current Ranking"
+          />
+          <StatItem
+            icon={<DiamondOutlinedIcon />}
+            value={
+              team.overall_ranking?.total_points !== undefined
+                ? `${team.overall_ranking.total_points} pts`
+                : "-"
+            }
+            description="Total Points"
+          />
+          <StatItem
+            icon={<EmojiEventsOutlinedIcon />}
+            value={
+              team.overall_ranking?.event_wins !== undefined
+                ? `${team.overall_ranking.event_wins} wins`
+                : "-"
+            }
+            description="Events Won"
+          />
+          <StatItem
+            icon={<LeaderboardOutlinedIcon />}
+            value={
+              team.overall_ranking?.event_podiums !== undefined
+                ? `${team.overall_ranking.event_podiums} podiums`
+                : "-"
+            }
+            description="Total Podiums"
+          />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="flex items-center">
-          <NumbersOutlinedIcon className="mr-2 text-tertiary" />
-          {team.overall_ranking?.rank && (
-            <span className="font-bold">
-              {getOrdinalSuffix(team.overall_ranking.rank)}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center">
-          <DiamondOutlinedIcon className="mr-2 text-tertiary" />
-          {team.overall_ranking?.total_points !== undefined && (
-            <span className="font-bold">
-              {team.overall_ranking.total_points} pts
-            </span>
-          )}
-        </div>
-        <div className="flex items-center">
-          <EmojiEventsOutlinedIcon className="mr-2 text-tertiary" />
-          {team.overall_ranking?.event_wins !== undefined && (
-            <span className="font-bold">
-              {team.overall_ranking.event_wins} wins
-            </span>
-          )}
-        </div>
-        <div className="flex items-center">
-          <LeaderboardOutlinedIcon className="mr-2 text-tertiary" />
-          {team.overall_ranking?.event_podiums !== undefined && (
-            <span className="font-bold">
-              {team.overall_ranking.event_podiums} podiums
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const getEventComponent = (type, props) => {
     switch (type) {
@@ -127,7 +145,7 @@ const Team = ({ teams, default_uuid }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto container-padding">
+    <div className="max-w-4xl p-2">
       <div className="mb-4">
         <label
           htmlFor="team-select"

@@ -17,18 +17,8 @@ const TeamInvite = () => {
         <div>
           <h3 className="header-2">{info.name}</h3>
           <div className="text-sm text-light">
-            {info.player_1 && (
-              <p className="mb-1">
-                <span className="font-semibold">Player 1:</span>{" "}
-                {info.player_1.full_name}
-              </p>
-            )}
-            {info.player_2 && (
-              <p>
-                <span className="font-semibold">Player 2:</span>{" "}
-                {info.player_2.full_name}
-              </p>
-            )}
+            {info.player_1 && <p className="mb-1">{info.player_1.full_name}</p>}
+            {info.player_2 && <p className="mb-1">{info.player_2.full_name}</p>}
           </div>
         </div>
       </div>

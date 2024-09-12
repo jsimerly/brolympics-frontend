@@ -28,7 +28,7 @@ const EventPre = ({ events }) => {
   const selectedEvent = events.find((event) => event.uuid === selectedEventId);
 
   return (
-    <div className="max-w-2xl p-4 mx-auto">
+    <div className="max-w-2xl p-2 mx-auto">
       <div className="mb-4">
         <label
           htmlFor="event-select"

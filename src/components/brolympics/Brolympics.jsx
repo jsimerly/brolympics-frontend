@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import {
   Routes,
   Route,
@@ -94,7 +94,7 @@ const Brolympics = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen-minus-nav">
       <header className="w-full px-6 pt-4 text-center">
         <h1 className="py-4 text-3xl font-bold">
           {broInfo.name || "Name Missing"}
@@ -114,7 +114,10 @@ const Brolympics = () => {
               />
             }
           />
-          <Route path="standings" element={<Standings status={status} />} />
+          <Route
+            path="standings"
+            element={<Standings status={status} teams={broInfo.teams} />}
+          />
           <Route
             path="team/:teamUuid"
             element={

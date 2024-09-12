@@ -80,7 +80,6 @@ export const signInUserWithEmail = async (auth, email, password) => {
 };
 
 export const signInWithPhone = async (auth, phoneNumber, buttonId) => {
-  console.log(phoneNumber);
   try {
     const appVerifier = initializeRecaptcha(auth, buttonId);
     const confirmationResult = await signInWithPhoneNumber(
@@ -91,7 +90,6 @@ export const signInWithPhone = async (auth, phoneNumber, buttonId) => {
     return confirmationResult;
   } catch (error) {
     clearRecaptcha();
-    console.error("Error in signInWithPhone:", error);
     let errorMessage;
     switch (error.code) {
       case "auth/invalid-phone-number":
@@ -125,6 +123,7 @@ export const confirmPhoneSignIn = async (
   verificationCode
 ) => {
   try {
+    console.log("confirmPhoneSignin");
     const credential = PhoneAuthProvider.credential(
       verificationId,
       verificationCode

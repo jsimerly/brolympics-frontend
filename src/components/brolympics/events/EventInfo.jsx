@@ -1,5 +1,8 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
+import HeadToHead from "./eventInfo/H2hInfo";
+import Individual from "./eventInfo/IndInfo";
+import TeamEvent from "./eventInfo/TeamInfo";
 
 export const EventInfo = ({ event }) => {
   const formatDateTime = (dateString) => {
@@ -7,6 +10,19 @@ export const EventInfo = ({ event }) => {
       return "";
     }
     return format(parseISO(dateString), "EEEE, MMMM d, yyyy 'at' h:mm a");
+  };
+
+  const renderEventTypeDetails = () => {
+    switch (event.type) {
+      case "h2h":
+        return <HeadToHead />;
+      case "ind":
+        return <Individual />;
+      case "team":
+        return <TeamEvent />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -87,6 +103,12 @@ export const EventInfo = ({ event }) => {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Event Type Details */}
+        <div className="p-4 card">
+          <h2 className="mb-4 header-3">Event Type Details</h2>
+          {renderEventTypeDetails()}
         </div>
       </div>
     </div>

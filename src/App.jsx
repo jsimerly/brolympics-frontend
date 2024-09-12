@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.jsx";
 import StartLeague from "./components/create_league_page/StartLeague.jsx";
 import Brolympics from "./components/brolympics/Brolympics.jsx";
@@ -14,16 +19,18 @@ import { useAuth } from "./context/AuthContext.jsx";
 import LeagueRouter from "./components/brolympics/league/LeagueRouter.jsx";
 import AuthRouter from "./components/auth/AuthRouter.jsx";
 import ProtectedRoute from "./routing/ProtectedRoutes.jsx";
-
+import About from "./components/home/About.jsx";
 import "./firebase/firebaseConfig";
 import { fetchCSRFToken } from "./api/axios.js";
-import About from "./components/home/About.jsx";
+
 fetchCSRFToken();
 
 function App() {
   const [leagues, setLeagues] = useState([]);
   const { notification, showNotification } = useNotification();
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getLeagues = async () => {
@@ -40,6 +47,22 @@ function App() {
     }
   }, [firebaseUser]);
 
+  useEffect(() => {
+    if (location.pathname.startsWith("/invite/") && !firebaseUser && !loading) {
+    
+      sessionStorage.setItem("pendingInvite", location.pathname);
+      navigate("/auth/login", { state: { from: location } });
+    } else if (firebaseUser && sessionStorage.getItem("pendingInvite")) {
+      const pendingInvite = sessionStorage.getItem("pendingInvite");
+      sessionStorage.removeItem("pendingInvite");
+      navigate(pendingInvite);
+    }
+  }, [firebaseUser, loading, location, navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar leagues={leagues} />
@@ -52,7 +75,6 @@ function App() {
       )}
       <Routes>
         {/* Public routes */}
-        {/* <Route path="/home" element={<Home />} /> */}
         <Route
           path="/auth/*"
           element={firebaseUser ? <Navigate to="/" replace /> : <AuthRouter />}
@@ -61,7 +83,7 @@ function App() {
 
         {/* Protected routes */}
         <Route
-          path="*"
+          path="/"
           element={
             <ProtectedRoute>
               <Leagues leagues={leagues} />

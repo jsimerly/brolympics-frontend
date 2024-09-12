@@ -1,64 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import {
   formatIncompletePhoneNumber,
   isValidPhoneNumber,
+  parsePhoneNumber,
 } from "libphonenumber-js";
 
-const formatToE164 = (phoneNumber) => {
-  const digitsOnly = phoneNumber.replace(/\D/g, "");
-
-  if (digitsOnly.length === 10) {
-    return `+1${digitsOnly}`;
-  } else if (digitsOnly.length === 11 && digitsOnly.startsWith("1")) {
-    return `+${digitsOnly}`;
-  } else {
-    return phoneNumber;
-  }
-};
-
-const LoginWithPhone = ({ setError }) => {
-  const [phone, setPhone] = useState("");
-  const { login, clearRecaptcha } = useAuth();
-  const navigate = useNavigate();
-
+const EnterPhone = ({ onSendCode, phone, setPhone }) => {
   const handlePhoneChange = (value) => {
-    // Format the phone number as the user types
     const formattedNumber = formatIncompletePhoneNumber(value, "US");
     setPhone(formattedNumber);
   };
 
-  const handleSendCode = async (e) => {
-    e.preventDefault();
-    setError(""); // Clear any previous errors
-
-    if (!isValidPhoneNumber(phone, "US")) {
-      setError("Please enter a valid US phone number.");
-      return;
-    }
-
-    try {
-      const formattedPhone = formatToE164(phone);
-      const result = await login("phone", {
-        phoneNumber: formattedPhone,
-        buttonId: "send-code-button",
-      });
-      // Navigate to the verification page, passing the verificationId and phone number
-      navigate("/auth/verify-phone", {
-        state: {
-          verificationId: result.verificationId,
-          phoneNumber: formattedPhone,
-        },
-      });
-    } catch (error) {
-      setError(error.message);
-      clearRecaptcha();
-    }
-  };
-
   return (
-    <form onSubmit={handleSendCode} className="space-y-4">
+    <form onSubmit={onSendCode} className="space-y-4">
       <div>
         <label htmlFor="phone" className="form-label">
           Phone Number
@@ -80,7 +35,126 @@ const LoginWithPhone = ({ setError }) => {
       >
         Login with Phone
       </button>
+      <div id="recaptcha-container"></div>
     </form>
+  );
+};
+
+const EnterCode = ({ onVerifyCode, verificationCode, setVerificationCode }) => {
+  return (
+    <form onSubmit={onVerifyCode} className="space-y-4">
+      <div>
+        <label htmlFor="verificationCode" className="form-label">
+          Verification Code
+        </label>
+        <input
+          id="verificationCode"
+          type="text"
+          placeholder="Enter verification code"
+          value={verificationCode}
+          onChange={(e) => setVerificationCode(e.target.value)}
+          className="w-full input-tertiary"
+          required
+        />
+      </div>
+      <button
+        id="verify-code-button"
+        type="submit"
+        className="w-full tertiary-btn"
+      >
+        Verify Code
+      </button>
+    </form>
+  );
+};
+
+const LoginWithPhone = ({ setError }) => {
+  const [phone, setPhone] = useState("");
+  const [verificationId, setVerificationId] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const { login, clearRecaptcha } = useAuth();
+
+  const formatToE164 = (phoneNumber) => {
+    try {
+      const parsedNumber = parsePhoneNumber(phoneNumber, "US");
+      return parsedNumber.format("E.164");
+    } catch (error) {
+      console.error("Error formatting phone number:", error);
+      return phoneNumber;
+    }
+  };
+
+  const handleSendCode = async (e) => {
+    console.log("send code");
+    e.preventDefault();
+    setError("");
+
+    if (!isValidPhoneNumber(phone, "US")) {
+      setError("Please enter a valid US phone number.");
+      return;
+    }
+
+    try {
+      const formattedPhone = formatToE164(phone);
+      const result = await login("phone", {
+        phoneNumber: formattedPhone,
+        buttonId: "send-code-button",
+      });
+
+      if (result && result.verificationId) {
+        setVerificationId(result.verificationId);
+        setIsCodeSent(true);
+      } else {
+        throw new Error("Failed to send verification code");
+      }
+    } catch (error) {
+      setError(error.message);
+      clearRecaptcha();
+    }
+  };
+
+  const handleVerifyCode = async (e) => {
+    console.log("verify");
+    e.preventDefault();
+
+    if (!verificationId || !verificationCode) {
+      setError("Verification ID or code is missing");
+      return;
+    }
+
+    try {
+      const result = await login("phone", {
+        verificationId,
+        verificationCode,
+      });
+
+      if (!result) {
+        throw new Error("Failed to verify code");
+      }
+    } catch (error) {
+      console.error("Error in handleVerifyCode:", error);
+      setError(error.message);
+      clearRecaptcha();
+    }
+  };
+
+  return (
+    <div>
+      {!isCodeSent ? (
+        <EnterPhone
+          onSendCode={handleSendCode}
+          phone={phone}
+          setPhone={setPhone}
+        />
+      ) : (
+        <EnterCode
+          onVerifyCode={handleVerifyCode}
+          verificationCode={verificationCode}
+          setVerificationCode={setVerificationCode}
+        />
+      )}
+    </div>
   );
 };
 

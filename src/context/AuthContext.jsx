@@ -11,6 +11,7 @@ import {
   clearRecaptcha,
 } from "../firebase/loginMethods";
 import { getUser } from "../api/auth";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -22,7 +23,10 @@ export function AuthProvider({ children }) {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pendingInvite, setPendingInvite] = useState(null);
   const auth = getAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
@@ -31,6 +35,12 @@ export function AuthProvider({ children }) {
         try {
           const data = await getUser();
           setUser(data);
+
+          // Check for pending invite
+          if (pendingInvite && user.account_complete) {
+            navigate(pendingInvite);
+            setPendingInvite(null);
+          }
         } catch (error) {
           console.error("Error fetching Django user:", error);
         }
@@ -41,7 +51,15 @@ export function AuthProvider({ children }) {
     });
 
     return unsubscribe;
-  }, [auth]);
+  }, [auth, navigate, pendingInvite]);
+
+  useEffect(() => {
+    // Check for invite in the URL
+    if (location.pathname.startsWith("/invite/") && !firebaseUser) {
+      setPendingInvite(location.pathname);
+      navigate("/auth/login", { state: { from: location } });
+    }
+  }, [location, firebaseUser, navigate]);
 
   const login = async (method, credentials) => {
     switch (method) {
@@ -73,12 +91,30 @@ export function AuthProvider({ children }) {
   };
 
   const signUp = async (email, password) => {
-    return createUserWithEmail(auth, email, password);
+    try {
+      const result = await createUserWithEmail(auth, email, password);
+
+      // Wait for auth state to update
+      await new Promise((resolve) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+          if (user) {
+            unsubscribe();
+            resolve();
+          }
+        });
+      });
+
+      return result;
+    } catch (error) {
+      console.error("Signup error:", error);
+      throw error;
+    }
   };
 
   const logout = async () => {
     await logoutFirebase(auth);
     setFirebaseUser(null);
+    setUser(null);
   };
 
   const resetPassword = async (email) => {
@@ -93,11 +129,8 @@ export function AuthProvider({ children }) {
     logout,
     resetPassword,
     clearRecaptcha,
+    loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

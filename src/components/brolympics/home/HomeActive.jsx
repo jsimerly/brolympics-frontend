@@ -10,103 +10,73 @@ import ActiveCompetition_team from "./team/ActiveCompetition_team.jsx";
 import HomeAdminActive from "./HomeAdminActive.jsx";
 
 import { fetchHome } from "../../../api/activeBro/home.js";
+import Schedule from "./Schedule.jsx";
 
 const CurrentEventCard = ({ name, percent_complete }) => (
-  <div className="pb-1 rounded-md ">
-    <h3 className="pb-2">{name}</h3>
-    <div className="relative h-[2px] w-full rounded-full ">
+  <div className="p-4 mb-4 bg-white border rounded-lg shadow-md">
+    <h3 className="mb-2 text-lg font-semibold">{name}</h3>
+    <div className="relative w-full h-2 overflow-hidden bg-gray-200 rounded-full">
       <div
-        className="absolute top-0 left-0 w-full h-full duration-200 ease-in-out rounded-full transition-width bg-primary"
+        className="absolute top-0 left-0 h-full transition-all duration-300 ease-in-out bg-primary"
         style={{ width: `${percent_complete}%` }}
       />
     </div>
+    <span className="text-sm text-gray-600">{percent_complete}% complete</span>
   </div>
 );
 
-const getAvailableComponent = (type, props) => {
-  switch (type) {
-    case "h2h":
-      return <AvailableCompetition_h2h {...props} />;
-    case "ind":
-      return <AvailableCompetition_ind {...props} />;
-    case "team":
-      return <AvailableCompetition_team {...props} />;
-    case "bracket":
-      return <AvailableCompetition_h2h {...props} />;
-    default:
-      return null;
-  }
-};
-
-const getActiveComponent = (type, props) => {
-  switch (type) {
-    case "h2h":
-      return <ActiveCompetition_h2h {...props} />;
-    case "bracket":
-      return <ActiveCompetition_h2h {...props} />;
-    case "ind":
-      return <ActiveCompetition_ind {...props} />;
-    case "team":
-      return <ActiveCompetition_team {...props} />;
-    default:
-      return null;
-  }
-};
-
-const EventBlock = ({ title, items, component: Component, component_func }) => {
-  return (
-    <div>
-      <h2 className="text-[20px] font-bold pb-2">
-        {title}
-        {items.length > 1 && "s"}
-      </h2>
-      {items.length === 0 ? (
-        `No ${title}`
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {items.map((item, i) => {
-            return (
-              <div key={i}>
-                {component_func === null ? (
-                  <Component {...item} />
-                ) : (
-                  <div>
-                    {i !== 0 && <div className="w-full h-[1px] my-2" />}
-                    {React.cloneElement(component_func(item.type, item), {
-                      key: i,
-                    })}
-                  </div>
-                )}
-                {/* Add divider here except for the last item */}
-              </div>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-};
-
-const AdminSwitch = ({ adminView, setAdminView }) => {
-  const homeClick = () => {
-    setAdminView(false);
+const getComponent = (type, props, isAvailable) => {
+  const components = {
+    h2h: isAvailable ? AvailableCompetition_h2h : ActiveCompetition_h2h,
+    ind: isAvailable ? AvailableCompetition_ind : ActiveCompetition_ind,
+    team: isAvailable ? AvailableCompetition_team : ActiveCompetition_team,
+    bracket: isAvailable ? AvailableCompetition_h2h : ActiveCompetition_h2h,
   };
-  const adminClick = () => {
-    setAdminView(true);
-  };
-
-  return (
-    <div className="flex items-center justify-center w-full pb-3 font-semibold">
-      <button className={""} onClick={homeClick}>
-        Home
-      </button>
-      <span className="px-6 opacity-60">|</span>
-      <button className="" onClick={adminClick}>
-        Admin
-      </button>
-    </div>
-  );
+  const Component = components[type] || null;
+  return Component ? <Component {...props} /> : null;
 };
+
+const EventBlock = ({ title, items, component_func }) => (
+  <div className="mb-6">
+    <h2 className="mb-4 text-xl font-bold">
+      {title}
+      {items.length !== 1 && "s"}
+    </h2>
+    {items.length === 0 ? (
+      <p className="text-gray-500">No {title.toLowerCase()}</p>
+    ) : (
+      <ul className="space-y-4">
+        {items.map((item, i) => (
+          <li key={i} className="order">
+            {component_func ? (
+              component_func(item.type, item)
+            ) : (
+              <CurrentEventCard {...item} />
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
+const AdminSwitch = ({ adminView, setAdminView }) => (
+  <div className="flex mb-6 overflow-hidden bg-white rounded-lg shadow-md">
+    {["Home", "Admin"].map((label) => (
+      <button
+        key={label}
+        className={`w-1/2 py-3 text-center font-semibold transition-colors duration-200 ${
+          (adminView && label === "Admin") || (!adminView && label === "Home")
+            ? "bg-primary text-white"
+            : "bg-white text-gray-600 hover:bg-gray-100"
+        }`}
+        onClick={() => setAdminView(label === "Admin")}
+      >
+        {label}
+      </button>
+    ))}
+  </div>
+);
 
 const HomeActive = ({ is_owner }) => {
   const [adminView, setAdminView] = useState(false);
@@ -114,9 +84,9 @@ const HomeActive = ({ is_owner }) => {
     active_events: [],
     available_competitions: [],
     active_competitions: [],
+    upcoming_events: [],
   });
 
-  const navigate = useNavigate();
   const { uuid } = useParams();
 
   useEffect(() => {
@@ -125,39 +95,47 @@ const HomeActive = ({ is_owner }) => {
         const data = await fetchHome(uuid);
         setHomeData(data);
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching home data:", error);
       }
     };
     getHomeInfo();
-  }, []);
+  }, [uuid]);
 
   return (
-    <div className="px-6 py-3">
+    <div className="max-w-md px-4 py-6 mx-auto sm:px-6 lg:px-8">
       {is_owner && (
         <AdminSwitch adminView={adminView} setAdminView={setAdminView} />
       )}
       {adminView ? (
         <HomeAdminActive />
       ) : (
-        <div className="flex flex-col gap-3">
-          <EventBlock
-            title="Active Event"
-            items={homeData.active_events}
-            component={CurrentEventCard}
-            component_func={null}
-          />
-          <EventBlock
-            title="Available Competition"
-            items={homeData.available_competitions}
-            component={AvailableCompetition_h2h}
-            component_func={getAvailableComponent}
-          />
-          <EventBlock
-            title="Active Competition"
-            items={homeData.active_competitions}
-            component={ActiveCompetition_h2h}
-            component_func={getActiveComponent}
-          />
+        <div>
+          {homeData.active_events.length > 0 && (
+            <>
+              <EventBlock
+                title="Available Competition"
+                items={homeData.available_competitions}
+                component_func={(type, props) =>
+                  getComponent(type, props, true)
+                }
+              />
+              <EventBlock
+                title="Active Event"
+                items={homeData.active_events}
+                component_func={null}
+              />
+              <EventBlock
+                title="Active Competition"
+                items={homeData.active_competitions}
+                component_func={(type, props) =>
+                  getComponent(type, props, false)
+                }
+              />
+            </>
+          )}
+          <div className="pt-6 mt-6 border-t">
+            <Schedule events={homeData.upcoming_events || []} />
+          </div>
         </div>
       )}
     </div>

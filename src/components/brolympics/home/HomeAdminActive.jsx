@@ -3,7 +3,13 @@ import {
   fetchStartEvent,
 } from "../../../api/activeBro/admin.js";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { format, parseISO } from "date-fns";
+
+function formatProjectedStartDate(isoDateString) {
+  const date = parseISO(isoDateString);
+  return format(date, "MMM d, 'at' h:mm a");
+}
 
 const UnstartedEventCard = ({ name, projected_start_date, uuid, type }) => {
   const onStartClick = async () => {
@@ -20,12 +26,9 @@ const UnstartedEventCard = ({ name, projected_start_date, uuid, type }) => {
       <div>
         <h2 className="font-semibold">{name}</h2>
 
-        {projected_start_date}
+        {formatProjectedStartDate(projected_start_date)}
       </div>
-      <button
-        className="min-w-[100px] rounded-md bg-primary py-1"
-        onClick={onStartClick}
-      >
+      <button className="min-w-[100px] primary-btn" onClick={onStartClick}>
         Start
       </button>
     </div>

@@ -45,7 +45,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
     const response = await fetchUpdateTeamImage(croppedImage, uuid);
     if (response.ok) {
       showNotification(
-        "Your team's image has been udpated.",
+        "Your team's image has been updated.",
         "!border-primary"
       );
     } else {
@@ -87,9 +87,11 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
   };
 
   const removePlayerFunc = async () => {
-    const response = await fetchRemovePlayer(removePlayer.uuid, uuid);
-    if (response.ok) {
+    try {
+      const data = await fetchRemovePlayer(removePlayer.uid, uuid);
       location.reload();
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -118,7 +120,11 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
         className="inline-flex bg-white rounded-md cursor-pointer"
       >
         {savedImg ? (
-          <img src={savedImg} className="rounded-md w-[80px] h-[80px]" />
+          <img
+            src={savedImg}
+            className="rounded-md w-[80px] h-[80px]"
+            alt="Team logo"
+          />
         ) : (
           <div className="w-[100px] h-[100px] rounded-md flex items-center justify-center">
             <CameraAltIcon
@@ -189,7 +195,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
         </button>
       )}
       {!editOpen && !(player_1 && player_2) && (
-        <div className="absolute px-1 py-0 bottom-2 right-2 primary-btn">
+        <div className="absolute px-1 py-0 border rounded-md bottom-2 right-2 border-primary">
           <CopyWrapper copyString={getInviteLinkTeam(uuid)} size={20}>
             <span className="mr-1 text-sm">Copy Invite Link</span>
           </CopyWrapper>
@@ -200,7 +206,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
           open={popupTeamOpen}
           setOpen={setPopupTeamOpen}
           header={"Delete this Team?"}
-          desc={"Doing this will perminately delete this team."}
+          desc={"Doing this will permanently delete this team."}
           continueText={"Delete"}
           continueFunc={deleteTeamFunc}
         />
@@ -210,7 +216,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
           header={`Remove ${
             removePlayer && removePlayer.full_name
           } from this team?`}
-          desc={`Doing this will perminately remove ${
+          desc={`Doing this will permanently remove ${
             removePlayer && removePlayer.first_name
           }. If you do, you can always add them back to the team later.`}
           continueText={"Delete"}
@@ -233,9 +239,13 @@ const TeamCard = ({ broUuid, team }) => {
       className="flex items-center w-full p-4 space-x-4 card"
       onClick={handleSelect}
     >
-      <img src={team.img} className="object-cover w-16 h-16 rounded-md" />
+      <img
+        src={team.img}
+        className="object-cover w-16 h-16 rounded-md"
+        alt={`${team.name} logo`}
+      />
       <div className="">
-        <h3 className="text-xl font-semibold`">{team.name}</h3>
+        <h3 className="text-xl font-semibold">{team.name}</h3>
         <div className="text-sm text-light">
           <div>{team.player_1 && team.player_1.full_name}</div>
           <div>{team.player_2 && team.player_2.full_name}</div>
@@ -261,9 +271,24 @@ const HomePre = ({
   const { uuid } = useParams();
   const { showNotification } = useNotification();
 
+  const handleImageUpload = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      let imageDataUrl = await readImageFile(file);
+
+      setNewTeamImg(imageDataUrl);
+      setCropping(true);
+    }
+  };
+
+  const setCroppedImage = (croppedImage) => {
+    setNewTeamImg(croppedImage);
+    setCropping(false);
+  };
+
   const onCreateTeamClick = async () => {
     try {
-      const data = await fetchCreateSingleTeam(newTeamName, uuid, true);
+      const data = await fetchCreateSingleTeam(newTeamName, uuid, newTeamImg);
       location.reload();
     } catch (error) {
       console.log(error);
@@ -279,7 +304,7 @@ const HomePre = ({
         {user_team ? (
           <OwnTeamCard {...user_team} />
         ) : (
-          <div className="p-6 space-y-4 bg-white rounded-md shadow-md">
+          <div className="p-6 space-y-4 bg-white border border-gray-100 rounded-md shadow-md">
             <h3 className="text-2xl font-bold text-primary">
               Create Your Team
             </h3>
@@ -318,6 +343,7 @@ const HomePre = ({
                   <img
                     src={newTeamImg}
                     className="object-cover w-24 h-24 rounded-md"
+                    alt="New team logo"
                   />
                 ) : (
                   <div className="flex items-center justify-center w-24 h-24 rounded-md">
@@ -330,8 +356,9 @@ const HomePre = ({
               </label>
               {cropping && (
                 <ImageCropper
-                  img={league.imgSrc}
+                  img={newTeamImg}
                   setCroppedImage={setCroppedImage}
+                  handleCloseCropper={() => setCropping(false)}
                 />
               )}
             </div>
@@ -359,7 +386,7 @@ const HomePre = ({
           {teams && teams.length > 0 ? (
             teams.map(
               (team, i) =>
-                team.uuid !== user_team.uuid && (
+                (!user_team || team.uuid !== user_team.uuid) && (
                   <TeamCard broUuid={uuid} team={team} key={i + "_teamCard"} />
                 )
             )

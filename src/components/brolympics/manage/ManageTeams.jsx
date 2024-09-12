@@ -35,7 +35,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
   };
 
   const removePlayerFunc = async () => {
-    const response = await fetchRemovePlayer(removePlayer.uuid, uuid);
+    const response = await fetchRemovePlayer(removePlayer.uid, uuid);
     if (response.ok) {
       location.reload();
     }
@@ -256,10 +256,7 @@ const ManageTeams = ({ teams, broUUID }) => {
         "There are no teams in this league yet."
       )}
 
-      <button
-        className="flex gap-3  text-[16px]"
-        onClick={toggleAddingTeam}
-      >
+      <button className="flex gap-3  text-[16px]" onClick={toggleAddingTeam}>
         Add Team
         {addingTeam ? <RemoveIcon /> : <AddCircleOutlineIcon />}
       </button>
@@ -273,7 +270,7 @@ const ManageTeams = ({ teams, broUUID }) => {
             className="w-full p-2 border rounded-md outline-none border-primary"
           />
           <button
-            className="w-full p-3 mt-3 font-semibold  rounded-md bg-primary"
+            className="w-full p-3 mt-3 font-semibold rounded-md bg-primary"
             onClick={handleCreateTeamClicked}
           >
             Create Team
