@@ -22,7 +22,7 @@ const Team = ({ status, teams, default_uuid }) => {
     if (!teamUuid && default_uuid) {
       navigate(`/b/${uuid}/team/${default_uuid}`);
     }
-  }, [teamUuid, default_uuid, navigate, uuid]);
+  }, [default_uuid, teamUuid]);
 
   useEffect(() => {
     if (teamUuid) {

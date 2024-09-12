@@ -55,7 +55,7 @@ const Toolbar = ({
           icon={<HomeOutlinedIcon sx={{ fontSize: 30 }} />}
         />
         <PageButton
-          route={`team/${default_team_uuid || `team/`}`}
+          route={`team/${default_team_uuid || ""}`}
           path="team"
           text="Teams"
           sx="text-tertiary"
