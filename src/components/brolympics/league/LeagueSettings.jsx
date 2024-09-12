@@ -59,7 +59,6 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
       setCropping(false);
       showNotification("League image updated successfully", "success");
     } catch (error) {
-      console.error("Error updating league image:", error);
       showNotification("Failed to update league image", "error");
     }
   };
@@ -70,7 +69,10 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
   };
 
   const handleImageError = () => {
-    setImageError(true);
+    showNotification(
+      "There was an error loading the image. Please try again.",
+      "error"
+    );
   };
 
   const handleSave = async () => {
@@ -164,12 +166,6 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
           <DeleteIcon className="mr-2" sx={{ fontSize: 18 }} /> Delete League
         </button>
       </div>
-
-      {imageError &&
-        showNotification(
-          "There was an error loading the image. Please try again.",
-          "error"
-        )}
 
       {cropping && (
         <ImageCropper

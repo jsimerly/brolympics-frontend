@@ -3,15 +3,19 @@ import { format, parseISO } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Schedule = ({ events }) => {
+  console.log(events);
   const navigate = useNavigate();
   const { uuid } = useParams();
+
   // Group events by date
   const groupedEvents = events.reduce((acc, event) => {
-    const date = format(parseISO(event.projected_start_date), "yyyy-MM-dd");
-    if (!acc[date]) {
-      acc[date] = [];
+    if (event.projected_start_date) {
+      const date = format(parseISO(event.projected_start_date), "yyyy-MM-dd");
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(event);
     }
-    acc[date].push(event);
     return acc;
   }, {});
 
@@ -22,6 +26,10 @@ const Schedule = ({ events }) => {
     localStorage.setItem("selectedEventUuid", event.uuid);
     localStorage.setItem("selectedEventType", event.type);
     navigate(`/b/${uuid}/event/${event.type}/${event.uuid}`);
+  };
+
+  const formatDate = (dateString) => {
+    return dateString ? format(parseISO(dateString), "h:mm a") : "TBD";
   };
 
   return (
@@ -36,8 +44,8 @@ const Schedule = ({ events }) => {
             {groupedEvents[date]
               .sort(
                 (a, b) =>
-                  new Date(a.projected_start_date) -
-                  new Date(b.projected_start_date)
+                  new Date(a.projected_start_date || 0) -
+                  new Date(b.projected_start_date || 0)
               )
               .map((event) => (
                 <button
@@ -52,11 +60,16 @@ const Schedule = ({ events }) => {
                     </div>
                     <div className="flex-shrink-0 text-right">
                       <p className="text-sm font-medium">
-                        {format(parseISO(event.projected_start_date), "h:mm a")}{" "}
-                        - {format(parseISO(event.projected_end_date), "h:mm a")}
+                        {formatDate(event.projected_start_date)} -{" "}
+                        {formatDate(event.projected_end_date)}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {format(parseISO(event.projected_start_date), "MMM d")}
+                        {event.projected_start_date
+                          ? format(
+                              parseISO(event.projected_start_date),
+                              "MMM d"
+                            )
+                          : "Date TBD"}
                       </p>
                     </div>
                   </div>
