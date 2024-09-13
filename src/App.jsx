@@ -21,9 +21,6 @@ import AuthRouter from "./components/auth/AuthRouter.jsx";
 import ProtectedRoute from "./routing/ProtectedRoutes.jsx";
 import About from "./components/home/About.jsx";
 import "./firebase/firebaseConfig";
-import { fetchCSRFToken } from "./api/axios.js";
-
-fetchCSRFToken();
 
 function App() {
   const [leagues, setLeagues] = useState([]);
@@ -49,7 +46,6 @@ function App() {
 
   useEffect(() => {
     if (location.pathname.startsWith("/invite/") && !firebaseUser && !loading) {
-    
       sessionStorage.setItem("pendingInvite", location.pathname);
       navigate("/auth/login", { state: { from: location } });
     } else if (firebaseUser && sessionStorage.getItem("pendingInvite")) {
