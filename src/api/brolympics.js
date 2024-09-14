@@ -62,3 +62,14 @@ export async function fetchCreateBrolympics(
     throw error;
   }
 }
+
+export async function fetchForceOverallUpdate(uuid) {
+  try {
+    const response = await api.put(
+      `/api/brolympics/force-update-overall/${uuid}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

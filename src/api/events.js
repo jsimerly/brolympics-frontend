@@ -51,3 +51,4 @@ export async function fetchDeleteTeamEvent(uuid) {
     throw error;
   }
 }
+
