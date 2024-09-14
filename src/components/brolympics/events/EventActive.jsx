@@ -17,7 +17,6 @@ const EventActive = ({ events, eventInfo }) => {
   const [selectedEventId, setSelectedEventId] = useState(
     eventUuid || events[0]?.uuid || ""
   );
-  const [showEventInfo, setShowEventInfo] = useState(false);
 
   useEffect(() => {
     if (!eventUuid && events[0]?.uuid) {
@@ -161,19 +160,8 @@ const EventActive = ({ events, eventInfo }) => {
           </div>
         </div>
       )}
-      {showEventInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <EventInfo event={eventInfo} />
-            <button
-              onClick={handleCloseEventInfo}
-              className="px-4 py-2 mt-4 text-white rounded bg-secondary hover:bg-secondary-dark"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+
+      <EventInfo event={eventInfo} />
     </div>
   );
 };
