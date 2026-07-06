@@ -1,32 +1,33 @@
 import InviteWrapper from "./InviteWrapper.jsx";
-import {fetchLeagueInviteInfo, fetchJoinLeague} from '../../api/invites.js'
+import { fetchLeagueInvite, joinLeague } from "../../api/client";
 
 const LeagueInvite = () => {
-
-  const Card = ({info}) => (
+  const Card = ({ info }) => (
     <div className="flex flex-col items-center justify-center w-full h-full gap-3">
       <h2 className="text-[20px] text-center max-w-[280px]">
-        You've been invited to this league by <span className="font-semibold">{info.league_owner}</span>:
+        You've been invited to join a league:
       </h2>
       <div className="flex w-full gap-3 p-3 border rounded-md border-primary">
-        <img src={info.img} className="rounded-md w-[80px] h-[80px]"/>
+        {info.img && (
+          <img src={info.img} className="rounded-md w-[80px] h-[80px]" />
+        )}
         <div className="flex flex-col items-start justify-center h-full">
           <h2 className="text-[30px] leading-none font-bold">{info.name}</h2>
-            <span className="ml-1">Founded: {info.founded}</span>
+          {info.detail && <span className="ml-1">{info.detail}</span>}
         </div>
       </div>
     </div>
-  )
+  );
 
   return (
     <InviteWrapper
-      fetchInfo={fetchLeagueInviteInfo}
-      fetchJoin={fetchJoinLeague}
-      joinText={'Join League'}
+      fetchInfo={fetchLeagueInvite}
+      fetchJoin={joinLeague}
+      joinText={"Join League"}
     >
       <Card />
     </InviteWrapper>
-  )
-}
+  );
+};
 
-export default LeagueInvite
+export default LeagueInvite;

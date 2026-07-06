@@ -1,5 +1,5 @@
 import React from "react";
-import { fetchTeamInvite, fetchJoinTeam } from "../../api/invites.js";
+import { fetchTeamInvite, joinTeam } from "../../api/client";
 import InviteWrapper from "./InviteWrapper.jsx";
 
 const TeamInvite = () => {
@@ -9,16 +9,20 @@ const TeamInvite = () => {
         You've been invited to join the team
       </h2>
       <div className="flex items-center gap-6 mb-6">
-        <img
-          src={info.img}
-          alt={`${info.name} team logo`}
-          className="object-cover w-24 h-24 rounded-md"
-        />
+        {info.img && (
+          <img
+            src={info.img}
+            alt={`${info.name} team logo`}
+            className="object-cover w-24 h-24 rounded-md"
+          />
+        )}
         <div>
           <h3 className="header-2">{info.name}</h3>
           <div className="text-sm text-light">
-            {info.player_1 && <p className="mb-1">{info.player_1.full_name}</p>}
-            {info.player_2 && <p className="mb-1">{info.player_2.full_name}</p>}
+            {info.detail && <p className="mb-1">{info.detail}</p>}
+            {info.league_name && (
+              <p className="mb-1 text-tertiary">{info.league_name}</p>
+            )}
           </div>
         </div>
       </div>
@@ -28,7 +32,7 @@ const TeamInvite = () => {
   return (
     <InviteWrapper
       fetchInfo={fetchTeamInvite}
-      fetchJoin={fetchJoinTeam}
+      fetchJoin={joinTeam}
       joinText="Join Team"
     >
       <Card />

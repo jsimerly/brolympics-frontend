@@ -11,7 +11,7 @@ import {
   fetchRemovePlayer,
   fetchUpdateTeamImage,
 } from "../../../api/team.js";
-import { getInviteLinkTeam } from "../../../api/invites.js";
+import { inviteLinkTeam as getInviteLinkTeam } from "../../../api/client";
 import PopupContinue from "../../Util/PopupContinue.jsx";
 import CopyWrapper from "../../Util/CopyWrapper.jsx";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper.jsx";

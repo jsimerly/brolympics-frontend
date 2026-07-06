@@ -8,6 +8,7 @@
  * - uuids in, plain objects out -- shapes match the DRF serializers 1:1
  * - one Contest shape for every format; `kind` (match|outing|heat) discriminates
  */
+export * from "./invites";
 export * from "./leagues";
 export * from "./brolympics";
 export * from "./events";
