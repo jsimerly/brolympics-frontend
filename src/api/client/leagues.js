@@ -1,0 +1,31 @@
+import api from "../axios";
+
+export const fetchLeagues = () =>
+  api.get("/api/leagues/").then((r) => r.data);
+
+export const fetchLeague = (uuid) =>
+  api.get(`/api/leagues/${uuid}/`).then((r) => r.data);
+
+export const createLeague = (data) =>
+  api.post("/api/leagues/", data).then((r) => r.data);
+
+export const updateLeague = (uuid, patch) =>
+  api.patch(`/api/leagues/${uuid}/`, patch).then((r) => r.data);
+
+export const joinLeague = (uuid) =>
+  api.post(`/api/leagues/${uuid}/join/`).then((r) => r.data);
+
+/** Invite landing card; works for any logged-in link holder. */
+export const fetchLeagueInvite = (uuid) =>
+  api.get(`/api/leagues/${uuid}/invite/`).then((r) => r.data);
+
+export const addLeagueAdmin = (uuid, uid) =>
+  api.post(`/api/leagues/${uuid}/add-admin/`, { uid }).then((r) => r.data);
+
+/** Owner only. */
+export const removeLeagueAdmin = (uuid, uid) =>
+  api.post(`/api/leagues/${uuid}/remove-admin/`, { uid }).then((r) => r.data);
+
+/** All-time: leaderboard, championships, team lineages (by duo / by name). */
+export const fetchLeagueAllTime = (uuid) =>
+  api.get(`/api/leagues/${uuid}/all-time/`).then((r) => r.data);
