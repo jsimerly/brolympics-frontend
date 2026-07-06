@@ -4,7 +4,7 @@ import Bronze from "../../../assets/svgs/bronze.svg";
 import { Routes, Route } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { fetchLeagueInfo } from "../../../api/league.js";
+import { fetchLeagueDetail } from "../../../api/client";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import LeagueSettings from "./LeagueSettings";
 import League from "./League";
@@ -16,7 +16,7 @@ const LeagueRouter = () => {
   useEffect(() => {
     const getLeagueInfo = async () => {
       try {
-        const data = await fetchLeagueInfo(uuid);
+        const data = await fetchLeagueDetail(uuid);
         setLeagueInfo(data);
       } catch (error) {
         console.log(error);

@@ -11,7 +11,7 @@ import StartLeague from "./components/create_league_page/StartLeague.jsx";
 import Brolympics from "./components/brolympics/Brolympics.jsx";
 import Leagues from "./components/brolympics/league/Leagues.jsx";
 import Invites from "./components/invites/Invites.jsx";
-import { fetchLeagues } from "./api/league.js";
+import { fetchLeagues } from "./api/client";
 import Notification, {
   useNotification,
 } from "./components/Util/Notification.jsx";

@@ -1,7 +1,22 @@
 import api from "../axios";
+import { fetchMyOpenContests } from "./contests";
 
-export const fetchBrolympicsList = () =>
-  api.get("/api/brolympics/").then((r) => r.data);
+/** filters: { league: <uuid> } */
+export const fetchBrolympicsList = (filters = {}) =>
+  api.get("/api/brolympics/", { params: filters }).then((r) => r.data);
+
+/** Navbar slideout data: my bros split by state + my open contests. */
+export const fetchUpcoming = async () => {
+  const [bros, contests] = await Promise.all([
+    fetchBrolympicsList(),
+    fetchMyOpenContests(),
+  ]);
+  return {
+    current_brolympics: bros.filter((b) => b.is_active),
+    upcoming_brolympics: bros.filter((b) => !b.is_active && !b.is_complete),
+    upcoming_competitions: contests,
+  };
+};
 
 export const fetchBrolympics = (uuid) =>
   api.get(`/api/brolympics/${uuid}/`).then((r) => r.data);

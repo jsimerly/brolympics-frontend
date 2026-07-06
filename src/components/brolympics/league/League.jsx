@@ -4,7 +4,6 @@ import Bronze from "../../../assets/svgs/bronze.svg";
 import { Routes, Route, Link } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { fetchLeagueInfo } from "../../../api/league.js";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -12,8 +11,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 const BrolympicsCard_Upcoming = ({
   img,
   name,
-  events,
-  teams,
+  event_names,
+  team_names,
   projected_start_date,
   projected_end_date,
   uuid,
@@ -49,32 +48,32 @@ const BrolympicsCard_Upcoming = ({
       </div>
       <div className="space-y-4">
         <div className="flex flex-col">
-          {events.length > 0 && (
+          {event_names.length > 0 && (
             <>
               <div className="mb-2 header-sm">Events:</div>
               <div className="flex flex-wrap gap-2">
-                {events.map((event, i) => (
+                {event_names.map((name, i) => (
                   <div
                     className="px-2 py-1 text-sm border rounded-md border-primary"
                     key={i + "bro_card_event"}
                   >
-                    {event.name}
+                    {name}
                   </div>
                 ))}
               </div>
             </>
           )}
         </div>
-        {teams.length > 0 && (
+        {team_names.length > 0 && (
           <div className="flex flex-col">
             <div className="mb-2 header-sm">Teams:</div>
             <div className="flex flex-wrap gap-2">
-              {teams.map((team, i) => (
+              {team_names.map((teamName, i) => (
                 <div
                   className="px-2 py-1 text-sm border rounded-md border-tertiary"
                   key={i + "bro_card_team"}
                 >
-                  {team.name}
+                  {teamName}
                 </div>
               ))}
             </div>
@@ -129,7 +128,7 @@ const League = ({ leagueInfo }) => {
   const onCreateClick = () => {
     navigate("create-brolympics");
   };
-  const isOwner = leagueInfo?.league_owner === user.uid;
+  const isOwner = !!leagueInfo?.is_admin;
 
   return (
     <div className="min-h-[calc(100vh-80px)] container-padding flex flex-col justify-between">
