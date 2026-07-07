@@ -63,6 +63,31 @@ export const fetchBrolympicsDetail = async (uuid) => {
   };
 };
 
+/** Per-event top-3 finishes (final rankings), for the standings page. */
+export const fetchBrolympicsPodiums = (uuid) =>
+  api.get(`/api/brolympics/${uuid}/podiums/`).then((r) => r.data);
+
+/** Active-home page data: running/upcoming events + my open contests split by
+ * whether I've checked in. `type` mirrors the event format for card routing. */
+export const fetchActiveHome = async (broUuid) => {
+  const [events, myOpen] = await Promise.all([
+    fetchBrolympicsEvents(broUuid),
+    fetchMyOpenContests(),
+  ]);
+  const mine = myOpen
+    .filter((c) => c.brolympics === broUuid)
+    .map((c) => ({ ...c, type: c.format }));
+  const live = events.filter((e) => e.is_active && !e.is_cancelled);
+  return {
+    active_events: live,
+    upcoming_events: events.filter(
+      (e) => !e.is_active && !e.is_complete && !e.is_cancelled
+    ),
+    available_competitions: mine.filter((c) => !c.is_active),
+    active_competitions: mine.filter((c) => c.is_active),
+  };
+};
+
 /** Overall standings (summed final event points), live at any moment. */
 export const fetchBrolympicsStandings = (uuid) =>
   api.get(`/api/brolympics/${uuid}/standings/`).then((r) => r.data);

@@ -1,77 +1,60 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import {
-  fetchActiveComp_ind,
-  fetchSubmitComp_ind,
-  fetchCancelComp_ind,
-} from "../../../api/activeBro/home";
+import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
-const InCompetition_ind = () => {
-  const [player1Score, setPlayer1Score] = useState("");
-  const [player2Score, setPlayer2Score] = useState("");
-  const { compUuid } = useParams();
+const InCompetition_ind = ({ contest }) => {
+  const [scores, setScores] = useState({});
+  const [team, setTeam] = useState(null);
   const { showNotification } = useNotification();
-  const [compData, setCompData] = useState(null);
+
+  const teamEntry =
+    contest.entries.find((e) => e.team && !e.player) || contest.entries[0];
 
   useEffect(() => {
-    const getData = async () => {
+    const getTeam = async () => {
       try {
-        const data = await fetchActiveComp_ind(compUuid);
-        setCompData(data);
+        setTeam(await fetchTeam(teamEntry.team));
       } catch (error) {
-        console.error("Error fetching competition data:", error);
+        console.error("Error fetching team:", error);
         showNotification("Error loading competition data", "border-red-500");
       }
     };
-    getData();
-  }, [compUuid]);
+    getTeam();
+  }, [teamEntry.team]);
 
-  const handleScoreChange = (setter) => (e) => {
+  const handleScoreChange = (playerUuid) => (e) => {
     const value = e.target.value;
     if (value === "" || /^\d+$/.test(value)) {
-      setter(value);
+      setScores((prev) => ({ ...prev, [playerUuid]: value }));
     }
   };
 
-  const isValidScore = (score) => {
-    const numScore = Number(score);
-    const minScore = compData.min_score ?? -Infinity;
-    const maxScore = compData.max_score ?? Infinity;
-    return numScore >= minScore && numScore <= maxScore;
-  };
-
   const handleSubmitClicked = async () => {
-    if (isValidScore(player1Score) && isValidScore(player2Score)) {
-      try {
-        await fetchSubmitComp_ind(
-          compUuid,
-          Number(player1Score),
-          Number(player2Score)
-        );
-        showNotification("Scores submitted successfully", "border-primary");
-        window.location.reload();
-      } catch (error) {
-        console.error("Error submitting scores:", error);
-        showNotification("Error submitting scores", "border-red-500");
-      }
-    } else {
+    const missing = team.players.some((p) => !scores[p.uuid]?.length);
+    if (missing) {
       showNotification(
-        <>
-          Please enter valid scores for each player.
-          <br />
-          Min Score: {compData.min_score ?? "No min"}
-          <br />
-          Max Score: {compData.max_score ?? "No max"}
-        </>,
+        "Please enter a score for every player.",
         "border-yellow-500"
       );
+      return;
+    }
+    try {
+      await recordContest(contest.uuid, {
+        player_scores: Object.fromEntries(
+          team.players.map((p) => [p.uuid, Number(scores[p.uuid])])
+        ),
+      });
+      showNotification("Scores submitted successfully", "border-primary");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error submitting scores:", error);
+      showNotification("Error submitting scores", "border-red-500");
     }
   };
 
   const handleCancelClicked = async () => {
     try {
-      await fetchCancelComp_ind(compUuid);
+      await abandonContest(contest.uuid);
       window.location.reload();
     } catch (error) {
       console.error("Error cancelling competition:", error);
@@ -79,45 +62,41 @@ const InCompetition_ind = () => {
     }
   };
 
-  if (!compData) return <div className="p-6 text-center">Loading...</div>;
+  if (!team) return <div className="p-6 text-center">Loading...</div>;
 
   return (
     <div className="min-h-[calc(100vh-160px)] flex flex-col justify-between p-2">
       <div className="overflow-hidden bg-white rounded-lg shadow-md">
         <div className="p-4 text-white bg-primary">
-          <h2 className="text-xl font-bold text-center">{compData.event}</h2>
+          <h2 className="text-xl font-bold text-center">
+            {contest.event_name}
+          </h2>
         </div>
         <div className="p-4">
           <div className="flex items-center gap-4 mb-6">
             <img
-              src={compData.team.img}
-              alt={`${compData.team.name} logo`}
+              src={team.img}
+              alt={`${team.name} logo`}
               className="object-cover w-20 h-20 rounded-md"
             />
-            <h3 className="text-3xl font-semibold">{compData.team.name}</h3>
+            <h3 className="text-3xl font-semibold">{team.name}</h3>
           </div>
-          {[compData.team.player_1, compData.team.player_2].map(
-            (player, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between mb-4 last:mb-0"
-              >
-                <span className="text-lg">
-                  {player?.short_name || `Player ${index + 1}`}
-                </span>
-                <input
-                  value={index === 0 ? player1Score : player2Score}
-                  onChange={handleScoreChange(
-                    index === 0 ? setPlayer1Score : setPlayer2Score
-                  )}
-                  className="w-20 h-12 text-lg font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d*"
-                />
-              </div>
-            )
-          )}
+          {team.players.map((player) => (
+            <div
+              key={player.uuid}
+              className="flex items-center justify-between mb-4 last:mb-0"
+            >
+              <span className="text-lg">{player.name}</span>
+              <input
+                value={scores[player.uuid] || ""}
+                onChange={handleScoreChange(player.uuid)}
+                className="w-20 h-12 text-lg font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+              />
+            </div>
+          ))}
         </div>
       </div>
       <div className="flex gap-2 mt-4">

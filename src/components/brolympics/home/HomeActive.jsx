@@ -9,7 +9,7 @@ import AvailableCompetition_team from "./team/AvailableCompetition_team.jsx";
 import ActiveCompetition_team from "./team/ActiveCompetition_team.jsx";
 import HomeAdminActive from "./HomeAdminActive.jsx";
 
-import { fetchHome } from "../../../api/activeBro/home.js";
+import { fetchActiveHome } from "../../../api/client";
 import Schedule from "./Schedule.jsx";
 
 const CurrentEventCard = ({ name, percent_complete }) => (
@@ -92,7 +92,7 @@ const HomeActive = ({ is_owner }) => {
   useEffect(() => {
     const getHomeInfo = async () => {
       try {
-        const data = await fetchHome(uuid);
+        const data = await fetchActiveHome(uuid);
         setHomeData(data);
       } catch (error) {
         console.error("Error fetching home data:", error);

@@ -1,31 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import {
-  fetchActiveComp_h2h,
-  fetchCancelComp_h2h,
-  fetchSubmitComp_h2h,
-} from "../../../api/activeBro/home";
+import React, { useState } from "react";
+import { recordContest, abandonContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
-const InCompetitions_h2h = () => {
+const InCompetitions_h2h = ({ contest }) => {
   const [team1Score, setTeam1Score] = useState("");
   const [team2Score, setTeam2Score] = useState("");
   const { showNotification } = useNotification();
-  const { compUuid } = useParams();
-  const [compData, setCompData] = useState(null);
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const data = await fetchActiveComp_h2h(compUuid);
-        setCompData(data);
-      } catch (error) {
-        console.error("Error fetching competition data:", error);
-        showNotification("Error loading competition data", "border-red-500");
-      }
-    };
-    getData();
-  }, [compUuid]);
+  const [entry_1, entry_2] = contest.entries;
 
   const handleScoreChange = (setter) => (e) => {
     const value = e.target.value;
@@ -34,66 +16,55 @@ const InCompetitions_h2h = () => {
     }
   };
 
-  const isValidScore = (score) => {
-    const numScore = Number(score);
-    const minScore = compData.min_score ?? -Infinity;
-    const maxScore = compData.max_score ?? Infinity;
-    return numScore >= minScore && numScore <= maxScore;
-  };
-
   const handleSubmitClicked = async () => {
-    if (isValidScore(team1Score) && isValidScore(team2Score)) {
-      try {
-        await fetchSubmitComp_h2h(
-          compUuid,
-          Number(team1Score),
-          Number(team2Score)
-        );
-        showNotification("Competition updated successfully", "border-primary");
-        window.location.reload();
-      } catch (error) {
-        if (error.response?.status === 409) {
-          showNotification(
-            "This competition was updated by someone else",
-            "border-yellow-500"
-          );
-          window.location.reload();
-        } else {
-          showNotification("Error updating competition", "border-red-500");
-        }
+    if (team1Score === "" || team2Score === "") {
+      showNotification("Enter a score for both teams", "border-red-500");
+      return;
+    }
+    try {
+      await recordContest(contest.uuid, {
+        scores: {
+          [entry_1.team]: Number(team1Score),
+          [entry_2.team]: Number(team2Score),
+        },
+      });
+      showNotification("Competition updated successfully", "border-primary");
+      window.location.reload();
+    } catch (error) {
+      const detail = error.response?.data;
+      if (error.response?.status === 400 && detail) {
+        showNotification(String(detail[0] ?? detail), "border-yellow-500");
+      } else {
+        showNotification("Error updating competition", "border-red-500");
       }
-    } else {
-      showNotification("Invalid scores", "border-red-500");
     }
   };
 
   const handleCancelClicked = async () => {
     try {
-      await fetchCancelComp_h2h(compUuid);
+      await abandonContest(contest.uuid);
       window.location.reload();
     } catch (error) {
       showNotification("Error cancelling competition", "border-red-500");
     }
   };
 
-  if (!compData) return <div className="p-6 text-center">Loading...</div>;
-
   return (
     <div className="min-h-[calc(100vh-240px)] p-6 flex flex-col justify-between bg-white rounded-lg shadow-md">
       <div>
         <h2 className="mb-6 text-2xl font-bold text-center">
-          {compData.event}
+          {contest.event_name}
         </h2>
-        {[compData.team_1, compData.team_2].map((team, index) => (
-          <div key={team.name} className="p-4 mb-6 rounded-lg">
+        {[entry_1, entry_2].map((entry, index) => (
+          <div key={entry.team} className="p-4 mb-6 rounded-lg">
             <div className="flex items-center gap-4">
               <img
-                src={team.img}
-                alt={`${team.name} logo`}
+                src={entry.team_img}
+                alt={`${entry.team_name} logo`}
                 className="object-cover w-20 h-20 rounded-md"
               />
               <div className="flex-grow">
-                <h4 className="text-xl font-semibold">{team.name}</h4>
+                <h4 className="text-xl font-semibold">{entry.team_name}</h4>
               </div>
               <input
                 value={index === 0 ? team1Score : team2Score}

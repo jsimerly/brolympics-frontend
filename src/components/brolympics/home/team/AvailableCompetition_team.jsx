@@ -1,15 +1,16 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchStartComp } from "../../../../api/activeBro/home";
+import { startContest } from "../../../../api/client";
 
-const AvailableCompetition_team = ({ event, team, uuid, type }) => {
+const AvailableCompetition_team = ({ event_name, entries = [], uuid }) => {
   const navigate = useNavigate();
   const { uuid: broUuid } = useParams();
+  const entry = entries.find((e) => e.team && !e.player) || entries[0];
 
   const onStartClicked = async () => {
     try {
-      const data = await fetchStartComp(uuid, type);
-      navigate(`/b/${broUuid}/competition/${data.comp_uuid}`);
+      await startContest(uuid);
+      navigate(`/b/${broUuid}/competition/${uuid}`);
     } catch (error) {
       console.error("Error starting competition:", error);
     }
@@ -18,15 +19,15 @@ const AvailableCompetition_team = ({ event, team, uuid, type }) => {
   return (
     <div className="card">
       <div className="p-4">
-        <h2 className="mb-4 text-lg font-semibold text-center">{event}</h2>
+        <h2 className="mb-4 text-lg font-semibold text-center">{event_name}</h2>
         <div className="flex items-center w-full">
           <div className="flex items-center space-x-4">
             <img
-              src={team.img}
-              alt={`${team.name} logo`}
+              src={entry?.team_img}
+              alt={`${entry?.team_name} logo`}
               className="object-cover w-16 h-16 rounded-md"
             />
-            <div className="text-lg font-bold">{team.name}</div>
+            <div className="text-lg font-bold">{entry?.team_name}</div>
           </div>
         </div>
       </div>

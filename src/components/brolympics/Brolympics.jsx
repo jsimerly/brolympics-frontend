@@ -143,7 +143,7 @@ const Brolympics = () => {
           />
           <Route
             path="competition/:compUuid"
-            element={<InCompetition activeComp={activeComp} />}
+            element={<InCompetition />}
           />
           <Route
             path="manage/*"

@@ -34,6 +34,14 @@ export const recordContest = (uuid, payload) =>
 export const unrecordContest = (uuid) =>
   api.post(`/api/contests/${uuid}/unrecord/`).then((r) => r.data);
 
+/** Participant check-in: "we're playing this now". */
+export const startContest = (uuid) =>
+  api.post(`/api/contests/${uuid}/start/`).then((r) => r.data);
+
+/** Back out of a started contest without a result. */
+export const abandonContest = (uuid) =>
+  api.post(`/api/contests/${uuid}/abandon/`).then((r) => r.data);
+
 /** Convenience: everything I'm currently supposed to be playing. */
 export const fetchMyOpenContests = () =>
   fetchContests({ mine: true, open: true });
