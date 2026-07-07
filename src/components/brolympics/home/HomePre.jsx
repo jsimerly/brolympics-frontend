@@ -6,11 +6,11 @@ import SaveIcon from "@mui/icons-material/Save";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  fetchCreateSingleTeam,
-  fetchDeleteTeam,
-  fetchRemovePlayer,
-  fetchUpdateTeamImage,
-} from "../../../api/team.js";
+  createTeam,
+  deleteTeam,
+  removePlayerFromTeam,
+  updateTeamImage,
+} from "../../../api/client";
 import { inviteLinkTeam as getInviteLinkTeam } from "../../../api/client";
 import PopupContinue from "../../Util/PopupContinue.jsx";
 import CopyWrapper from "../../Util/CopyWrapper.jsx";
@@ -18,7 +18,8 @@ import ImageCropper, { readImageFile } from "../../Util/ImageCropper.jsx";
 import { useNotification } from "../../Util/Notification.jsx";
 import Schedule from "./Schedule.jsx";
 
-const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
+const OwnTeamCard = ({ name, img, players = [], uuid }) => {
+  const [player_1, player_2] = players;
   const [editOpen, setEditOpen] = useState(false);
   const [teamName, setTeamName] = useState(name);
   const handleTeamNameChange = (e) => setTeamName(e.target.value);
@@ -42,7 +43,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
     setSavedImg(croppedImage);
     setCropping(false);
 
-    const response = await fetchUpdateTeamImage(croppedImage, uuid);
+    const response = await updateTeamImage(croppedImage, uuid);
     if (response.ok) {
       showNotification(
         "Your team's image has been updated.",
@@ -88,7 +89,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
 
   const removePlayerFunc = async () => {
     try {
-      const data = await fetchRemovePlayer(removePlayer.uid, uuid);
+      await removePlayerFromTeam(uuid, removePlayer.uuid);
       location.reload();
     } catch (error) {
       console.log(error);
@@ -100,7 +101,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
   };
 
   const deleteTeamFunc = async () => {
-    const response = await fetchDeleteTeam(uuid);
+    const response = await deleteTeam(uuid);
     if (response.ok) {
       location.reload();
     }
@@ -156,7 +157,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
             <div>
               <button onClick={() => onRemovePlayer(player_1)}>
                 <RemoveIcon className="text-errorRed" />
-                {player_1.full_name}
+                {player_1.name}
               </button>
             </div>
           )}
@@ -164,7 +165,7 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
             <div>
               <button onClick={() => onRemovePlayer(player_2)}>
                 <RemoveIcon className="text-errorRed" />
-                {player_2.full_name}
+                {player_2.name}
               </button>
             </div>
           )}
@@ -178,8 +179,8 @@ const OwnTeamCard = ({ name, img, player_1, player_2, uuid }) => {
           >
             {name}
           </h2>
-          <span className="text-sm">{player_1 && player_1.full_name}</span>
-          <span className="text-sm">{player_2 && player_2.full_name}</span>
+          <span className="text-sm">{player_1 && player_1.name}</span>
+          <span className="text-sm">{player_2 && player_2.name}</span>
         </div>
       )}
 
@@ -247,8 +248,8 @@ const TeamCard = ({ broUuid, team }) => {
       <div className="">
         <h3 className="text-xl font-semibold">{team.name}</h3>
         <div className="text-sm text-light">
-          <div>{team.player_1 && team.player_1.full_name}</div>
-          <div>{team.player_2 && team.player_2.full_name}</div>
+          <div>{team.players?.[0] && team.players[0].name}</div>
+          <div>{team.players?.[1] && team.players[1].name}</div>
         </div>
       </div>
     </button>
@@ -288,7 +289,10 @@ const HomePre = ({
 
   const onCreateTeamClick = async () => {
     try {
-      const data = await fetchCreateSingleTeam(newTeamName, uuid, newTeamImg);
+      const team = await createTeam({ name: newTeamName, brolympics: uuid });
+      if (newTeamImg) {
+        await updateTeamImage(team.uuid, newTeamImg);
+      }
       location.reload();
     } catch (error) {
       console.log(error);

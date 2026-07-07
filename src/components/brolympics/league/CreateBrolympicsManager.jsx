@@ -4,7 +4,7 @@ import AddPlayers from "../../create_league_page/AddPlayers";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
-import { fetchCreateBrolympics } from "../../../api/brolympics";
+import { createBrolympics as apiCreateBrolympics, createEvent } from "../../../api/client";
 
 const CreateBrolympicsManager = () => {
   const [step, setStep] = useState(1);
@@ -28,16 +28,32 @@ const CreateBrolympicsManager = () => {
     }
   };
 
+  const defaultStages = {
+    h2h: [
+      { structure: "round_robin", config: { games_per_team: 4 } },
+      { structure: "knockout", config: { take: 4, third_place: true, byes: "seeded" } },
+    ],
+    ind: [{ structure: "open_play", config: {} }],
+    team: [{ structure: "open_play", config: {} }],
+  };
+
   const createBrolympics = async () => {
     try {
-      const data = await fetchCreateBrolympics(
-        uuid,
-        brolympics,
-        h2hEvents,
-        indEvents,
-        teamEvents
-      );
-      setLink(data.uuid);
+      const newBro = await apiCreateBrolympics({ ...brolympics, league: uuid });
+      const events = [
+        ...h2hEvents.map((e) => ({ ...e, format: "h2h" })),
+        ...indEvents.map((e) => ({ ...e, format: "ind" })),
+        ...teamEvents.map((e) => ({ ...e, format: "team" })),
+      ];
+      for (const event of events) {
+        await createEvent({
+          brolympics: newBro.uuid,
+          event_type_name: event.name,
+          format: event.format,
+          stages: defaultStages[event.format],
+        });
+      }
+      setLink(newBro.uuid);
       nextStep();
     } catch (error) {
       console.log(error);

@@ -22,3 +22,20 @@ export const leaveTeam = (uuid) =>
 
 export const fetchTeamInvite = (uuid) =>
   api.get(`/api/teams/${uuid}/invite/`).then((r) => r.data);
+
+/** Admins (or the player themself) pull a player off a team. */
+export const removePlayerFromTeam = (teamUuid, playerUuid) =>
+  api
+    .post(`/api/teams/${teamUuid}/remove-player/`, { player: playerUuid })
+    .then((r) => r.data);
+
+/** Multipart image update (crop-tool File objects). */
+export const updateTeamImage = (uuid, file) => {
+  const form = new FormData();
+  form.append("img", file);
+  return api
+    .patch(`/api/teams/${uuid}/`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};

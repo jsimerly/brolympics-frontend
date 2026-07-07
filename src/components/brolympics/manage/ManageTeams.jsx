@@ -8,15 +8,16 @@ import CopyWrapper from "../../Util/CopyWrapper";
 import PopupContinue from "../../Util/PopupContinue";
 
 import {
-  fetchCreateSingleTeam,
-  fetchDeleteTeam,
-  fetchRemovePlayer,
-  fetchUpdateTeamImage,
-} from "../../../api/team.js";
+  createTeam,
+  deleteTeam,
+  removePlayerFromTeam,
+  updateTeamImage,
+} from "../../../api/client";
 import { useNotification } from "../../Util/Notification.jsx";
 import ImageCropper from "../../Util/ImageCropper.jsx";
 
-export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
+export const TeamCard = ({ name, players = [], img, uuid }) => {
+  const [player_1, player_2] = players;
   const [editing, setEditing] = useState(false);
   const [imageSrc, setImageSrc] = useState(img);
   const [cropping, setCropping] = useState(false);
@@ -35,7 +36,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
   };
 
   const removePlayerFunc = async () => {
-    const response = await fetchRemovePlayer(removePlayer.uid, uuid);
+    await removePlayerFromTeam(uuid, removePlayer.uuid);
     if (response.ok) {
       location.reload();
     }
@@ -47,7 +48,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
 
   const deleteTeamFunc = async () => {
     try {
-      const data = await fetchDeleteTeam(uuid);
+      await deleteTeam(uuid);
       location.reload();
     } catch (error) {
       console.log(error);
@@ -73,7 +74,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
       });
 
       // Placeholder API call - replace with actual implementation
-      await fetchUpdateTeamImage(file, uuid);
+      await updateTeamImage(uuid, file);
       setImageSrc(croppedImage);
       setCropping(false);
       showNotification("Team image updated successfully.");
@@ -141,7 +142,7 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
                       className="text-errorRed"
                       sx={{ fontSize: 20 }}
                     />
-                    {player_1.full_name}
+                    {player_1.name}
                   </div>
                 )}
 
@@ -151,17 +152,17 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
                       className="text-errorRed"
                       sx={{ fontSize: 20 }}
                     />
-                    {player_2.full_name}
+                    {player_2.name}
                   </div>
                 )}
               </div>
             ) : (
               <div className="text-[14px] font-semibold">
-                {player_1 && player_1.short_name}
+                {player_1 && player_1.name}
                 {player_1 && player_2 && (
                   <span className="text-[12px] font-normal"> & </span>
                 )}
-                {player_2 && player_2.short_name}
+                {player_2 && player_2.name}
               </div>
             )}
           </div>
@@ -201,10 +202,10 @@ export const TeamCard = ({ name, player_1, player_2, img, uuid }) => {
         open={popupPlayerOpen}
         setOpen={setPopupPlayerOpen}
         header={`Remove ${
-          removePlayer && removePlayer.full_name
+          removePlayer && removePlayer.name
         } from this team?`}
         desc={`Doing this will perminately remove ${
-          removePlayer && removePlayer.first_name
+          removePlayer && removePlayer.name
         }. If you do, you can always add them back to the team later.`}
         continueText={"Delete"}
         continueFunc={removePlayerFunc}
@@ -233,7 +234,7 @@ const ManageTeams = ({ teams, broUUID }) => {
   };
   const handleCreateTeamClicked = async () => {
     try {
-      const data = await fetchCreateSingleTeam(teamName, broUUID);
+      await createTeam({ name: teamName, brolympics: broUUID });
       location.reload();
     } catch (error) {
       console.log(error);

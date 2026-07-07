@@ -14,10 +14,7 @@ import Home from "./home/Home.jsx";
 import Team from "./team/Team.jsx";
 import InCompetition from "./InCompetition.jsx";
 import ManageRouter from "./manage/ManageRouter.jsx";
-import {
-  fetchBrolympicsHome,
-  fetchInCompetition,
-} from "../../api/brolympics.js";
+import { fetchBrolympicsDetail, fetchMyOpenContests } from "../../api/client";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const Brolympics = () => {
@@ -38,7 +35,7 @@ const Brolympics = () => {
   useEffect(() => {
     const getBrolympicsInfo = async () => {
       try {
-        const data = await fetchBrolympicsHome(uuid);
+        const data = await fetchBrolympicsDetail(uuid);
         setBroInfo(data);
       } catch (error) {
         console.error("Error fetching Brolympics info:", error.message);
@@ -50,8 +47,8 @@ const Brolympics = () => {
   useEffect(() => {
     if (broInfo) {
       if (broInfo.is_active) setStatus("active");
-      else if (!broInfo.is_complete && broInfo.is_owner) setStatus("pre_admin");
-      else if (!broInfo.is_complete && !broInfo.is_owner) setStatus("pre");
+      else if (!broInfo.is_complete && broInfo.is_admin) setStatus("pre_admin");
+      else if (!broInfo.is_complete && !broInfo.is_admin) setStatus("pre");
       else if (broInfo.is_complete) setStatus("post");
     }
   }, [broInfo]);
@@ -60,7 +57,12 @@ const Brolympics = () => {
     const checkActiveCompetition = async () => {
       if (broInfo && broInfo.is_active && firebaseUser) {
         try {
-          const data = await fetchInCompetition();
+          const mine = await fetchMyOpenContests();
+          const active = mine.find((c) => c.is_active);
+          const data = {
+            is_available: !active,
+            comp_uuid: active?.uuid,
+          };
           setActiveComp(data);
 
           if (

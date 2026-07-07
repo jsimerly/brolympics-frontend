@@ -2,10 +2,7 @@ import { useState } from "react";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CopyWrapper from "../../Util/CopyWrapper";
-import {
-  fetchDeleteBrolympics,
-  fetchUpdateBrolympics,
-} from "../../../api/brolympics";
+import { deleteBrolympics, updateBrolympics } from "../../../api/client";
 import PopupContinue from "../../Util/PopupContinue";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
@@ -67,7 +64,7 @@ const ManageBro = ({ name, startDate, endDate, img }) => {
 
   const deleteTeamFunc = async () => {
     try {
-      const data = await fetchDeleteBrolympics(uuid);
+      await deleteBrolympics(uuid);
       showNotification("This brolympics has been deleted.", "!border-primary");
       navigate("/");
     } catch (error) {
@@ -78,10 +75,8 @@ const ManageBro = ({ name, startDate, endDate, img }) => {
   };
 
   const handleUpdateClicked = async () => {
-    const data = broData;
-    data['uuid'] = uuid
     try {
-      await fetchUpdateBrolympics(data);
+      await updateBrolympics(uuid, broData);
       showNotification("You have updated your Brolympics.", "!border-primary");
     } catch (error) {
       console.log(error);

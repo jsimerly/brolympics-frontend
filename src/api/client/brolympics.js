@@ -47,6 +47,22 @@ export const fetchBrolympicsEvents = (uuid) =>
 export const fetchBrolympicsTeams = (uuid) =>
   api.get(`/api/brolympics/${uuid}/teams/`).then((r) => r.data);
 
+/** Brolympics page data: the bro + its teams + my admin flag + my team. */
+export const fetchBrolympicsDetail = async (uuid) => {
+  const bro = await fetchBrolympics(uuid);
+  const [teams, league] = await Promise.all([
+    fetchBrolympicsTeams(uuid),
+    // league detail carries is_admin for the requesting user
+    api.get(`/api/leagues/${bro.league}/`).then((r) => r.data),
+  ]);
+  return {
+    ...bro,
+    teams,
+    is_admin: league.is_admin,
+    user_team: teams.find((t) => t.players.some((p) => p.is_me)) ?? null,
+  };
+};
+
 /** Overall standings (summed final event points), live at any moment. */
 export const fetchBrolympicsStandings = (uuid) =>
   api.get(`/api/brolympics/${uuid}/standings/`).then((r) => r.data);
