@@ -50,9 +50,18 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
   const [placements, setPlacements] = useState("third");
+  const [heatSize, setHeatSize] = useState("");
 
   const buildStages = () => {
-    if (selectedType === "ffa") return [{ structure: "heats", config: {} }];
+    if (selectedType === "ffa") {
+      const size = Number(heatSize);
+      return [
+        {
+          structure: "heats",
+          config: size >= 2 ? { heat_size: size } : {},
+        },
+      ];
+    }
     if (selectedType !== "h2h") return [{ structure: "open_play", config: {} }];
 
     const stages = [];
@@ -159,6 +168,24 @@ const CreateEvent = ({ handleEventAdded }) => {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {selectedType === "ffa" && (
+        <div className="flex flex-col gap-3">
+          <span className="form-label">Heats</span>
+          <SelectRow
+            label="Heat size"
+            hint="Set it to pre-build balanced heats at start (16 racers in 8s = 8/8). Leave blank to make heats at the party."
+          >
+            <input
+              type="number"
+              value={heatSize}
+              onChange={(e) => setHeatSize(e.target.value)}
+              placeholder="—"
+              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+            />
+          </SelectRow>
         </div>
       )}
 
