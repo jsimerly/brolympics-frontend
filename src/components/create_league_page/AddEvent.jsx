@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { fetchEventTypes } from "../../api/client";
 import useCachedFetch from "../../hooks/useCachedFetch";
-import { searchPresets } from "./events/presets";
+import { searchPresets, catalogByCategory, PRESET_EVENTS } from "./events/presets";
 
 const FORMAT_LABEL = { h2h: "Head to Head", ind: "Individual", team: "Team", ffa: "Free-for-All" };
 
@@ -22,6 +22,37 @@ const AddButton = ({ added }) => (
   >
     {added ? <CheckIcon sx={{ fontSize: 18 }} /> : <AddIcon sx={{ fontSize: 18 }} />}
   </span>
+);
+
+const PresetGrid = ({ presets, isAdded, toggle }) => (
+  <div className="grid grid-cols-2 gap-1.5">
+    {presets.map((row) => {
+      const added = isAdded(row.name, row.format);
+      return (
+        <button
+          key={row.name}
+          onClick={() => toggle(row)}
+          className={`flex items-center justify-between gap-1 px-2.5 py-2 text-left transition-colors border rounded-lg ${
+            added ? "border-primary bg-primary/5" : "bg-white border-gray-200"
+          }`}
+        >
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-medium leading-tight truncate">
+              {row.name}
+            </span>
+            <span className="text-[10px] text-light">
+              {FORMAT_LABEL[row.format] || row.format}
+            </span>
+          </div>
+          {added ? (
+            <CheckIcon sx={{ fontSize: 16 }} className="shrink-0 text-primary" />
+          ) : (
+            <AddIcon sx={{ fontSize: 16 }} className="shrink-0 text-light" />
+          )}
+        </button>
+      );
+    })}
+  </div>
 );
 
 const EventComp = ({ header, events, setter }) => {
@@ -73,6 +104,7 @@ const AddEvent = ({
   const [showPicker, setShowPicker] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [query, setQuery] = useState("");
+  const [browsing, setBrowsing] = useState(false);
   const { data: eventTypes } = useCachedFetch(
     leagueUuid ? `event-types:${leagueUuid}` : null,
     () => fetchEventTypes(leagueUuid)
@@ -197,37 +229,58 @@ const AddEvent = ({
                 className="w-full py-2 pl-10 pr-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-primary"
               />
             </div>
-            {!query && presetResults.length > 0 && (
-              <span className="text-xs font-semibold tracking-wide uppercase text-light">
-                Popular
-              </span>
-            )}
-            <div className="space-y-1.5">
-              {presetResults.map((row) => (
-                <button
-                  key={row.name}
-                  onClick={() => toggle(row)}
-                  className={`flex items-center w-full gap-3 px-3 py-2 text-left transition-colors border rounded-lg ${
-                    isAdded(row.name, row.format)
-                      ? "border-primary bg-primary/5"
-                      : "bg-white border-gray-200"
-                  }`}
-                >
-                  <div className="flex flex-col flex-grow min-w-0">
-                    <span className="font-medium leading-tight">{row.name}</span>
-                    <span className="text-[11px] text-light">
-                      {FORMAT_LABEL[row.format] || row.format}
-                    </span>
+            {query ? (
+              <>
+                <PresetGrid
+                  presets={presetResults}
+                  isAdded={isAdded}
+                  toggle={toggle}
+                />
+                {presetResults.length === 0 && (
+                  <p className="px-1 text-sm text-light">
+                    Nothing in the catalog — make it a custom event below.
+                  </p>
+                )}
+              </>
+            ) : browsing ? (
+              <div className="space-y-4">
+                {catalogByCategory(knownNames).map(({ category, presets }) => (
+                  <div key={category}>
+                    <h4 className="pb-1.5 text-xs font-semibold tracking-wide uppercase text-light">
+                      {category}
+                    </h4>
+                    <PresetGrid
+                      presets={presets}
+                      isAdded={isAdded}
+                      toggle={toggle}
+                    />
                   </div>
-                  <AddButton added={isAdded(row.name, row.format)} />
+                ))}
+                <button
+                  className="w-full py-2 text-sm font-semibold text-light"
+                  onClick={() => setBrowsing(false)}
+                >
+                  Show less
                 </button>
-              ))}
-              {query && presetResults.length === 0 && (
-                <p className="px-1 text-sm text-light">
-                  Nothing in the catalog — make it a custom event below.
-                </p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <>
+                <span className="text-xs font-semibold tracking-wide uppercase text-light">
+                  Popular
+                </span>
+                <PresetGrid
+                  presets={presetResults}
+                  isAdded={isAdded}
+                  toggle={toggle}
+                />
+                <button
+                  className="w-full py-2 text-sm font-semibold border border-gray-200 rounded-lg text-primary bg-white"
+                  onClick={() => setBrowsing(true)}
+                >
+                  Browse all {PRESET_EVENTS.length} events
+                </button>
+              </>
+            )}
 
             <button
               className="flex items-center justify-between w-full p-3 text-sm font-semibold bg-white border border-gray-200 rounded-lg"
