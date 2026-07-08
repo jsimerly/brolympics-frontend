@@ -130,19 +130,28 @@ export const Leaderboard = ({ leaderboard }) => {
   );
 };
 
-/** One all-time leader line, phrased for the format. */
+/** One all-time leader line: points, then the format-specific detail. */
 const leaderLine = (leader, format) => {
-  if (format === "h2h") {
+  const points = Number.isInteger(leader.points)
+    ? leader.points
+    : leader.points.toFixed(1);
+  let detail = null;
+  if (format === "h2h" && leader.games) {
     const record = `${leader.wins}-${leader.losses}${
       leader.ties ? `-${leader.ties}` : ""
     }`;
-    return `${record} (${Math.round(leader.win_pct * 100)}%)`;
+    detail = `${record} (${Math.round(leader.win_pct * 100)}%)`;
+  } else if (format === "ffa" && leader.heats) {
+    detail = `${leader.heat_wins} heat win${
+      leader.heat_wins === 1 ? "" : "s"
+    } in ${leader.heats}`;
+  } else if (leader.avg != null) {
+    const avg = Number.isInteger(leader.avg)
+      ? leader.avg
+      : leader.avg.toFixed(1);
+    detail = `avg ${avg} (best ${leader.best})`;
   }
-  if (format === "ffa") {
-    return `${leader.heat_wins} heat win${leader.heat_wins === 1 ? "" : "s"} in ${leader.heats}`;
-  }
-  const avg = Number.isInteger(leader.avg) ? leader.avg : leader.avg.toFixed(1);
-  return `avg ${avg} (best ${leader.best})`;
+  return detail ? `${points} pts · ${detail}` : `${points} pts`;
 };
 
 const EventTypeHistory = ({ eventTypeUuid }) => {
@@ -163,11 +172,7 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
           <h4 className="font-semibold">
             All-Time Leaders
             <span className="ml-2 text-[10px] font-normal text-light">
-              {history.format === "h2h"
-                ? "by win rate"
-                : history.format === "ffa"
-                ? "by heat wins"
-                : "by average score"}
+              by points earned
             </span>
           </h4>
           <div className="space-y-1">
