@@ -8,6 +8,7 @@ import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
 import { PlayerTeams } from "./HistorySections";
 
@@ -74,6 +75,13 @@ const ContestRow = ({ contest, myTeamUuids, playerUuid }) => {
   return (
     <div className="flex items-center gap-2 py-1 text-sm border-t first:border-t-0">
       {line}
+      {contest.stage_structure === "knockout" && (
+        <AccountTreeOutlinedIcon
+          sx={{ fontSize: 14 }}
+          className="text-primary"
+          titleAccess="Playoff game"
+        />
+      )}
       <span className="text-xs text-light whitespace-nowrap">
         {contest.brolympics_name}
       </span>
