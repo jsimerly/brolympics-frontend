@@ -2,7 +2,7 @@ import CreateBrolympics from "../../create_league_page/CreateBrolympics";
 import AddEvent from "../../create_league_page/AddEvent";
 import AddPlayers from "../../create_league_page/AddPlayers";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
 import {
   createBrolympics as apiCreateBrolympics,
@@ -22,12 +22,18 @@ const CreateBrolympicsManager = () => {
   const [indEvents, setIndEvents] = usePersistentState(K("ind"), []);
   const [teamEvents, setTeamEvents] = usePersistentState(K("team"), []);
   const [ffaEvents, setFfaEvents] = usePersistentState(K("ffa"), []);
-  const [link, setLink] = useState();
+  const [link, setLink] = usePersistentState(K("link"), null);
+  const navigate = useNavigate();
   const { showNotification } = useNotification();
   const clearWizard = () =>
     clearPersistentState(
-      ...["step", "bro", "h2h", "ind", "team", "ffa", "form"].map(K)
+      ...["step", "bro", "h2h", "ind", "team", "ffa", "form", "link"].map(K)
     );
+  const finish = () => {
+    const destination = link;
+    clearWizard();
+    navigate(`/b/${destination}/home`);
+  };
 
   const nextStep = () => {
     if (step < 3) {
@@ -73,7 +79,6 @@ const CreateBrolympicsManager = () => {
         showNotification(warnings.join(" — "), "border-yellow-500");
       }
       setLink(newBro.uuid);
-      clearWizard();
       nextStep();
     } catch (error) {
       console.log(error);
@@ -115,9 +120,11 @@ const CreateBrolympicsManager = () => {
         />
         <AddPlayers
           step={3}
-          nextStep={nextStep}
-          prevStep={prevStep}
+          totalSteps={3}
           link={link}
+          broName={brolympics?.name}
+          leagueUuid={uuid}
+          onComplete={finish}
         />
       </div>
     </div>

@@ -94,9 +94,12 @@ const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
       />
       <AddPlayers
         step={4}
-        nextStep={nextStep}
-        prevStep={prevStep}
+        totalSteps={4}
         link={link}
+        broName={brolympics?.name}
+        onComplete={() => {
+          window.location.href = `/b/${link}/home`;
+        }}
       />
     </div>
   );
