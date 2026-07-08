@@ -21,6 +21,11 @@ const ConfirmCard = ({ uuid, event_name, entries = [], recorded_by_name }) => {
       await confirmContest(uuid);
       location.reload();
     } catch (error) {
+      if (error.response?.status === 400) {
+        // someone else confirmed first -- refresh shows it settled
+        location.reload();
+        return;
+      }
       console.error("Error confirming result:", error);
       setBusy(false);
     }
