@@ -173,7 +173,9 @@ const HomePost = ({ events = [] }) => {
                   onClick={() => goToEvent(podium)}
                 >
                   <img src={Gold} alt="Winner" className="h-4" />
-                  <span className="font-medium">{podium.first.join(", ")}</span>
+                  <span className="font-medium">
+                    {podium.first.map((row) => row.team ?? row).join(", ")}
+                  </span>
                   <span className="flex-grow text-right text-light">
                     {podium.event}
                   </span>

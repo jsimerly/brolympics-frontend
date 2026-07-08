@@ -199,17 +199,32 @@ const Standings = ({ status, teams }) => {
                         key={key}
                       >
                         <img src={icon} alt={key} className="h-4" />
-                        {event[key].map((name) => (
+                        {event[key].map((row) => (
                           <span
-                            className="flex items-center gap-1.5 font-medium"
-                            key={name}
+                            className="flex items-center flex-grow gap-1.5 font-medium"
+                            key={row.team}
                           >
                             <Img
-                              src={imgOf(name)}
-                              alt={name}
+                              src={imgOf(row.team)}
+                              alt={row.team}
                               className="object-cover w-6 h-6 rounded"
                             />
-                            {name}
+                            {row.team}
+                            <span className="flex-grow font-normal text-right text-light">
+                              {row.stats?.wins != null
+                                ? `${row.stats.wins}-${row.stats.losses}` +
+                                  (row.stats.ties ? `-${row.stats.ties}` : "")
+                                : row.stats?.total != null
+                                ? row.stats.total
+                                : ""}
+                              {row.points != null && (
+                                <span className="ml-2 font-semibold text-near-black">
+                                  {Number.isInteger(row.points)
+                                    ? row.points
+                                    : row.points.toFixed(1)}
+                                </span>
+                              )}
+                            </span>
                           </span>
                         ))}
                       </div>
