@@ -51,27 +51,30 @@ const EventActive = ({ eventInfo, is_admin }) => {
             )}
           </h2>
         </div>
-        <div className="">
-          <table className="w-full border">
+        <div className="overflow-hidden card">
+          <table className="w-full">
             <thead>
-              <tr className={`border ${eventInfo.is_complete && "font-bold"}`}>
-                <th className="border w-[60px] p-2">
-                  <NumbersOutlinedIcon />
+              <tr className="text-white bg-primary">
+                <th className="w-[60px] p-2">
+                  <NumbersOutlinedIcon sx={{ fontSize: 20 }} />
                 </th>
-                <th className="pl-3 border text-start text-[20px]">Team</th>
-                <th className="border w-[80px]">
-                  <DiamondOutlinedIcon />
+                <th className="pl-3 text-start">Team</th>
+                <th className="w-[80px]">
+                  <DiamondOutlinedIcon sx={{ fontSize: 20 }} />
                 </th>
               </tr>
             </thead>
             <tbody>
               {eventInfo.standings &&
                 eventInfo.standings.map((row, i) => (
-                  <tr key={i + "_row"}>
-                    <td className="p-3 font-semibold text-center text-[18px] border-r">
+                  <tr
+                    key={i + "_row"}
+                    className={i % 2 === 0 ? "bg-gray-50" : ""}
+                  >
+                    <td className="p-3 font-semibold text-center border-t">
                       {row.rank}
                     </td>
-                    <td className="pl-3 text-start text-[20px] border-r">
+                    <td className="pl-3 border-t text-start">
                       <div className="flex items-center gap-2">
                         <Img
                           src={row.team.img}
@@ -92,7 +95,7 @@ const EventActive = ({ eventInfo, is_admin }) => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-2 text-center border-r text-[18px]">
+                    <td className="p-2 font-semibold text-center border-t">
                       {displayPoints(row.points)}
                     </td>
                   </tr>

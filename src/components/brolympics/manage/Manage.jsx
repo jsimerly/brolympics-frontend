@@ -7,12 +7,9 @@ const ManageButton = ({header, desc, nav}) => {
     }
 
     return (
-    <div 
-        className='w-full p-3 border rounded-md border-primary'
-        onClick={onClick}
-    >
-        <h2 className='font-semibold text-[16px]'>{header}</h2>
-        <p className='text-[12px]'>{desc}</p>
+    <div className='w-full p-4 card-clickable' onClick={onClick}>
+        <h2 className='font-semibold'>{header}</h2>
+        <p className='text-sm text-light'>{desc}</p>
     </div>
     )
 }
@@ -20,7 +17,8 @@ const ManageButton = ({header, desc, nav}) => {
 const Manage = () => {
 
   return (
-    <div className='flex flex-col gap-3'>
+    <div className='flex flex-col gap-3 max-w-3xl mx-auto'>
+        <h2 className='header-3'>Manage</h2>
         <ManageButton 
             header='Manage Brolympics' 
             desc={'Manage your Brolympics settings including: start date, end date, invites, etc.'}

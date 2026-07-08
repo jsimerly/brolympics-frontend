@@ -6,6 +6,8 @@ import {
 } from "../../../api/client";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import Img from "../../Util/Img";
+import useCachedFetch from "../../../hooks/useCachedFetch";
+import { SkeletonPage } from "../../Util/Skeleton";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
@@ -13,22 +15,24 @@ import Bronze from "../../../assets/svgs/bronze.svg";
 
 const Standings = ({ status, teams }) => {
   const { uuid } = useParams();
-  const [standingData, setStandingData] = useState();
+  const { data: standingData, loading } = useCachedFetch(
+    `bro-standings:${uuid}`,
+    async () => {
+      const [standings, podiums] = await Promise.all([
+        fetchBrolympicsStandings(uuid),
+        fetchBrolympicsPodiums(uuid),
+      ]);
+      return { standings, podiums };
+    }
+  );
 
-  useEffect(() => {
-    const getStandingsInfo = async () => {
-      try {
-        const [standings, podiums] = await Promise.all([
-          fetchBrolympicsStandings(uuid),
-          fetchBrolympicsPodiums(uuid),
-        ]);
-        setStandingData({ standings, podiums });
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getStandingsInfo();
-  }, [uuid]);
+  if (loading) {
+    return (
+      <div className="py-6 container-padding">
+        <SkeletonPage />
+      </div>
+    );
+  }
 
   const getFontSize = (name) => {
     if (name) {
@@ -41,14 +45,14 @@ const Standings = ({ status, teams }) => {
 
   const renderScoringInfo = () => (
     <div className="p-4 mb-6 card">
-      <h3 className="header-3 text-red">Scoring</h3>
+      <h3 className="header-3">Scoring</h3>
       <p className="mb-4 text-light">
         Scoring in the top 3 will earn bonus points.
       </p>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="text-white bg-red">
+            <tr className="text-white bg-primary">
               <th className="px-4 py-2 text-left">Place</th>
               <th className="px-4 py-2 text-left">Points</th>
             </tr>
@@ -109,7 +113,7 @@ const Standings = ({ status, teams }) => {
         <h2 className="p-4 header-3">Overall Standings</h2>
         <table className="w-full">
           <thead>
-            <tr className="text-white bg-red">
+            <tr className="text-white bg-primary">
               <th className="p-2 w-[60px]">
                 <NumbersOutlinedIcon />
               </th>

@@ -9,13 +9,18 @@ import Img from "../../Util/Img";
 import Event_h2h from "./events/Event_h2h";
 import Event_outing from "./events/Event_outing";
 import { fetchTeamInfo } from "../../../api/client";
+import useCachedFetch from "../../../hooks/useCachedFetch";
+import { SkeletonPage } from "../../Util/Skeleton";
 
 const Team = ({ status, teams, default_uuid }) => {
   const { uuid, teamUuid } = useParams();
   const navigate = useNavigate();
-  const [teamInfo, setTeamInfo] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState(
     teamUuid || teams[0]?.uuid || ""
+  );
+  const { data: teamInfo, loading, refreshing } = useCachedFetch(
+    selectedTeamId ? `team-info:${selectedTeamId}` : null,
+    () => fetchTeamInfo(selectedTeamId)
   );
 
   useEffect(() => {
@@ -29,20 +34,6 @@ const Team = ({ status, teams, default_uuid }) => {
       setSelectedTeamId(teamUuid);
     }
   }, [teamUuid]);
-
-  useEffect(() => {
-    const getTeamInfo = async () => {
-      try {
-        const data = await fetchTeamInfo(selectedTeamId);
-        setTeamInfo(data);
-      } catch (error) {
-        console.error("Error fetching team info:", error);
-      }
-    };
-    if (selectedTeamId) {
-      getTeamInfo();
-    }
-  }, [selectedTeamId]);
 
   const handleTeamChange = (e) => {
     const selectedTeam = teams.find((team) => team.uuid === e.target.value);
@@ -157,6 +148,12 @@ const Team = ({ status, teams, default_uuid }) => {
           </button>
         ))}
       </div>
+      {loading && <SkeletonPage rows={4} />}
+      <div
+        className={`transition-opacity duration-200 ${
+          refreshing ? "opacity-60" : "opacity-100"
+        }`}
+      >
       {teamInfo && <TeamInfo team={teamInfo.team} />}
 
       {teamInfo && teamInfo.events && teamInfo.events.length > 0 && (
@@ -172,6 +169,7 @@ const Team = ({ status, teams, default_uuid }) => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -9,6 +9,8 @@ import {
   fetchBrolympicsStandings,
   fetchBrolympicsPodiums,
 } from "../../../api/client";
+import useCachedFetch from "../../../hooks/useCachedFetch";
+import { SkeletonPage } from "../../Util/Skeleton";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 
@@ -20,30 +22,22 @@ const fmtPoints = (points) =>
 const HomePost = ({ events = [] }) => {
   const { uuid } = useParams();
   const navigate = useNavigate();
-  const [standings, setStandings] = useState(null);
-  const [podiums, setPodiums] = useState([]);
+  const { data, loading } = useCachedFetch(`post-home:${uuid}`, async () => {
+    const [rows, eventPodiums] = await Promise.all([
+      fetchBrolympicsStandings(uuid),
+      fetchBrolympicsPodiums(uuid),
+    ]);
+    return { standings: rows, podiums: eventPodiums };
+  });
 
-  useEffect(() => {
-    const getResults = async () => {
-      try {
-        const [rows, eventPodiums] = await Promise.all([
-          fetchBrolympicsStandings(uuid),
-          fetchBrolympicsPodiums(uuid),
-        ]);
-        setStandings(rows);
-        setPodiums(eventPodiums);
-      } catch (error) {
-        console.error("Error fetching final results:", error);
-      }
-    };
-    getResults();
-  }, [uuid]);
-
-  if (!standings) {
+  if (loading || !data) {
     return (
-      <div className="flex items-center justify-center h-64">Loading...</div>
+      <div className="container-padding w-full max-w-3xl py-6 mx-auto">
+        <SkeletonPage />
+      </div>
     );
   }
+  const { standings, podiums } = data;
 
   const champions = standings.filter((row) => row.rank === 1);
   const runnersUp = standings.filter(

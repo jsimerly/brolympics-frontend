@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchEventInfo } from "../../../api/client";
+import useCachedFetch from "../../../hooks/useCachedFetch";
+import { SkeletonPage } from "../../Util/Skeleton";
 
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
 
 const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
-  const [eventInfo, setEventInfo] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const navigate = useNavigate();
   const { eventUuid, eventType, uuid } = useParams();
@@ -50,20 +51,10 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
     navigate,
   ]);
 
-  useEffect(() => {
-    const getEventInfo = async () => {
-      if (selectedEventId) {
-        try {
-          const data = await fetchEventInfo(selectedEventId);
-          setEventInfo(data); // Set the eventInfo state with the fetched data
-        } catch (error) {
-          console.error("Error fetching event info:", error);
-          setEventInfo(null); // Reset eventInfo on error
-        }
-      }
-    };
-    getEventInfo();
-  }, [selectedEventId, eventType]);
+  const { data: eventInfo, loading, refreshing } = useCachedFetch(
+    selectedEventId ? `event-info:${selectedEventId}` : null,
+    () => fetchEventInfo(selectedEventId)
+  );
 
   const handleEventSelect = (selectedEvent) => {
     if (selectedEvent) {
@@ -117,10 +108,16 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
           </button>
         ))}
       </div>
-      {eventInfo ? (
-        renderEventComponent()
+      {loading || !eventInfo ? (
+        <SkeletonPage />
       ) : (
-        <div>Loading event information...</div>
+        <div
+          className={`transition-opacity duration-200 ${
+            refreshing ? "opacity-60" : "opacity-100"
+          }`}
+        >
+          {renderEventComponent()}
+        </div>
       )}
     </div>
   );
