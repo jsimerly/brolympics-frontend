@@ -16,11 +16,15 @@ import Team from "./team/Team.jsx";
 import InCompetition from "./InCompetition.jsx";
 import ManageRouter from "./manage/ManageRouter.jsx";
 import { fetchBrolympicsDetail, fetchMyOpenContests } from "../../api/client";
+import useCachedFetch from "../../hooks/useCachedFetch";
+import { SkeletonPage } from "../Util/Skeleton";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const Brolympics = () => {
-  const [broInfo, setBroInfo] = useState();
   const { uuid } = useParams();
+  const { data: broInfo } = useCachedFetch(`bro-detail:${uuid}`, () =>
+    fetchBrolympicsDetail(uuid)
+  );
   const { firebaseUser } = useAuth();
   const [status, setStatus] = useState("active");
   const navigate = useNavigate();
@@ -32,18 +36,6 @@ const Brolympics = () => {
     comp_uuid: "",
     type: "",
   });
-
-  useEffect(() => {
-    const getBrolympicsInfo = async () => {
-      try {
-        const data = await fetchBrolympicsDetail(uuid);
-        setBroInfo(data);
-      } catch (error) {
-        console.error("Error fetching Brolympics info:", error.message);
-      }
-    };
-    getBrolympicsInfo();
-  }, [uuid]);
 
   useEffect(() => {
     if (broInfo) {
@@ -92,8 +84,8 @@ const Brolympics = () => {
 
   if (!broInfo) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
+      <div className="w-full max-w-3xl px-4 mx-auto">
+        <SkeletonPage />
       </div>
     );
   }
