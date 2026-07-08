@@ -49,6 +49,7 @@ const CreateBrolympicsManager = () => {
           event_type_name: event.name,
           format: event.format,
           stages: event.stages || defaultStagesFor(event.format),
+          ...(event.event_type && { event_type: event.event_type }),
           ...(event.is_high_score_wins != null && {
             is_high_score_wins: event.is_high_score_wins,
           }),

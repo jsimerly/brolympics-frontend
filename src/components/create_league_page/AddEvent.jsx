@@ -102,6 +102,7 @@ const AddEvent = ({
       row.latest
         ? {
             name: row.name,
+            event_type: row.uuid, // lineage tag: survives future renames
             stages: row.latest.stages?.length ? row.latest.stages : undefined,
             is_high_score_wins: row.latest.is_high_score_wins,
             location: row.latest.location,
