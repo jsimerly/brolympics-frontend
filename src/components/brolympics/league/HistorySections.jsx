@@ -193,13 +193,23 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
       )}
       {history.best_performances.length > 0 && (
         <div>
-          <h4 className="font-semibold">Best Performances</h4>
-          {history.best_performances.map((row, i) => (
-            <p className="text-sm" key={i + "_best"}>
-              {row.score} — {row.who}{" "}
-              <span className="text-light">({row.brolympics})</span>
-            </p>
-          ))}
+          <h4 className="font-semibold">
+            Best Performances
+            <span className="ml-2 text-[10px] font-normal text-light">
+              single outing
+            </span>
+          </h4>
+          <div className="space-y-1">
+            {history.best_performances.map((row, i) => (
+              <div className="flex items-center gap-2 text-sm" key={i + "_best"}>
+                <span className="w-5 font-semibold text-light">{i + 1}.</span>
+                <span className="flex-grow">{row.who}</span>
+                <span className="text-light">
+                  {row.score} · {row.brolympics}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {history.years.length > 0 && (
