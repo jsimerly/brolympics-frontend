@@ -259,7 +259,6 @@ const TeamCard = ({ broUuid, team }) => {
 const HomePre = ({
   events,
   img,
-  is_owner,
   projected_start_date,
   projected_end_date,
   teams,

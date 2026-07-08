@@ -47,17 +47,20 @@ export const fetchBrolympicsEvents = (uuid) =>
 export const fetchBrolympicsTeams = (uuid) =>
   api.get(`/api/brolympics/${uuid}/teams/`).then((r) => r.data);
 
-/** Brolympics page data: the bro + its teams + my admin flag + my team. */
+/** Brolympics page data: the bro + its teams/events + my admin flag + my team.
+ * Events carry `type` (mirroring format) for the legacy card/route switching. */
 export const fetchBrolympicsDetail = async (uuid) => {
   const bro = await fetchBrolympics(uuid);
-  const [teams, league] = await Promise.all([
+  const [teams, events, league] = await Promise.all([
     fetchBrolympicsTeams(uuid),
+    fetchBrolympicsEvents(uuid),
     // league detail carries is_admin for the requesting user
     api.get(`/api/leagues/${bro.league}/`).then((r) => r.data),
   ]);
   return {
     ...bro,
     teams,
+    events: events.map((e) => ({ ...e, type: e.format })),
     is_admin: league.is_admin,
     user_team: teams.find((t) => t.players.some((p) => p.is_me)) ?? null,
   };

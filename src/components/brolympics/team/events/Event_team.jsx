@@ -1,30 +1,35 @@
 import EventWrapper from "./EventWrapper";
 
-const Competition = ({ team_score, is_active, rank }) => {
+const Competition = ({ contest, rank }) => {
+  const entries = contest.entries || [];
+  const teamEntry = entries.find((e) => e.team && !e.player) || entries[0];
+
   return (
     <div
-      className={`flex items-center px-3 py-2 border rounded-md 
-       ${is_active && "border-[3px]"} ${
-        !is_active && rank <= 4 ? "border-tertiary" : null
+      className={`flex items-center px-3 py-2 border rounded-md
+       ${contest.is_active && "border-[3px]"} ${
+        !contest.is_active && rank <= 4 ? "border-tertiary" : null
       }
       `}
     >
       <div className="grid grid-cols-2 ">
         <div className="font-bold text-end">Score:</div>
-        <div className="pl-3 font-bold">{team_score}</div>
+        <div className="pl-3 font-bold">
+          {teamEntry?.score != null ? teamEntry.score : "—"}
+        </div>
       </div>
     </div>
   );
 };
 
-const EventDropdown_Ind = ({ comps, decimcal_places, is_active, rank }) => (
+const EventDropdown_Team = ({ contests, rank }) => (
   <div className={`pb-2 border-t  `}>
     <h4 className="pt-2 font-bold">Competitions</h4>
     <div className="flex flex-col gap-1 py-1">
-      {comps.map((comp, i) => (
-        <Competition {...comp} rank={rank} key={i + "_team_competition"} />
+      {contests.map((contest) => (
+        <Competition contest={contest} rank={rank} key={contest.uuid} />
       ))}
-      {comps.length === 0 && "Event has not started yet."}
+      {contests.length === 0 && "Event has not started yet."}
     </div>
   </div>
 );
@@ -35,13 +40,11 @@ const Event_team = ({
   points,
   is_active,
   is_final,
-  score,
-  decimal_places,
-  comps,
-  team,
+  stats = {},
+  contests = [],
 }) => {
   const display_score =
-    score !== null && score !== 0 ? score.toFixed(decimal_places) : "";
+    stats.total != null && stats.total !== 0 ? stats.total : "";
   return (
     <EventWrapper
       name={name}
@@ -51,12 +54,7 @@ const Event_team = ({
       is_active={is_active}
       is_final={is_final}
     >
-      <EventDropdown_Ind
-        comps={comps}
-        decimcal_places={decimal_places}
-        is_active={is_active}
-        rank={rank}
-      />
+      <EventDropdown_Team contests={contests} rank={rank} />
     </EventWrapper>
   );
 };

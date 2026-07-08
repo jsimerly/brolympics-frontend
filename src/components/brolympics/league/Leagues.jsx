@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
-const LeagueCard = ({ name, img, founded, is_owner, uuid }) => {
+const LeagueCard = ({ name, img, founded, is_admin, uuid }) => {
   const navigate = useNavigate();
 
   const onLeagueClick = () => {
@@ -19,7 +19,7 @@ const LeagueCard = ({ name, img, founded, is_owner, uuid }) => {
         <h2 className="header-4 text-near-black">{name}</h2>
         <span className="text-sm text-light">Founded: {founded}</span>
       </div>
-      {is_owner && (
+      {is_admin && (
         <div className="text-primary">
           <AutoAwesomeIcon sx={{ fontSize: 24 }} />
         </div>

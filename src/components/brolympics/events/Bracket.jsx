@@ -1,50 +1,42 @@
 import BracketNode from "./BracketNode";
-import { TeamNode } from "./BracketNode";
 import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 
-const BracketConnection = ({ match1, match2 }) => (
-  <div className="flex items-center">
-    <div className="inline-flex flex-col gap-6">
-      <BracketNode match={match1} />
-      <BracketNode match={match2} />
-    </div>
-    <div className="w-[2px] bg-black h-[110px]" />
-    <div className="h-[2px] bg-black w-[16px] mr-3" />
-  </div>
-);
+/** Renders one knockout stage from the bracket endpoint payload:
+ * { stage, is_complete, nodes: [{round, slot, winner_to, loser_to, contest}] }.
+ * Nodes are grouped by round into columns; any bracket size works. */
+const Bracket = ({ nodes = [], is_complete }) => {
+  const rounds = [...new Set(nodes.map((n) => n.round))].sort((a, b) => a - b);
+  if (rounds.length === 0) return null;
+  const lastRound = rounds[rounds.length - 1];
 
-const Bracket = ({
-  championship,
-  loser_bracket_finals,
-  match_1,
-  match_2,
-  is_active,
-  is_complete,
-}) => {
+  const roundLabel = (round) => {
+    if (round === lastRound) return "Finals";
+    if (round === lastRound - 1) return "Semifinals";
+    return `Round ${round}`;
+  };
+
   return (
     <div className="px-6 pb-6 overflow-auto">
       <div className="flex items-center gap-2">
         <h2 className="font-bold text-[20px]">Bracket</h2>
-        {is_active && <PriorityHighIcon className="text-secondary" />}
+        {!is_complete && <PriorityHighIcon className="text-secondary" />}
       </div>
-      <h4 className="text-[12px] pb-2">Winners</h4>
-      <div className="flex items-center w-[720px]">
-        <BracketConnection match1={match_1} match2={match_2} />
-        <BracketNode match={championship} />
-        <div className="pr-3" />
-        <TeamNode
-          name={championship.winner.name}
-          img={championship.winner.img}
-        />
-      </div>
-      <h4 className="text-[12px] pb-2 pt-3">Losers</h4>
-      <div className="flex items-center ">
-        <BracketNode match={loser_bracket_finals} />
-        <div className="pr-3" />
-        <TeamNode
-          name={loser_bracket_finals.winner.name}
-          img={loser_bracket_finals.winner.img}
-        />
+      <div className="flex items-start gap-8 pt-2">
+        {rounds.map((round) => (
+          <div key={round} className="flex flex-col justify-around h-full">
+            <h4 className="text-[12px] pb-2">{roundLabel(round)}</h4>
+            <div className="flex flex-col justify-around flex-grow gap-6">
+              {nodes
+                .filter((n) => n.round === round)
+                .map((node) => (
+                  <BracketNode
+                    key={`${node.round}_${node.slot}`}
+                    contest={node.contest}
+                  />
+                ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

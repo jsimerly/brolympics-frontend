@@ -1,26 +1,29 @@
-import {
-  fetchEventsUnstarted,
-  fetchStartEvent,
-} from "../../../api/activeBro/admin.js";
+import { fetchBrolympicsEvents, startEvent } from "../../../api/client";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { format, parseISO } from "date-fns";
+import { useNotification } from "../../Util/Notification";
 
 function formatProjectedStartDate(isoDateString) {
-  if (isoDateString === null) {
+  if (!isoDateString) {
     return "Not scheduled";
   }
   const date = parseISO(isoDateString);
   return format(date, "MMM d, 'at' h:mm a");
 }
 
-const UnstartedEventCard = ({ name, projected_start_date, uuid, type }) => {
+const UnstartedEventCard = ({ name, projected_start_date, uuid }) => {
+  const { showNotification } = useNotification();
+
   const onStartClick = async () => {
     try {
-      const data = await fetchStartEvent(uuid, type);
+      await startEvent(uuid);
       location.reload();
     } catch (error) {
-      console.log(error);
+      const detail = error.response?.data;
+      showNotification(
+        detail ? String(detail[0] ?? detail) : `Unable to start ${name}.`
+      );
     }
   };
 
@@ -46,8 +49,12 @@ const HomeAdminActive = () => {
   useEffect(() => {
     const getUnstartedEvents = async () => {
       try {
-        const data = await fetchEventsUnstarted(uuid);
-        setUnstartedEvents(data);
+        const events = await fetchBrolympicsEvents(uuid);
+        setUnstartedEvents(
+          events.filter(
+            (e) => !e.is_active && !e.is_complete && !e.is_cancelled
+          )
+        );
       } catch (error) {
         console.log(error);
       }

@@ -3,7 +3,7 @@ import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import ManageBro from "../manage/ManageBro";
 import ManageEvents from "../manage/ManageEvents";
 import ManageTeams from "../manage/ManageTeams";
-import { fetchStartBrolympics } from "../../../api/activeBro/admin";
+import { startBrolympics } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
 const HomeAdminPre = ({
@@ -20,16 +20,15 @@ const HomeAdminPre = ({
 
   const onStartClick = async () => {
     try {
-      const data = await fetchStartBrolympics(uuid);
+      await startBrolympics(uuid);
       setStatus("active");
     } catch (error) {
-      if (error.status === 412) {
-        showNotification(error.response.data.detail);
-      } else {
-        showNotification(
-          "There was an error when attempting to start your brolympics."
-        );
-      }
+      const detail = error.response?.data;
+      showNotification(
+        detail
+          ? String(detail.detail ?? detail[0] ?? detail)
+          : "There was an error when attempting to start your brolympics."
+      );
     }
   };
 

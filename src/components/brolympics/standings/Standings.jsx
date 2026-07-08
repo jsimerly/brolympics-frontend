@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { fetchStandings } from "../../../api/activeBro/standings.js";
+import {
+  fetchBrolympicsStandings,
+  fetchBrolympicsPodiums,
+} from "../../../api/client";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
@@ -14,8 +17,11 @@ const Standings = ({ status, teams }) => {
   useEffect(() => {
     const getStandingsInfo = async () => {
       try {
-        const data = await fetchStandings(uuid);
-        setStandingData(data);
+        const [standings, podiums] = await Promise.all([
+          fetchBrolympicsStandings(uuid),
+          fetchBrolympicsPodiums(uuid),
+        ]);
+        setStandingData({ standings, podiums });
       } catch (error) {
         console.error(error);
       }
@@ -89,10 +95,13 @@ const Standings = ({ status, teams }) => {
     if (standingsData.length === 0 && teams) {
       standingsData = teams.map((team) => ({
         rank: "-",
-        total_points: 0,
+        points: 0,
         team: team,
       }));
     }
+
+    const imgFor = (row) =>
+      row.team.img ?? teams?.find((t) => t.uuid === row.team.uuid)?.img;
 
     return (
       <div className="p-4 overflow-hidden card">
@@ -123,7 +132,7 @@ const Standings = ({ status, teams }) => {
                   <td className="p-3 border-r">
                     <div className="flex items-center gap-2">
                       <img
-                        src={ranking.team.img}
+                        src={imgFor(ranking)}
                         alt={ranking.team.name}
                         className="w-[30px] h-[30px] rounded-md"
                       />
@@ -137,9 +146,9 @@ const Standings = ({ status, teams }) => {
                     </div>
                   </td>
                   <td className="p-3 text-lg font-semibold text-center">
-                    {Number.isInteger(ranking?.total_points)
-                      ? ranking.total_points
-                      : ranking.total_points.toFixed(1)}
+                    {Number.isInteger(ranking?.points)
+                      ? ranking.points
+                      : ranking.points.toFixed(1)}
                   </td>
                 </tr>
               ))}
@@ -159,22 +168,22 @@ const Standings = ({ status, teams }) => {
             <li key={i + "_podium"} className="p-4 card">
               <h3 className="mb-3 header-4">{event.event}</h3>
               <div className="space-y-2">
-                {event.first.map((team, i) => (
+                {event.first.map((name, i) => (
                   <div className="flex items-center gap-2" key={`first_${i}`}>
                     <img src={Gold} alt="Gold" className="h-5" />
-                    <span>{team.name}</span>
+                    <span>{name}</span>
                   </div>
                 ))}
-                {event.second.map((team, i) => (
+                {event.second.map((name, i) => (
                   <div className="flex items-center gap-2" key={`second_${i}`}>
                     <img src={Silver} alt="Silver" className="h-5" />
-                    <span>{team.name}</span>
+                    <span>{name}</span>
                   </div>
                 ))}
-                {event.third.map((team, i) => (
+                {event.third.map((name, i) => (
                   <div className="flex items-center gap-2" key={`third_${i}`}>
                     <img src={Bronze} alt="Bronze" className="h-5" />
-                    <span>{team.name}</span>
+                    <span>{name}</span>
                   </div>
                 ))}
               </div>

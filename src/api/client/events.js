@@ -1,4 +1,5 @@
 import api from "../axios";
+import { fetchContests } from "./contests";
 
 export const fetchEvent = (uuid) =>
   api.get(`/api/events/${uuid}/`).then((r) => r.data);
@@ -52,6 +53,54 @@ export const addHeat = (uuid, playerUuids) =>
   api
     .post(`/api/events/${uuid}/add-heat/`, { players: playerUuids })
     .then((r) => r.data);
+
+/** Default stage lists per format for quick event creation; the manage page
+ * can reshape any event later. */
+export const defaultStagesFor = (format) =>
+  ({
+    h2h: [
+      { structure: "round_robin", config: { games_per_team: 4 } },
+      {
+        structure: "knockout",
+        config: { take: 4, third_place: true, byes: "seeded" },
+      },
+    ],
+    ind: [{ structure: "open_play", config: {} }],
+    team: [{ structure: "open_play", config: {} }],
+    ffa: [{ structure: "heats", config: {} }],
+  }[format] || [{ structure: "open_play", config: {} }]);
+
+/** Event page data: the event + a normalized standings table + its contests +
+ * bracket topology (when a knockout stage exists). `type` mirrors format. */
+export const fetchEventInfo = async (uuid) => {
+  const [event, contests] = await Promise.all([
+    fetchEvent(uuid),
+    fetchContests({ event: uuid }),
+  ]);
+  const hasKnockout = (event.stages || []).some(
+    (s) => s.structure === "knockout"
+  );
+  const [standings, brackets] = await Promise.all([
+    event.is_complete
+      ? fetchEventRankings(uuid)
+      : event.is_active
+      ? fetchEventStandings(uuid).catch(() => [])
+      : Promise.resolve([]),
+    hasKnockout ? fetchEventBracket(uuid).catch(() => []) : Promise.resolve([]),
+  ]);
+  return {
+    ...event,
+    type: event.format,
+    standings: standings.map((row, i) => ({
+      rank: row.rank ?? i + 1,
+      points: row.points ?? null,
+      team: row.team,
+      stats: row.stats || {},
+    })),
+    contests,
+    brackets,
+  };
+};
 
 export const fetchEventTypes = (leagueUuid) =>
   api

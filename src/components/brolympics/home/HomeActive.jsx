@@ -78,7 +78,7 @@ const AdminSwitch = ({ adminView, setAdminView }) => (
   </div>
 );
 
-const HomeActive = ({ is_owner }) => {
+const HomeActive = ({ is_admin }) => {
   const [adminView, setAdminView] = useState(false);
   const [homeData, setHomeData] = useState({
     active_events: [],
@@ -103,7 +103,7 @@ const HomeActive = ({ is_owner }) => {
 
   return (
     <div className="max-w-md px-4 py-6 mx-auto sm:px-6 lg:px-8">
-      {is_owner && (
+      {is_admin && (
         <AdminSwitch adminView={adminView} setAdminView={setAdminView} />
       )}
       {adminView ? (

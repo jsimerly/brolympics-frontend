@@ -157,7 +157,7 @@ const Brolympics = () => {
         <footer className="bg-gray-100">
           <Toolbar
             status={status}
-            is_owner={broInfo.is_owner}
+            is_owner={broInfo.is_admin}
             default_team_uuid={
               broInfo.user_team?.uuid || broInfo.teams?.[0]?.uuid || ""
             }

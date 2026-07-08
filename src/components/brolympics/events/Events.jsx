@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchEventInfo } from "../../../api/activeBro/events.js";
+import { fetchEventInfo } from "../../../api/client";
 
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
@@ -52,9 +52,9 @@ const Events = ({ events, default_uuid, default_type, status }) => {
 
   useEffect(() => {
     const getEventInfo = async () => {
-      if (selectedEventId && eventType) {
+      if (selectedEventId) {
         try {
-          const data = await fetchEventInfo(selectedEventId, eventType);
+          const data = await fetchEventInfo(selectedEventId);
           setEventInfo(data); // Set the eventInfo state with the fetched data
         } catch (error) {
           console.error("Error fetching event info:", error);

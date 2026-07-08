@@ -1,9 +1,8 @@
 import ManageEventWrapper from "./ManageEventWrapper";
 import { useState, useEffect } from "react";
 import ScoringSettings from "./ScoringSettings";
-import { fetchUpdateEvent } from "../../../../api/events.js";
+import { updateEvent, deleteEvent } from "../../../../api/client";
 import PopupContinue from "../../../Util/PopupContinue";
-import { fetchDeleteH2h } from "../../../../api/events.js";
 import { useNotification } from "../../../Util/Notification";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -11,10 +10,20 @@ import "react-quill/dist/quill.snow.css";
 const ManageEvent_h2h = ({ event }) => {
   const [formValues, setFormValues] = useState({});
   const { showNotification } = useNotification();
+  const structureLocked = event.is_active || event.is_complete;
 
   useEffect(() => {
     if (event) {
-      setFormValues({ ...event });
+      const rr = (event.stages || []).find(
+        (s) => s.structure === "round_robin"
+      );
+      const ko = (event.stages || []).find((s) => s.structure === "knockout");
+      setFormValues({
+        ...event,
+        ...(event.config || {}),
+        n_matches: rr?.config?.games_per_team ?? "",
+        bracket_take: ko?.config?.take ?? "",
+      });
     }
   }, [event]);
 
@@ -26,13 +35,47 @@ const ManageEvent_h2h = ({ event }) => {
     }));
   };
 
+  const buildStages = () =>
+    (event.stages || []).map((s) => ({
+      structure: s.structure,
+      config: {
+        ...s.config,
+        ...(s.structure === "round_robin" && formValues.n_matches
+          ? { games_per_team: Number(formValues.n_matches) }
+          : {}),
+        ...(s.structure === "knockout" && formValues.bracket_take
+          ? { take: Number(formValues.bracket_take) }
+          : {}),
+      },
+    }));
+
   const handleUpdateClicked = async () => {
     try {
-      const data = await fetchUpdateEvent(formValues);
+      const patch = {
+        location: formValues.location || "",
+        rules: formValues.rules || "",
+        is_high_score_wins: !!formValues.is_high_score_wins,
+        projected_start_date: formValues.projected_start_date || null,
+        projected_end_date: formValues.projected_end_date || null,
+        config: {
+          ...(event.config || {}),
+          min_score: formValues.min_score ?? null,
+          max_score: formValues.max_score ?? null,
+          decimal_places: formValues.decimal_places ?? null,
+        },
+        ...(formValues.name && formValues.name !== event.name
+          ? { name_override: formValues.name }
+          : {}),
+        ...(structureLocked ? {} : { stages: buildStages() }),
+      };
+      await updateEvent(event.uuid, patch);
       showNotification(`${event.name} has been updated.`, "!border-primary");
     } catch (error) {
+      const detail = error.response?.data;
       showNotification(
-        "There was an issue when attemping to update this event."
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "There was an issue when attemping to update this event."
       );
     }
   };
@@ -52,7 +95,7 @@ const ManageEvent_h2h = ({ event }) => {
 
   const deleteEventFunc = async () => {
     try {
-      const data = await fetchDeleteH2h(event.uuid);
+      await deleteEvent(event.uuid);
       showNotification(`Successfully deleted ${event.name}`, "!border-primary");
       location.reload();
     } catch (error) {
@@ -108,6 +151,11 @@ const ManageEvent_h2h = ({ event }) => {
       />
       <div className="flex flex-col">
         <h2 className="py-2">Match Settings</h2>
+        {structureLocked && (
+          <p className="text-[10px] text-errorRed">
+            This event has started; its structure can no longer change.
+          </p>
+        )}
         <div className="flex items-center justify-between min-h-[50px]">
           <div>
             <h3 className="font-semibold">Number of Matches</h3>
@@ -119,38 +167,26 @@ const ManageEvent_h2h = ({ event }) => {
             value={formValues.n_matches || ""}
             name="n_matches"
             onChange={handleInputChange}
+            disabled={structureLocked}
             className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
             type="number"
           />
         </div>
         <div className="flex items-center justify-between min-h-[50px]">
           <div>
-            <h3 className="font-semibold">Max Concurrent Matches</h3>
-            <p className="text-[10px]">
-              The number of max possible simulatnious matches. <br /> Ex: 2 sets
-              of cornhole boards. Leave blank for no max.
-            </p>
-          </div>
-          <input
-            value={formValues.n_active_limit || ""}
-            name="n_active_limit"
-            onChange={handleInputChange}
-            className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-            type="number"
-          />
-        </div>
-        <div className="flex items-center justify-between min-h-[50px]">
-          <div>
-            {/* Fake form input for now until I can create more options for brackets */}
             <h3 className="font-semibold">Bracket Size</h3>
             <p className="text-[10px]">
               The number of teams to make the playoffs.
             </p>
           </div>
-          <div className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center justify-center flex items-center">
-            {" "}
-            4{" "}
-          </div>
+          <input
+            value={formValues.bracket_take || ""}
+            name="bracket_take"
+            onChange={handleInputChange}
+            disabled={structureLocked}
+            className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+            type="number"
+          />
         </div>
 
         <div className="flex flex-col mt-4 space-y-4">

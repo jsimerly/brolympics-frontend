@@ -1,7 +1,7 @@
 import ManageEventWrapper from "./ManageEventWrapper";
 import { useState, useEffect } from "react";
 import ScoringSettings from "./ScoringSettings";
-import { fetchDeleteInd, fetchUpdateEvent } from "../../../../api/events.js";
+import { updateEvent, deleteEvent } from "../../../../api/client";
 import ToggleButton from "../../../Util/ToggleButton";
 import PopupContinue from "../../../Util/PopupContinue";
 import { useNotification } from "../../../Util/Notification";
@@ -14,7 +14,7 @@ const ManageEvent_ind = ({ event }) => {
 
   useEffect(() => {
     if (event) {
-      setFormValues({ ...event });
+      setFormValues({ ...event, ...(event.config || {}) });
     }
   }, [event]);
 
@@ -42,11 +42,31 @@ const ManageEvent_ind = ({ event }) => {
 
   const handleUpdateClicked = async () => {
     try {
-      const data = await fetchUpdateEvent(formValues);
+      const patch = {
+        location: formValues.location || "",
+        rules: formValues.rules || "",
+        is_high_score_wins: !!formValues.is_high_score_wins,
+        projected_start_date: formValues.projected_start_date || null,
+        projected_end_date: formValues.projected_end_date || null,
+        config: {
+          ...(event.config || {}),
+          min_score: formValues.min_score ?? null,
+          max_score: formValues.max_score ?? null,
+          decimal_places: formValues.decimal_places ?? null,
+          display_avg_scores: !!formValues.display_avg_scores,
+        },
+        ...(formValues.name && formValues.name !== event.name
+          ? { name_override: formValues.name }
+          : {}),
+      };
+      await updateEvent(event.uuid, patch);
       showNotification(`${event.name} has been updated.`, "!border-primary");
     } catch (error) {
+      const detail = error.response?.data;
       showNotification(
-        "There was an issue when attemping to update this event."
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "There was an issue when attemping to update this event."
       );
     }
   };
@@ -59,7 +79,7 @@ const ManageEvent_ind = ({ event }) => {
 
   const deleteEventFunc = async () => {
     try {
-      const data = await fetchDeleteInd(event.uuid);
+      await deleteEvent(event.uuid);
       showNotification(`Successfully deleted ${event.name}`, "!border-primary");
       location.reload();
     } catch (error) {
@@ -114,38 +134,6 @@ const ManageEvent_ind = ({ event }) => {
         continueFunc={deleteEventFunc}
       />
       <h2 className="py-2">Competition Settings</h2>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">Number of Competitions</h3>
-          <p className="text-[10px]">
-            The number of times each team will complete this event. Ex:
-            Completing 2 relay races.
-          </p>
-        </div>
-        <input
-          value={formValues.n_competitions || ""}
-          name="n_competitions"
-          onChange={handleInputChange}
-          className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-          type="number"
-        />
-      </div>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">Max Concurrent Competitions</h3>
-          <p className="text-[10px]">
-            The number of max possible simulatnious competitions. <br /> Ex: 2
-            relay race courses. Leave blank for no max.
-          </p>
-        </div>
-        <input
-          value={formValues.n_active_limit || ""}
-          name="n_active_limit"
-          onChange={handleInputChange}
-          className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-          type="number"
-        />
-      </div>
       <div className="flex items-center justify-between min-h-[50px]">
         <div>
           <h3 className="font-semibold">Display Average Scores</h3>

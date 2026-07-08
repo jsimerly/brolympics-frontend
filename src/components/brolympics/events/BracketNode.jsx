@@ -27,36 +27,33 @@ export const TeamNode = ({ name, seed, score, img }) => {
         )}
 
         <div className="text-[12px]">{seed}</div>
-        <div>{name}</div>
+        <div>{name || "TBD"}</div>
       </div>
       <div className="text-[16px] px-1">{score}</div>
     </div>
   );
 };
 
-const BracketNode = ({ match }) => {
+const BracketNode = ({ contest }) => {
+  if (!contest) return null;
+  const [entry_1, entry_2] = contest.entries || [];
   return (
-    match && (
-      <div className="flex gap-1">
-        <div className="flex flex-col gap-1">
-          <TeamNode
-            name={match.team_1.name}
-            img={match.team_1.img}
-            score={match.team_1_score}
-            seed={match.team_1_seed}
-          />
-          <TeamNode
-            name={match.team_2.name}
-            img={match.team_2.img}
-            score={match.team_2_score}
-            seed={match.team_2_seed}
-          />
-        </div>
-        <div className="flex items-center pl-3">
-          <div className="h-[2px] bg-black w-[16px]" />
-        </div>
+    <div className="flex gap-1">
+      <div className="flex flex-col gap-1">
+        <TeamNode
+          name={entry_1?.team_name}
+          img={entry_1?.team_img}
+          score={entry_1?.score}
+          seed={entry_1?.seed}
+        />
+        <TeamNode
+          name={entry_2?.team_name}
+          img={entry_2?.team_img}
+          score={entry_2?.score}
+          seed={entry_2?.seed}
+        />
       </div>
-    )
+    </div>
   );
 };
 export default BracketNode;

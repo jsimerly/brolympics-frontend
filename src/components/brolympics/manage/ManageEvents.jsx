@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCreateEvent } from "../../../api/events.js";
+import { createEvent, defaultStagesFor } from "../../../api/client";
 
 import ManageEvent_h2h from "./events/ManageEvent_h2h.jsx";
 import ManageEvent_ind from "./events/ManageEvent_ind.jsx";
@@ -21,11 +21,12 @@ const ManageEvents = ({ events, setEvents }) => {
 
   const handleEventAdd = async (eventName, type) => {
     try {
-      const data = await fetchCreateEvent(eventName, type, uuid);
-      setCompEvents((prevEvents) => [
-        ...prevEvents,
-        { name: eventName, type: type },
-      ]);
+      await createEvent({
+        brolympics: uuid,
+        event_type_name: eventName,
+        format: type,
+        stages: defaultStagesFor(type),
+      });
       setAddingEvent(false);
       location.reload();
     } catch (error) {
