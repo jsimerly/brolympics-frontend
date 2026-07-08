@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -74,9 +75,12 @@ export const Leaderboard = ({ leaderboard }) => {
             <tr className="text-white bg-primary">
               <th className="p-2 w-[40px]">#</th>
               <th className="p-2 text-left">Player</th>
-              <th className="p-2 w-[60px]">Pts</th>
-              <th className="p-2 w-[50px]">
+              <th className="p-2 w-[55px]">Pts</th>
+              <th className="p-2 w-[45px]" title="Event wins">
                 <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+              <th className="p-2 w-[45px]" title="Podiums">
+                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
             </tr>
           </thead>
@@ -108,10 +112,11 @@ export const Leaderboard = ({ leaderboard }) => {
                       : row.points.toFixed(1)}
                   </td>
                   <td className="p-2 text-center border-t">{row.event_wins}</td>
+                  <td className="p-2 text-center border-t">{row.podiums}</td>
                 </tr>
                 {openPlayer === row.uuid && (
                   <tr>
-                    <td colSpan={4} className="border-t">
+                    <td colSpan={5} className="border-t">
                       <PlayerCareer playerUuid={row.uuid} />
                     </td>
                   </tr>
@@ -123,6 +128,21 @@ export const Leaderboard = ({ leaderboard }) => {
       </div>
     </section>
   );
+};
+
+/** One all-time leader line, phrased for the format. */
+const leaderLine = (leader, format) => {
+  if (format === "h2h") {
+    const record = `${leader.wins}-${leader.losses}${
+      leader.ties ? `-${leader.ties}` : ""
+    }`;
+    return `${record} (${Math.round(leader.win_pct * 100)}%)`;
+  }
+  if (format === "ffa") {
+    return `${leader.heat_wins} heat win${leader.heat_wins === 1 ? "" : "s"} in ${leader.heats}`;
+  }
+  const avg = Number.isInteger(leader.avg) ? leader.avg : leader.avg.toFixed(1);
+  return `avg ${avg} (best ${leader.best})`;
 };
 
 const EventTypeHistory = ({ eventTypeUuid }) => {
@@ -138,6 +158,34 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
 
   return (
     <div className="p-2 space-y-3">
+      {history.leaders?.length > 0 && (
+        <div>
+          <h4 className="font-semibold">
+            All-Time Leaders
+            <span className="ml-2 text-[10px] font-normal text-light">
+              {history.format === "h2h"
+                ? "by win rate"
+                : history.format === "ffa"
+                ? "by heat wins"
+                : "by average score"}
+            </span>
+          </h4>
+          <div className="space-y-1">
+            {history.leaders.map((leader, i) => (
+              <div
+                className="flex items-center gap-2 text-sm"
+                key={leader.who}
+              >
+                <span className="w-5 font-semibold text-light">{i + 1}.</span>
+                <span className="flex-grow">{leader.who}</span>
+                <span className="text-light">
+                  {leaderLine(leader, history.format)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {history.years.map((year, i) => (
         <div key={i + "_year"}>
           <h4 className="font-semibold">
