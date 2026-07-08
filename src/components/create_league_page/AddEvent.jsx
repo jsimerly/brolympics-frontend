@@ -9,6 +9,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { fetchEventTypes } from "../../api/client";
 import useCachedFetch from "../../hooks/useCachedFetch";
+import { PRESET_EVENTS, suggestionsFor } from "./events/presets";
 
 const FORMAT_LABEL = { h2h: "Head to Head", ind: "Individual", team: "Team", ffa: "Free-for-All" };
 
@@ -85,20 +86,31 @@ const AddEvent = ({
     }
     setter((prev) => [
       ...prev,
-      {
-        name: row.name,
-        stages: row.latest?.stages?.length ? row.latest.stages : undefined,
-        is_high_score_wins: row.latest?.is_high_score_wins,
-        location: row.latest?.location,
-        rules: row.latest?.rules,
-        config: row.latest?.config,
-        fromLineage: true,
-        lastPlayed: row.last_played,
-      },
+      row.preset
+        ? {
+            name: row.name,
+            is_high_score_wins: row.is_high_score_wins,
+          }
+        : {
+            name: row.name,
+            stages: row.latest?.stages?.length ? row.latest.stages : undefined,
+            is_high_score_wins: row.latest?.is_high_score_wins,
+            location: row.latest?.location,
+            rules: row.latest?.rules,
+            config: row.latest?.config,
+            fromLineage: true,
+            lastPlayed: row.last_played,
+          },
     ]);
   };
 
-  const recommended = (eventTypes || []).filter((row) => row.latest);
+  const lineage = (eventTypes || []).filter((row) => row.latest);
+  // new leagues see the classics; thin histories get topped up with them
+  const recommended = leagueUuid
+    ? eventTypes
+      ? suggestionsFor(lineage)
+      : []
+    : PRESET_EVENTS.map((preset) => ({ ...preset, preset: true }));
 
   return (
     <CreateWrapper
@@ -113,14 +125,15 @@ const AddEvent = ({
         {recommended.length > 0 && (
           <div>
             <h3 className="flex items-center gap-1 pb-2 text-xs font-semibold tracking-wide uppercase text-light">
-              <HistoryIcon sx={{ fontSize: 14 }} /> Your league's events
+              <HistoryIcon sx={{ fontSize: 14 }} />
+              {lineage.length > 0 ? "Your league's events" : "The classics"}
             </h3>
             <div className="space-y-2">
               {recommended.map((row) => {
                 const added = isAdded(row.name, row.format);
                 return (
                   <button
-                    key={row.uuid}
+                    key={row.uuid || row.name}
                     onClick={() => toggleRecommended(row)}
                     className={`flex items-center w-full gap-3 p-3 text-left transition-colors border rounded-lg ${
                       added
@@ -133,8 +146,10 @@ const AddEvent = ({
                         {row.name}
                       </span>
                       <span className="text-xs text-light">
-                        {FORMAT_LABEL[row.format] || row.format} · played ×
-                        {row.times_played} · last {row.last_played}
+                        {FORMAT_LABEL[row.format] || row.format}
+                        {row.preset
+                          ? " · classic"
+                          : ` · played ×${row.times_played} · last ${row.last_played}`}
                       </span>
                     </div>
                     <span
@@ -155,7 +170,8 @@ const AddEvent = ({
               })}
             </div>
             <p className="pt-1 text-[11px] text-light">
-              One tap re-adds it with the same settings as last time.
+              Your events come back with the same settings as last time;
+              classics start fresh.
             </p>
           </div>
         )}
