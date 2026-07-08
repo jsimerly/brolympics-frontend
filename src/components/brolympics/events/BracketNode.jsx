@@ -34,6 +34,11 @@ export const TeamNode = ({ name, seed, score, img }) => {
 const BracketNode = ({ contest }) => {
   if (!contest) return null;
   const [entry_1, entry_2] = contest.entries || [];
+  // a completed "match" with a single winning entry is a bye, not a TBD
+  const isBye =
+    contest.is_complete &&
+    (contest.entries || []).length === 1 &&
+    entry_1?.outcome === "w";
   return (
     <div className="flex gap-1">
       <div className="flex flex-col gap-1">
@@ -43,12 +48,18 @@ const BracketNode = ({ contest }) => {
           score={entry_1?.score}
           seed={entry_1?.seed}
         />
-        <TeamNode
-          name={entry_2?.team_name}
-          img={entry_2?.team_img}
-          score={entry_2?.score}
-          seed={entry_2?.seed}
-        />
+        {isBye ? (
+          <div className="p-1 border border-dashed rounded-md h-[40px] flex items-center justify-center w-[200px] min-w-[200px] text-[11px] font-semibold tracking-widest uppercase text-light">
+            Bye
+          </div>
+        ) : (
+          <TeamNode
+            name={entry_2?.team_name}
+            img={entry_2?.team_img}
+            score={entry_2?.score}
+            seed={entry_2?.seed}
+          />
+        )}
       </div>
     </div>
   );

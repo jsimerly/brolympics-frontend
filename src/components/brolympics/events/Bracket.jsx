@@ -11,12 +11,12 @@ const Bracket = ({ nodes = [], is_complete }) => {
   const third = nodes.find((n) => n.round === lastRound && n.slot === 1);
   const treeNodes = nodes.filter((n) => n !== third);
 
-  const roundLabel = (round) =>
-    round === lastRound
-      ? "Finals"
-      : round === lastRound - 1
-      ? "Semifinals"
-      : `Round ${round}`;
+  const roundLabel = (round) => {
+    if (round === lastRound) return "Finals";
+    if (round === lastRound - 1) return "Semifinals";
+    if (round === lastRound - 2) return "Quarterfinals";
+    return `Round ${round}`;
+  };
 
   return (
     <div className="px-4 pb-6">
