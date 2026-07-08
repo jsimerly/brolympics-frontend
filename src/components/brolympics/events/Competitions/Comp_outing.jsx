@@ -1,4 +1,5 @@
 import React from "react";
+import Img from "../../../Util/Img";
 
 /** One outing result card: the team, its players' scores when present, and
  * the team score when present. Covers both ind and team formats. */
@@ -9,7 +10,7 @@ const Comp_outing = ({ entries = [], is_complete }) => {
   return (
     <div className="flex flex-col px-6 py-3 card">
       <h3 className="flex items-center gap-2 pb-1 font-semibold">
-        <img
+        <Img
           src={teamEntry?.team_img}
           className="rounded-md w-[30px] h-[30px]"
         />

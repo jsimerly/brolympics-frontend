@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import Img from "../../Util/Img";
 
 /** Score entry for outing contests: one input per roster player for ind
  * events, a single team input for team events. */
@@ -91,7 +92,7 @@ const InCompetition_outing = ({ contest }) => {
         </div>
         <div className="p-4">
           <div className="flex items-center gap-4 mb-6">
-            <img
+            <Img
               src={isInd ? team.img : teamEntry?.team_img}
               alt="team logo"
               className="object-cover w-20 h-20 rounded-md"

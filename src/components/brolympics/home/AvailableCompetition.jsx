@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { startContest } from "../../../api/client";
 import TeamsBlock from "./TeamBlock";
+import Img from "../../Util/Img";
 
 /** One card for any waiting contest. Matches (h2h) show both sides; outings
  * show the checking-in team. */
@@ -43,7 +44,7 @@ const AvailableCompetition = ({ event_name, entries = [], uuid, format }) => {
         ) : (
           <div className="flex items-center w-full">
             <div className="flex items-center space-x-4">
-              <img
+              <Img
                 src={entry_1?.team_img}
                 alt={`${entry_1?.team_name} logo`}
                 className="object-cover w-16 h-16 rounded-md"

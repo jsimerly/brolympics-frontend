@@ -1,4 +1,5 @@
 import TeamsBlock from "./TeamBlock";
+import Img from "../../Util/Img";
 
 /** One card for any in-progress contest. Matches show both sides; outings
  * show the playing team. */
@@ -29,7 +30,7 @@ const ActiveCompetition = ({ event_name, entries = [], format }) => {
     <div className="p-2">
       <h2 className="pb-2 font-bold">{event_name}</h2>
       <div className="flex gap-2">
-        <img
+        <Img
           src={entry_1?.team_img}
           className="h-[60px] w-[60px] min-w-[60px] bg-white rounded-md"
         />

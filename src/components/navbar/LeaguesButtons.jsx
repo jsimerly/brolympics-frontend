@@ -1,6 +1,7 @@
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DataList from "./DataList";
 import { useNavigate } from "react-router-dom";
+import Img from "../Util/Img";
 
 const Card = (league, index, setOpen) => {
   const navigate = useNavigate();
@@ -15,9 +16,10 @@ const Card = (league, index, setOpen) => {
       key={index}
       onClick={onClick}
     >
-      <img
+      <Img
         src={league.img}
         alt={league.name}
+        kind="league"
         className="object-cover w-12 h-12 rounded-md"
       />
       <h3 className="header-4 text-near-black">{league.name}</h3>

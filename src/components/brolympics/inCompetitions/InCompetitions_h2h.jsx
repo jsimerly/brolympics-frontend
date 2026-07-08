@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { recordContest, abandonContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import Img from "../../Util/Img";
 
 const InCompetitions_h2h = ({ contest }) => {
   const [team1Score, setTeam1Score] = useState("");
@@ -58,7 +59,7 @@ const InCompetitions_h2h = ({ contest }) => {
         {[entry_1, entry_2].map((entry, index) => (
           <div key={entry.team} className="p-4 mb-6 rounded-lg">
             <div className="flex items-center gap-4">
-              <img
+              <Img
                 src={entry.team_img}
                 alt={`${entry.team_name} logo`}
                 className="object-cover w-20 h-20 rounded-md"

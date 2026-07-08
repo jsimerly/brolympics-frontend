@@ -6,6 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import CopyWrapper from "../../Util/CopyWrapper";
 import PopupContinue from "../../Util/PopupContinue";
+import Img from "../../Util/Img";
 
 import {
   createTeam,
@@ -108,7 +109,7 @@ export const TeamCard = ({ name, players = [], img, uuid }) => {
             : "min-w-[60px] w-[60px] h-[60px]"
         } rounded-md`}
       >
-        <img
+        <Img
           src={imageSrc}
           className={`w-full h-full bg-white rounded-md  ${
             editing ? "min-w-[80px] h-[80px]" : "min-w-[60px] h-[60px]"

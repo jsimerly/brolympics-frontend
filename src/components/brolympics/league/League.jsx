@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AddIcon from "@mui/icons-material/Add";
+import Img from "../../Util/Img";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
 
@@ -37,13 +38,12 @@ const LiveCard = ({ uuid, name, img }) => {
       onClick={() => navigate(`/b/${uuid}/home`)}
     >
       <div className="flex items-center gap-4">
-        {img && (
-          <img
-            src={img}
-            alt={name}
-            className="object-cover w-16 h-16 bg-white rounded-lg"
-          />
-        )}
+        <Img
+          src={img}
+          alt={name}
+          kind="brolympics"
+          className="object-cover w-16 h-16 bg-white rounded-lg"
+        />
         <div className="flex flex-col">
           <span className="flex items-center gap-2 text-sm font-semibold text-primary">
             <span className="relative flex w-2.5 h-2.5">
@@ -74,13 +74,12 @@ const UpcomingCard = ({
   return (
     <div className="p-4 card-clickable" onClick={() => navigate(`/b/${uuid}/home/`)}>
       <div className="flex items-center gap-4 mb-3">
-        {img && (
-          <img
-            src={img}
-            alt={name}
-            className="object-cover w-16 h-16 bg-white rounded-lg"
-          />
-        )}
+        <Img
+          src={img}
+          alt={name}
+          kind="brolympics"
+          className="object-cover w-16 h-16 bg-white rounded-lg"
+        />
         <div className="flex flex-col justify-center">
           <h3 className="header-4 text-near-black">{name}</h3>
           {dates && <div className="text-sm text-light">{dates}</div>}
@@ -150,15 +149,11 @@ const ChampionCard = ({ bro }) => {
           className="flex items-center gap-4 px-4 py-3"
           key={row.team.uuid}
         >
-          {row.team.img ? (
-            <img
-              src={row.team.img}
-              alt={row.team.name}
-              className="object-cover w-20 h-20 rounded-lg"
-            />
-          ) : (
-            <img src={Gold} alt="Champions" className="w-14 h-14" />
-          )}
+          <Img
+            src={row.team.img}
+            alt={row.team.name}
+            className="object-cover w-20 h-20 rounded-lg"
+          />
           <div className="flex flex-col">
             <span className="flex items-center gap-1 text-[11px] font-semibold tracking-wide uppercase text-light">
               <img src={Gold} alt="" className="h-4" /> Champions
@@ -185,13 +180,11 @@ const ChampionCard = ({ bro }) => {
               key={row.team.uuid}
             >
               <img src={medalFor[row.rank]} alt={`#${row.rank}`} className="h-4" />
-              {row.team.img && (
-                <img
-                  src={row.team.img}
-                  alt={row.team.name}
-                  className="object-cover w-8 h-8 rounded-md"
-                />
-              )}
+              <Img
+                src={row.team.img}
+                alt={row.team.name}
+                className="object-cover w-8 h-8 rounded-md"
+              />
               <span className="text-sm font-medium">{row.team.name}</span>
             </div>
           ))}
@@ -242,13 +235,12 @@ const League = ({ leagueInfo }) => {
       <div className="py-6 space-y-8">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {leagueInfo.img && (
-              <img
-                src={leagueInfo.img}
-                alt={leagueInfo.name}
-                className="object-cover w-16 h-16 rounded-xl"
-              />
-            )}
+            <Img
+              src={leagueInfo.img}
+              alt={leagueInfo.name}
+              kind="league"
+              className="object-cover w-16 h-16 rounded-xl"
+            />
             <div>
               <h1 className="text-3xl font-bold leading-tight text-near-black">
                 {leagueInfo.name}

@@ -1,4 +1,5 @@
 import React from "react";
+import Img from "../../Util/Img";
 
 export const TeamNode = ({ name, seed, score, img }) => {
   let fontSize;
@@ -20,11 +21,7 @@ export const TeamNode = ({ name, seed, score, img }) => {
       style={{ fontSize }}
     >
       <div className="flex items-center justify-start gap-1">
-        {img ? (
-          <img src={img} className="h-[30px] w-[30px] rounded-md" />
-        ) : (
-          <div className="w-[30px] h-[30px]" />
-        )}
+        <Img src={img} className="h-[30px] w-[30px] min-w-[30px] rounded-md" />
 
         <div className="text-[12px]">{seed}</div>
         <div>{name || "TBD"}</div>

@@ -3,6 +3,7 @@ import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Bracket from "./Bracket";
+import Img from "../../Util/Img";
 import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import Comp_outing from "./Competitions/Comp_outing.jsx";
@@ -72,7 +73,7 @@ const EventActive = ({ eventInfo, is_admin }) => {
                     </td>
                     <td className="pl-3 text-start text-[20px] border-r">
                       <div className="flex items-center gap-2">
-                        <img
+                        <Img
                           src={row.team.img}
                           className="w-[30px] h-[30px] rounded-md"
                           alt={row.team.name}

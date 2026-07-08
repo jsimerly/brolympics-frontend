@@ -5,6 +5,7 @@ import {
   fetchBrolympicsPodiums,
 } from "../../../api/client";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
+import Img from "../../Util/Img";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
@@ -131,7 +132,7 @@ const Standings = ({ status, teams }) => {
                   </td>
                   <td className="p-3 border-r">
                     <div className="flex items-center gap-2">
-                      <img
+                      <Img
                         src={imgFor(ranking)}
                         alt={ranking.team.name}
                         className="w-[30px] h-[30px] rounded-md"

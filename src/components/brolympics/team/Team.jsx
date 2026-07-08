@@ -5,6 +5,7 @@ import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 
+import Img from "../../Util/Img";
 import Event_h2h from "./events/Event_h2h";
 import Event_outing from "./events/Event_outing";
 import { fetchTeamInfo } from "../../../api/client";
@@ -76,7 +77,7 @@ const Team = ({ status, teams, default_uuid }) => {
         <div className="flex flex-col justify-between mb-4 md:flex-row">
           <div className="flex items-center justify-start space-x-6">
             <div>
-              <img src={team.img} className="rounded-md w-[60px] h-[60px]" />
+              <Img src={team.img} className="rounded-md w-[60px] h-[60px]" />
             </div>
             <div className="flex flex-col">
               {(team.players || []).map((player) => (
