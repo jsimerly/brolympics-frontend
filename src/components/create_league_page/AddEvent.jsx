@@ -4,14 +4,25 @@ import CreateEventManger from "./events/CreateEventManger";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
+import SearchIcon from "@mui/icons-material/Search";
 import HistoryIcon from "@mui/icons-material/History";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { fetchEventTypes } from "../../api/client";
 import useCachedFetch from "../../hooks/useCachedFetch";
-import { PRESET_EVENTS, suggestionsFor } from "./events/presets";
+import { searchPresets } from "./events/presets";
 
 const FORMAT_LABEL = { h2h: "Head to Head", ind: "Individual", team: "Team", ffa: "Free-for-All" };
+
+const AddButton = ({ added }) => (
+  <span
+    className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
+      added ? "text-white bg-primary" : "border text-light border-gray-300"
+    }`}
+  >
+    {added ? <CheckIcon sx={{ fontSize: 18 }} /> : <AddIcon sx={{ fontSize: 18 }} />}
+  </span>
+);
 
 const EventComp = ({ header, events, setter }) => {
   const removeEvent = (i) => {
@@ -58,7 +69,9 @@ const AddEvent = ({
   setFfaEvents,
   createAll,
 }) => {
+  const [showPicker, setShowPicker] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
+  const [query, setQuery] = useState("");
   const { data: eventTypes } = useCachedFetch(
     leagueUuid ? `event-types:${leagueUuid}` : null,
     () => fetchEventTypes(leagueUuid)
@@ -77,7 +90,7 @@ const AddEvent = ({
   const isAdded = (name, format) =>
     (lists[format] || []).some((e) => e.name === name);
 
-  const toggleRecommended = (row) => {
+  const toggle = (row) => {
     const setter = setters[row.format];
     if (!setter) return;
     if (isAdded(row.name, row.format)) {
@@ -86,31 +99,31 @@ const AddEvent = ({
     }
     setter((prev) => [
       ...prev,
-      row.preset
+      row.latest
         ? {
             name: row.name,
-            is_high_score_wins: row.is_high_score_wins,
-          }
-        : {
-            name: row.name,
-            stages: row.latest?.stages?.length ? row.latest.stages : undefined,
-            is_high_score_wins: row.latest?.is_high_score_wins,
-            location: row.latest?.location,
-            rules: row.latest?.rules,
-            config: row.latest?.config,
+            stages: row.latest.stages?.length ? row.latest.stages : undefined,
+            is_high_score_wins: row.latest.is_high_score_wins,
+            location: row.latest.location,
+            rules: row.latest.rules,
+            config: row.latest.config,
             fromLineage: true,
             lastPlayed: row.last_played,
-          },
+          }
+        : { name: row.name, is_high_score_wins: row.is_high_score_wins },
     ]);
   };
 
-  const lineage = (eventTypes || []).filter((row) => row.latest);
-  // new leagues see the classics; thin histories get topped up with them
-  const recommended = leagueUuid
-    ? eventTypes
-      ? suggestionsFor(lineage)
-      : []
-    : PRESET_EVENTS.map((preset) => ({ ...preset, preset: true }));
+  // the league's own history, staples first
+  const lineage = (eventTypes || [])
+    .filter((row) => row.latest)
+    .sort(
+      (a, b) =>
+        (b.times_played || 0) - (a.times_played || 0) ||
+        a.name.localeCompare(b.name)
+    );
+  const knownNames = new Set(lineage.map((r) => r.name.trim().toLowerCase()));
+  const presetResults = searchPresets(query, knownNames);
 
   return (
     <CreateWrapper
@@ -122,77 +135,113 @@ const AddEvent = ({
       description="These are the events that make up the competition. You can reshape any of them later."
     >
       <div className="flex flex-col gap-4 py-2">
-        {recommended.length > 0 && (
+        {lineage.length > 0 && (
           <div>
             <h3 className="flex items-center gap-1 pb-2 text-xs font-semibold tracking-wide uppercase text-light">
-              <HistoryIcon sx={{ fontSize: 14 }} />
-              {lineage.length > 0 ? "Your league's events" : "The classics"}
+              <HistoryIcon sx={{ fontSize: 14 }} /> Your league's events
             </h3>
             <div className="space-y-2">
-              {recommended.map((row) => {
-                const added = isAdded(row.name, row.format);
-                return (
-                  <button
-                    key={row.uuid || row.name}
-                    onClick={() => toggleRecommended(row)}
-                    className={`flex items-center w-full gap-3 p-3 text-left transition-colors border rounded-lg ${
-                      added
-                        ? "border-primary bg-primary/5"
-                        : "bg-white border-gray-200"
-                    }`}
-                  >
-                    <div className="flex flex-col flex-grow min-w-0">
-                      <span className="font-semibold leading-tight">
-                        {row.name}
-                      </span>
-                      <span className="text-xs text-light">
-                        {FORMAT_LABEL[row.format] || row.format}
-                        {row.preset
-                          ? " · classic"
-                          : ` · played ×${row.times_played} · last ${row.last_played}`}
-                      </span>
-                    </div>
-                    <span
-                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                        added
-                          ? "text-white bg-primary"
-                          : "border text-light border-gray-300"
-                      }`}
-                    >
-                      {added ? (
-                        <CheckIcon sx={{ fontSize: 18 }} />
-                      ) : (
-                        <AddIcon sx={{ fontSize: 18 }} />
-                      )}
+              {lineage.map((row) => (
+                <button
+                  key={row.uuid}
+                  onClick={() => toggle(row)}
+                  className={`flex items-center w-full gap-3 p-3 text-left transition-colors border rounded-lg ${
+                    isAdded(row.name, row.format)
+                      ? "border-primary bg-primary/5"
+                      : "bg-white border-gray-200"
+                  }`}
+                >
+                  <div className="flex flex-col flex-grow min-w-0">
+                    <span className="font-semibold leading-tight">{row.name}</span>
+                    <span className="text-xs text-light">
+                      {FORMAT_LABEL[row.format] || row.format} · played ×
+                      {row.times_played} · last {row.last_played}
                     </span>
-                  </button>
-                );
-              })}
+                  </div>
+                  <AddButton added={isAdded(row.name, row.format)} />
+                </button>
+              ))}
             </div>
             <p className="pt-1 text-[11px] text-light">
-              Your events come back with the same settings as last time;
-              classics start fresh.
+              One tap brings it back with the same settings as last time.
             </p>
           </div>
         )}
 
         <button
           className="flex items-center justify-between w-full p-3 font-semibold bg-white border border-gray-200 rounded-lg"
-          onClick={() => setShowCustom((s) => !s)}
+          onClick={() => setShowPicker((s) => !s)}
         >
           <span className="flex items-center gap-2">
             <AddIcon sx={{ fontSize: 18 }} className="text-primary" />
-            {recommended.length > 0 ? "Add a new event" : "Add an event"}
+            Add {lineage.length > 0 ? "a new event" : "an event"}
           </span>
-          {showCustom ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          {showPicker ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </button>
-        {showCustom && (
-          <CreateEventManger
-            setH2hEvents={setH2hEvents}
-            setIndEvents={setIndEvents}
-            setTeamEvents={setTeamEvents}
-            setFfaEvents={setFfaEvents}
-          />
+
+        {showPicker && (
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <SearchIcon
+                sx={{ fontSize: 18 }}
+                className="absolute -translate-y-1/2 left-3 top-1/2 text-light"
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search events — cornhole, golf, trivia..."
+                className="w-full py-2 pl-10 pr-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-primary"
+              />
+            </div>
+            {!query && presetResults.length > 0 && (
+              <span className="text-xs font-semibold tracking-wide uppercase text-light">
+                Popular
+              </span>
+            )}
+            <div className="space-y-1.5">
+              {presetResults.map((row) => (
+                <button
+                  key={row.name}
+                  onClick={() => toggle(row)}
+                  className={`flex items-center w-full gap-3 px-3 py-2 text-left transition-colors border rounded-lg ${
+                    isAdded(row.name, row.format)
+                      ? "border-primary bg-primary/5"
+                      : "bg-white border-gray-200"
+                  }`}
+                >
+                  <div className="flex flex-col flex-grow min-w-0">
+                    <span className="font-medium leading-tight">{row.name}</span>
+                    <span className="text-[11px] text-light">
+                      {FORMAT_LABEL[row.format] || row.format}
+                    </span>
+                  </div>
+                  <AddButton added={isAdded(row.name, row.format)} />
+                </button>
+              ))}
+              {query && presetResults.length === 0 && (
+                <p className="px-1 text-sm text-light">
+                  Nothing in the catalog — make it a custom event below.
+                </p>
+              )}
+            </div>
+
+            <button
+              className="flex items-center justify-between w-full p-3 text-sm font-semibold bg-white border border-gray-200 rounded-lg"
+              onClick={() => setShowCustom((s) => !s)}
+            >
+              <span>Create a custom event</span>
+              {showCustom ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </button>
+            {showCustom && (
+              <CreateEventManger
+                setH2hEvents={setH2hEvents}
+                setIndEvents={setIndEvents}
+                setTeamEvents={setTeamEvents}
+                setFfaEvents={setFfaEvents}
+              />
+            )}
+          </div>
         )}
 
         {totalEvents > 0 && (
