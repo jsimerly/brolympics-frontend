@@ -10,6 +10,7 @@ import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import Img from "../../Util/Img";
+import PlayerNames from "../../Util/PlayerNames";
 import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
@@ -414,7 +415,7 @@ export const Lineages = ({ lineages }) => {
       <div className="space-y-3">
         {duos.map((duo, i) => (
           <div className="p-4 card" key={i + "_duo"}>
-            <h3 className="font-semibold">{duo.players.join(" & ")}</h3>
+            <h3 className="font-semibold"><PlayerNames players={duo.players} /></h3>
             <div className="text-sm text-light">
               {duo.appearances.map((a, j) => (
                 <p key={j + "_appearance"}>

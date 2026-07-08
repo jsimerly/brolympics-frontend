@@ -4,6 +4,7 @@ import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import Img from "../../Util/Img";
+import PlayerNames from "../../Util/PlayerNames";
 import {
   fetchBrolympicsStandings,
   fetchBrolympicsPodiums,
@@ -73,11 +74,10 @@ const HomePost = ({ events = [] }) => {
               <span className="text-2xl font-bold leading-tight text-near-black">
                 {row.team.name}
               </span>
-              {row.team.players?.length > 0 && (
-                <span className="text-sm text-light">
-                  {row.team.players.join(" & ")}
-                </span>
-              )}
+              <PlayerNames
+                players={row.team.players}
+                className="text-sm text-light"
+              />
             </div>
             <span className="ml-auto text-xl font-bold text-primary whitespace-nowrap">
               {fmtPoints(row.points)}
@@ -149,11 +149,10 @@ const HomePost = ({ events = [] }) => {
                         />
                         <div className="flex flex-col">
                           <span className="leading-tight">{row.team.name}</span>
-                          {row.team.players?.length > 0 && (
-                            <span className="text-xs leading-tight text-light">
-                              {row.team.players.join(" & ")}
-                            </span>
-                          )}
+                          <PlayerNames
+                            players={row.team.players}
+                            className="text-xs leading-tight text-light"
+                          />
                         </div>
                       </div>
                     </td>
