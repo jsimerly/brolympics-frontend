@@ -1,51 +1,38 @@
-import React from "react";
 import EventWrapper from "./EventWrapper";
 
-const Competition = ({ contest, rank }) => {
+/** One outing, game-log style: the score up front, player breakdown after. */
+const Outing = ({ contest }) => {
   const entries = contest.entries || [];
   const teamEntry = entries.find((e) => e.team && !e.player) || entries[0];
   const playerEntries = entries.filter((e) => e.player);
+  const total =
+    teamEntry?.score ??
+    (playerEntries.length
+      ? playerEntries.reduce((sum, e) => sum + (e.score ?? 0), 0)
+      : null);
 
   return (
-    <div
-      className={`flex items-center px-3 py-2 border rounded-md
-      ${contest.is_active && "border-[3px]"} ${
-        !contest.is_active && rank <= 4 ? "border-tertiary" : null
-      }
-      `}
-    >
-      <div className="grid grid-cols-2 ">
-        {playerEntries.map((entry) => (
-          <React.Fragment key={entry.player}>
-            <div className="text-end">{entry.player_name}:</div>
-            <div className="pl-3">{entry.score}</div>
-          </React.Fragment>
-        ))}
-        {teamEntry?.score != null && (
-          <>
-            <div className="font-bold text-end">Team:</div>
-            <div className="pl-3 font-bold">{teamEntry.score}</div>
-          </>
-        )}
-        {playerEntries.length === 0 && teamEntry?.score == null && (
-          <div className="col-span-2 text-[12px]">Not recorded yet.</div>
-        )}
-      </div>
+    <div className="flex items-center gap-2 py-1.5 text-sm border-t first:border-t-0">
+      <span className="w-10 font-bold">
+        {contest.is_complete && total != null ? total : "–"}
+      </span>
+      <span className="flex-grow text-light">
+        {playerEntries.length > 0
+          ? playerEntries
+              .map((e) => `${e.player_name} ${e.score ?? "—"}`)
+              .join(" · ")
+          : contest.is_complete
+          ? "team score"
+          : "not played yet"}
+      </span>
+      {contest.is_active && (
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark">
+          live
+        </span>
+      )}
     </div>
   );
 };
-
-const EventDropdown_Outing = ({ contests, rank }) => (
-  <div className={`pb-2 border-t`}>
-    <h4 className="pt-2 font-bold">Competitions</h4>
-    <div className="flex flex-col gap-1 py-1">
-      {contests.map((contest) => (
-        <Competition contest={contest} rank={rank} key={contest.uuid} />
-      ))}
-      {contests.length === 0 && "Event has not started yet."}
-    </div>
-  </div>
-);
 
 const Event_outing = ({
   name,
@@ -57,7 +44,7 @@ const Event_outing = ({
   contests = [],
 }) => {
   const display_score =
-    stats.total != null && stats.total !== 0 ? stats.total : "";
+    stats.total != null && stats.total !== 0 ? `Score: ${stats.total}` : "";
 
   return (
     <EventWrapper
@@ -68,7 +55,16 @@ const Event_outing = ({
       is_active={is_active}
       is_final={is_final}
     >
-      <EventDropdown_Outing contests={contests} rank={rank} />
+      <div className="pb-2">
+        <div className="px-3 bg-white border rounded-lg">
+          {contests.map((contest) => (
+            <Outing contest={contest} key={contest.uuid} />
+          ))}
+          {contests.length === 0 && (
+            <p className="py-2 text-sm text-light">Event has not started yet.</p>
+          )}
+        </div>
+      </div>
     </EventWrapper>
   );
 };
