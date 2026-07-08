@@ -191,31 +191,6 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
           </div>
         </div>
       )}
-      {history.years.map((year, i) => (
-        <div key={i + "_year"}>
-          <h4 className="font-semibold">
-            {year.brolympics}
-            {!year.complete && (
-              <span className="ml-2 text-[10px] text-light">(in progress)</span>
-            )}
-          </h4>
-          <div className="space-y-1">
-            {year.podium.map((row) => (
-              <div className="flex items-center gap-2 text-sm" key={row.rank}>
-                <img
-                  src={medalFor[row.rank]}
-                  alt={`#${row.rank}`}
-                  className="h-4"
-                />
-                <span>{row.team}</span>
-              </div>
-            ))}
-            {year.podium.length === 0 && (
-              <p className="text-sm text-light">No final results.</p>
-            )}
-          </div>
-        </div>
-      ))}
       {history.best_performances.length > 0 && (
         <div>
           <h4 className="font-semibold">Best Performances</h4>
@@ -224,6 +199,40 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
               {row.score} — {row.who}{" "}
               <span className="text-light">({row.brolympics})</span>
             </p>
+          ))}
+        </div>
+      )}
+      {history.years.length > 0 && (
+        <div className="pt-2 space-y-3 border-t">
+          {history.years.map((year, i) => (
+            <div key={i + "_year"}>
+              <h4 className="font-semibold">
+                {year.brolympics}
+                {!year.complete && (
+                  <span className="ml-2 text-[10px] text-light">
+                    (in progress)
+                  </span>
+                )}
+              </h4>
+              <div className="space-y-1">
+                {year.podium.map((row) => (
+                  <div
+                    className="flex items-center gap-2 text-sm"
+                    key={row.rank}
+                  >
+                    <img
+                      src={medalFor[row.rank]}
+                      alt={`#${row.rank}`}
+                      className="h-4"
+                    />
+                    <span>{row.team}</span>
+                  </div>
+                ))}
+                {year.podium.length === 0 && (
+                  <p className="text-sm text-light">No final results.</p>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}
