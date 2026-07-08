@@ -1,10 +1,15 @@
 import { useState } from "react";
 
-import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
-import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import ExpandLessOutlinedIcon from "@mui/icons-material/ExpandLessOutlined";
+import Gold from "../../../../assets/svgs/gold.svg";
+import Silver from "../../../../assets/svgs/silver.svg";
+import Bronze from "../../../../assets/svgs/bronze.svg";
 
+const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
+
+/** One event row on the team page: name + record on the left, rank/points on
+ * the right (medal for podium finishes), tap to expand the game log. */
 const EventWrapper = ({
   name,
   rank,
@@ -15,33 +20,47 @@ const EventWrapper = ({
   children,
 }) => {
   const [isOpen, setOpen] = useState(false);
-  const handleClick = () => {
-    setOpen((isOpen) => !isOpen);
-  };
 
   return (
-    <div className={`px-6`}>
+    <div>
       <div
-        className={`flex justify-between w-full h-full py-3`}
-        onClick={handleClick}
+        className="flex items-center justify-between w-full py-3 cursor-pointer"
+        onClick={() => setOpen((open) => !open)}
       >
-        <div className="w-2/5">
-          <h3 className="font-bold">{name}</h3>
-          <span>{display_score}</span>
+        <div className="flex flex-col">
+          <h3 className="font-bold leading-tight">
+            {name}
+            {is_active && (
+              <span className="ml-2 text-[10px] font-semibold text-secondary uppercase">
+                live
+              </span>
+            )}
+          </h3>
+          {display_score !== "" && display_score != null && (
+            <span className="text-sm text-light">{display_score}</span>
+          )}
         </div>
-        {(is_active || is_final) && (
-          <div className="flex items-center w-2/5">
-            <div className="flex items-center w-1/2 gap-2">
-              <NumbersOutlinedIcon /> {rank}
-            </div>
-            <div className="flex items-center w-1/2 gap-2">
-              <DiamondOutlinedIcon />{" "}
-              {Number.isInteger(points) ? points : points.toFixed(1)}
-            </div>
-          </div>
-        )}
-        <div className="flex items-center">
-          {isOpen ? <ExpandLessOutlinedIcon /> : <ExpandMoreOutlinedIcon />}
+        <div className="flex items-center gap-2">
+          {rank != null && (
+            <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-white border rounded-full">
+              {rank <= 3 && is_final ? (
+                <img src={medalFor[rank]} alt="" className="h-3.5" />
+              ) : (
+                "#"
+              )}
+              {rank}
+            </span>
+          )}
+          {points != null && (
+            <span className="px-2.5 py-1 text-xs font-semibold bg-white border rounded-full">
+              {Number.isInteger(points) ? points : points.toFixed(1)} pts
+            </span>
+          )}
+          {isOpen ? (
+            <ExpandLessOutlinedIcon className="text-light" />
+          ) : (
+            <ExpandMoreOutlinedIcon className="text-light" />
+          )}
         </div>
       </div>
       {isOpen && children}
