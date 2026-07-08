@@ -99,10 +99,10 @@ const PlayerCareer = ({ playerUuid }) => {
   const records = career.records || [];
 
   return (
-    <div className="p-2 space-y-2">
+    <div className="p-2 space-y-3">
       <PlayerTeams teams={career.teams} />
       {(wins.length > 0 || podiums.length > 0 || records.length > 0) && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
           {wins.map((it) => (
             <AchievementChip
               icon={
@@ -114,6 +114,7 @@ const PlayerCareer = ({ playerUuid }) => {
               name={it.name}
               count={it.count}
               title="Event wins"
+              className="bg-gray-50"
               key={"win_" + it.name}
             />
           ))}
@@ -128,6 +129,7 @@ const PlayerCareer = ({ playerUuid }) => {
               name={it.name}
               count={it.count}
               title="Podium finishes"
+              className="bg-gray-50"
               key={"podium_" + it.name}
             />
           ))}
