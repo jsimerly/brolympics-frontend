@@ -16,8 +16,8 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
     const selectEvent = (eventUuid, eventType) => {
       if (events.some((event) => event.uuid === eventUuid)) {
         setSelectedEventId(eventUuid);
-        localStorage.setItem("selectedEventUuid", eventUuid);
-        localStorage.setItem("selectedEventType", eventType);
+        localStorage.setItem(`selectedEventUuid:${uuid}`, eventUuid);
+        localStorage.setItem(`selectedEventType:${uuid}`, eventType);
         navigate(`/b/${uuid}/event/${eventType}/${eventUuid}`);
       }
     };
@@ -25,8 +25,8 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
     if (eventUuid && eventType) {
       selectEvent(eventUuid, eventType);
     } else {
-      const savedEventUuid = localStorage.getItem("selectedEventUuid");
-      const savedEventType = localStorage.getItem("selectedEventType");
+      const savedEventUuid = localStorage.getItem(`selectedEventUuid:${uuid}`);
+      const savedEventType = localStorage.getItem(`selectedEventType:${uuid}`);
 
       if (
         savedEventUuid &&
@@ -59,8 +59,8 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
   const handleEventSelect = (selectedEvent) => {
     if (selectedEvent) {
       setSelectedEventId(selectedEvent.uuid);
-      localStorage.setItem("selectedEventUuid", selectedEvent.uuid);
-      localStorage.setItem("selectedEventType", selectedEvent.type);
+      localStorage.setItem(`selectedEventUuid:${uuid}`, selectedEvent.uuid);
+      localStorage.setItem(`selectedEventType:${uuid}`, selectedEvent.type);
       navigate(`/b/${uuid}/event/${selectedEvent.type}/${selectedEvent.uuid}`);
     }
   };

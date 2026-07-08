@@ -22,13 +22,19 @@ const Toolbar = ({
   const { pathname } = useLocation();
   const { uuid } = useParams();
   const pathRoute = pathname.split("/")[3] || "";
+  const savedTeam = localStorage.getItem(`selectedTeamUuid:${uuid}`);
+  const savedEventUuid = localStorage.getItem(`selectedEventUuid:${uuid}`);
+  const savedEventType = localStorage.getItem(`selectedEventType:${uuid}`);
 
   const tabs = [
     { route: "home", path: "home", text: "Home",
       Icon: HomeOutlinedIcon, ActiveIcon: HomeIcon },
-    { route: `team/${default_team_uuid || ""}`, path: "team", text: "Teams",
+    { route: `team/${savedTeam || default_team_uuid || ""}`,
+      path: "team", text: "Teams",
       Icon: PeopleAltOutlinedIcon, ActiveIcon: PeopleAltIcon },
-    { route: `event/${default_event_type}/${default_event_uuid || ""}`,
+    { route: savedEventUuid
+        ? `event/${savedEventType}/${savedEventUuid}`
+        : `event/${default_event_type}/${default_event_uuid || ""}`,
       path: "event", text: "Events",
       Icon: ScoreboardOutlinedIcon, ActiveIcon: ScoreboardIcon },
     { route: "standings", path: "standings", text: "Standings",

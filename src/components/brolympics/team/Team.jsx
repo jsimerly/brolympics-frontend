@@ -24,8 +24,11 @@ const Team = ({ status, teams, default_uuid }) => {
   );
 
   useEffect(() => {
-    if (!teamUuid && default_uuid) {
-      navigate(`/b/${uuid}/team/${default_uuid}`);
+    if (!teamUuid) {
+      const saved = localStorage.getItem(`selectedTeamUuid:${uuid}`);
+      const target =
+        (saved && teams.some((t) => t.uuid === saved) && saved) || default_uuid;
+      if (target) navigate(`/b/${uuid}/team/${target}`);
     }
   }, [default_uuid, teamUuid]);
 
@@ -38,7 +41,7 @@ const Team = ({ status, teams, default_uuid }) => {
   const handleTeamChange = (e) => {
     const selectedTeam = teams.find((team) => team.uuid === e.target.value);
     if (selectedTeam) {
-      localStorage.setItem("selectedTeamUuid", selectedTeam.uuid);
+      localStorage.setItem(`selectedTeamUuid:${uuid}`, selectedTeam.uuid);
       navigate(`/b/${uuid}/team/${selectedTeam.uuid}`);
     }
   };
