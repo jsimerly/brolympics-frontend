@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import SettingsIcon from "@mui/icons-material/Settings";
+import AddIcon from "@mui/icons-material/Add";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
 
@@ -233,8 +234,11 @@ const League = ({ leagueInfo }) => {
   const { current_brolympics, upcoming_brolympics, completed_brolympics } =
     leagueInfo;
 
+  const nothingScheduled =
+    current_brolympics.length === 0 && upcoming_brolympics.length === 0;
+
   return (
-    <div className="min-h-[calc(100vh-80px)] container-padding flex flex-col justify-between w-full max-w-5xl mx-auto">
+    <div className="min-h-[calc(100vh-80px)] container-padding w-full max-w-5xl mx-auto pb-24">
       <div className="py-6 space-y-8">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -264,6 +268,23 @@ const League = ({ leagueInfo }) => {
             {current_brolympics.map((bro) => (
               <LiveCard {...bro} key={bro.uuid} />
             ))}
+          </section>
+        )}
+
+        {isAdmin && nothingScheduled && (
+          <section className="px-5 py-6 text-center border-2 border-dashed border-gray-300 rounded-xl">
+            <h3 className="font-bold text-near-black">
+              Nothing on the calendar
+            </h3>
+            <p className="pt-1 text-sm text-light">
+              Line up the next Brolympics and get the invites out.
+            </p>
+            <button
+              className="inline-flex items-center gap-1 px-5 py-2 mt-4 font-semibold text-white transition-colors rounded-full bg-primary hover:bg-primary-dark"
+              onClick={() => navigate("create-brolympics")}
+            >
+              <AddIcon sx={{ fontSize: 20 }} /> Create Brolympics
+            </button>
           </section>
         )}
 
@@ -298,12 +319,13 @@ const League = ({ leagueInfo }) => {
         </div>
       </div>
 
-      {isAdmin && (
+      {isAdmin && !nothingScheduled && (
         <button
-          className="w-full p-3 my-6 btn primary-btn"
+          className="fixed z-30 flex items-center gap-2 px-5 py-3.5 font-semibold text-white transition-transform rounded-full shadow-lg bottom-6 right-6 bg-primary hover:bg-primary-dark active:scale-95"
           onClick={() => navigate("create-brolympics")}
+          title="Create a new Brolympics"
         >
-          Create Brolympics
+          <AddIcon /> New Brolympics
         </button>
       )}
     </div>
