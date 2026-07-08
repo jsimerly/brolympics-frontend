@@ -266,7 +266,10 @@ const PlayerStats = () => {
           <span>
             <span className="font-semibold">Record holder: </span>
             {career.records
-              .map((r) => `${r.event_type} (${r.score} · ${r.brolympics})`)
+              .map(
+                (r) =>
+                  `${r.event_type} (${r.score}${r.team ? ` w/ ${r.team}` : ""} · ${r.brolympics})`
+              )
               .join(", ")}
           </span>
         </div>
