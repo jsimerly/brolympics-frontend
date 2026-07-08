@@ -23,9 +23,10 @@ const ordinal = (n) => {
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 };
 
-/** Chips for every team a player has suited up for, with the team's overall
- * Brolympics finish -- a medal for top-3 years, the ordinal otherwise. */
-export const PlayerTeams = ({ teams }) => {
+/** Chips for every team a player has suited up for. Podium years always get
+ * their medal; non-podium ordinals ("5th") only show when showAllFinishes --
+ * the stats page tells the whole truth, the league page spares feelings. */
+export const PlayerTeams = ({ teams, showAllFinishes = false }) => {
   const shown = teams || [];
   if (!shown.length) return null;
   return (
@@ -48,7 +49,7 @@ export const PlayerTeams = ({ teams }) => {
               alt={ordinal(row.finish)}
               className="h-3.5"
             />
-          ) : row.finish ? (
+          ) : row.finish && showAllFinishes ? (
             <span className="text-light">{ordinal(row.finish)}</span>
           ) : null}
         </div>
@@ -59,9 +60,11 @@ export const PlayerTeams = ({ teams }) => {
 
 /** Achievement chips in the same visual language as the team chips: an icon,
  * the event, and a ×count when it happened more than once. */
-const AchievementChip = ({ icon, name, count = 1, title }) => (
+const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
   <div
-    className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 text-xs bg-white border rounded-full"
+    className={`flex items-center gap-1 pl-1.5 pr-2.5 py-1 text-xs border rounded-full ${
+      className || "bg-white"
+    }`}
     title={title}
   >
     {icon}
@@ -138,6 +141,7 @@ const PlayerCareer = ({ playerUuid }) => {
               }
               name={`${r.event_type} · ${r.score}`}
               title="All-time record"
+              className="bg-orange-50 border-orange-300 text-orange-900 shadow-sm"
               key={"record_" + r.event_type}
             />
           ))}

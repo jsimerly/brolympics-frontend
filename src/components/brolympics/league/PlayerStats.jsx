@@ -216,7 +216,7 @@ const PlayerStats = () => {
         </div>
       </div>
 
-      <PlayerTeams teams={career.teams} />
+      <PlayerTeams teams={career.teams} showAllFinishes />
 
       <div className="flex gap-3">
         <StatTile
