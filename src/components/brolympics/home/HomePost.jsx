@@ -145,9 +145,16 @@ const HomePost = ({ events = [] }) => {
                         <Img
                           src={row.team.img}
                           alt={row.team.name}
-                          className="object-cover w-7 h-7 rounded-md"
+                          className="object-cover w-8 h-8 rounded-md"
                         />
-                        {row.team.name}
+                        <div className="flex flex-col">
+                          <span className="leading-tight">{row.team.name}</span>
+                          {row.team.players?.length > 0 && (
+                            <span className="text-xs leading-tight text-light">
+                              {row.team.players.join(" & ")}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="p-2 text-center border-t">
