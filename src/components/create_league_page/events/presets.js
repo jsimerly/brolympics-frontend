@@ -19,6 +19,12 @@ export const PRESET_EVENTS = [
  * means the league knows what it likes; fewer, and we suggest classics they
  * haven't already played. */
 export const suggestionsFor = (lineage) => {
+  // staples first: most-played at the top, one-offs at the bottom
+  lineage = [...lineage].sort(
+    (a, b) =>
+      (b.times_played || 0) - (a.times_played || 0) ||
+      a.name.localeCompare(b.name)
+  );
   const played = new Set(lineage.map((row) => row.name.trim().toLowerCase()));
   const presets = PRESET_EVENTS.filter(
     (preset) => !played.has(preset.name.toLowerCase())
