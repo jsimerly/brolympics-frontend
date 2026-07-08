@@ -4,6 +4,13 @@ import HistoryIcon from "@mui/icons-material/History";
 
 const FORMAT_LABEL = { h2h: "Head to Head", ind: "Individual", team: "Team", ffa: "Free-for-All" };
 
+const typeLabel = (teamSize) => {
+  if (teamSize === 1) return "Individual — every player for themself";
+  if (teamSize === 2) return "Traditional — teams of 2";
+  if (teamSize) return `Teams of ${teamSize}`;
+  return "Open teams — no set size";
+};
+
 /** The confirm gate: nothing is created until this page's button. */
 const ReviewStep = ({
   step,
@@ -63,6 +70,9 @@ const ReviewStep = ({
           <div className="flex flex-col min-w-0">
             <span className="font-semibold leading-tight">
               {brolympics?.name || "Unnamed Brolympics"}
+            </span>
+            <span className="text-xs text-light">
+              {typeLabel(brolympics?.team_size)}
             </span>
             <span className="text-xs text-light">
               {brolympics?.projected_start_date || "no start date"}

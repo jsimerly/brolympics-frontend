@@ -1,8 +1,32 @@
 import { useState } from "react";
 import CreateWrapper from "./CreateWrapper";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import GroupIcon from "@mui/icons-material/Group";
+import PersonIcon from "@mui/icons-material/Person";
+import GroupsIcon from "@mui/icons-material/Groups";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
 import usePersistentState from "../../hooks/usePersistentState";
+
+const TYPES = [
+  {
+    mode: "traditional",
+    label: "Traditional",
+    hint: "Teams of 2 — the classic",
+    Icon: GroupIcon,
+  },
+  {
+    mode: "individual",
+    label: "Individual",
+    hint: "Every player for themself",
+    Icon: PersonIcon,
+  },
+  {
+    mode: "custom",
+    label: "Big Teams",
+    hint: "Pick your team size",
+    Icon: GroupsIcon,
+  },
+];
 
 const CreateBrolympics = ({
   step,
@@ -16,7 +40,11 @@ const CreateBrolympics = ({
     img: null,
     projected_start_date: "",
     projected_end_date: "",
+    mode: "traditional",
+    custom_size: "4",
   });
+  // older stashed forms predate the type picker
+  const mode = form.mode || "traditional";
   const [imgSrc, setImgSrc] = useState(null); // pre-crop original, not persisted
   const [cropping, setCropping] = useState(false);
 
@@ -27,7 +55,13 @@ const CreateBrolympics = ({
     form.projected_start_date &&
     form.projected_end_date &&
     form.projected_end_date < form.projected_start_date;
-  const valid = form.name.trim().length > 0 && !datesInvalid;
+  const customSize = Number(form.custom_size);
+  const customInvalid =
+    mode === "custom" && (!Number.isInteger(customSize) || customSize < 2);
+  const valid = form.name.trim().length > 0 && !datesInvalid && !customInvalid;
+
+  const teamSize =
+    mode === "individual" ? 1 : mode === "custom" ? customSize : 2;
 
   const handleCreateClicked = () => {
     if (!valid) return;
@@ -36,6 +70,7 @@ const CreateBrolympics = ({
       img: form.img,
       projected_start_date: form.projected_start_date || null,
       projected_end_date: form.projected_end_date || null,
+      team_size: teamSize,
     });
     nextStep();
   };
@@ -82,6 +117,64 @@ const CreateBrolympics = ({
             Most leagues name it after the season — it becomes this year's
             banner everywhere.
           </p>
+        </div>
+
+        <div>
+          <span className="form-label">Type</span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {TYPES.map(({ mode: m, label, hint, Icon }) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, mode: m }))}
+                className={`flex flex-col items-center gap-1 px-1.5 py-2.5 text-center transition-colors border rounded-lg ${
+                  mode === m
+                    ? "border-primary bg-primary/5"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <Icon
+                  sx={{ fontSize: 24 }}
+                  className={mode === m ? "text-primary" : "text-light"}
+                />
+                <span className="text-xs font-medium leading-tight">
+                  {label}
+                </span>
+                <span className="text-[10px] leading-tight text-light">
+                  {hint}
+                </span>
+              </button>
+            ))}
+          </div>
+          {mode === "custom" && (
+            <div className="flex items-center justify-between gap-3 p-2.5 mt-1.5 bg-white border border-gray-200 rounded-lg">
+              <div className="min-w-0">
+                <h4 className="text-sm font-semibold">Players per team</h4>
+                <p className="text-[10px] text-light">
+                  The standard size — teams stop listing as open once they hit
+                  it, but an extra teammate can always be added.
+                </p>
+              </div>
+              <input
+                type="number"
+                min="2"
+                value={form.custom_size ?? ""}
+                onChange={set("custom_size")}
+                className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+              />
+            </div>
+          )}
+          {mode === "individual" && (
+            <p className="mt-1 text-xs text-light">
+              Everyone competes solo — players get their own scoring column the
+              moment they join. Great for camps and big groups.
+            </p>
+          )}
+          {customInvalid && (
+            <p className="mt-1 text-xs text-red">
+              Team size needs to be a whole number of at least 2.
+            </p>
+          )}
         </div>
 
         <div>
