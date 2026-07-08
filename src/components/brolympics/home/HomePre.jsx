@@ -1,403 +1,556 @@
-import { useState, useEffect } from "react";
-import EditIcon from "@mui/icons-material/Edit";
-import RemoveIcon from "@mui/icons-material/Remove";
-import CloseIcon from "@mui/icons-material/Close";
-import SaveIcon from "@mui/icons-material/Save";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
+import IosShareIcon from "@mui/icons-material/IosShare";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { format, parseISO } from "date-fns";
 import {
   createTeam,
-  deleteTeam,
-  removePlayerFromTeam,
-  updateTeamImage,
+  updateTeam,
+  joinTeam,
+  leaveTeam,
+  inviteLinkTeam,
 } from "../../../api/client";
-import { inviteLinkTeam as getInviteLinkTeam } from "../../../api/client";
-import PopupContinue from "../../Util/PopupContinue.jsx";
+import Img from "../../Util/Img";
 import CopyWrapper from "../../Util/CopyWrapper.jsx";
+import PopupContinue from "../../Util/PopupContinue.jsx";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper.jsx";
 import { useNotification } from "../../Util/Notification.jsx";
-import Schedule from "./Schedule.jsx";
 
-const OwnTeamCard = ({ name, img, players = [], uuid }) => {
-  const [player_1, player_2] = players;
-  const [editOpen, setEditOpen] = useState(false);
+const FORMAT_LABEL = {
+  h2h: "Head to Head",
+  ind: "Individual",
+  team: "Team",
+  ffa: "Free-for-All",
+};
+
+const daysUntil = (dateStr) => {
+  if (!dateStr) return null;
+  const days = Math.ceil(
+    (parseISO(dateStr) - new Date()) / (1000 * 60 * 60 * 24)
+  );
+  return days;
+};
+
+const dateRange = (start, end) => {
+  if (!start) return "Dates TBD";
+  const from = format(parseISO(start), "MMM d");
+  if (!end) return from;
+  const to = format(parseISO(end), "MMM d");
+  return from === to ? from : `${from} – ${to}`;
+};
+
+/** The countdown hero: logo, dates, and how many are in. */
+export const StatusCard = ({
+  img,
+  name,
+  projected_start_date,
+  projected_end_date,
+  teams = [],
+  team_size,
+}) => {
+  const days = daysUntil(projected_start_date);
+  const countLabel =
+    team_size === 1
+      ? `${teams.length} player${teams.length === 1 ? "" : "s"} in`
+      : `${teams.length} team${teams.length === 1 ? "" : "s"} in`;
+  return (
+    <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+      <Img
+        src={img}
+        alt={name}
+        kind="brolympics"
+        className="object-cover w-14 h-14 rounded-lg shrink-0"
+      />
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <span className="text-sm font-semibold">
+          {dateRange(projected_start_date, projected_end_date)}
+        </span>
+        <span className="text-xs text-light">{countLabel}</span>
+      </div>
+      {days !== null && days >= 0 && (
+        <span className="px-2.5 py-1 ml-auto text-xs font-semibold rounded-full shrink-0 bg-primary/10 text-primary">
+          {days === 0 ? "Starts today" : `${days} day${days === 1 ? "" : "s"} out`}
+        </span>
+      )}
+    </div>
+  );
+};
+
+/** My team: logo (tap to swap), roster, inline rename, invite when open. */
+const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
+  const [editing, setEditing] = useState(false);
   const [teamName, setTeamName] = useState(name);
-  const handleTeamNameChange = (e) => setTeamName(e.target.value);
-  const { showNotification } = useNotification();
-
   const [imgSrc, setImgSrc] = useState(null);
   const [savedImg, setSavedImg] = useState(img);
   const [cropping, setCropping] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      let imageDataUrl = await readImageFile(file);
-
-      setImgSrc(imageDataUrl);
+      setImgSrc(await readImageFile(e.target.files[0]));
       setCropping(true);
     }
   };
 
   const setCroppedImage = async (croppedImage) => {
-    setSavedImg(croppedImage);
     setCropping(false);
-
-    const response = await updateTeamImage(croppedImage, uuid);
-    if (response.ok) {
+    try {
+      await updateTeam(uuid, { img: croppedImage });
+      setSavedImg(croppedImage);
+    } catch (error) {
+      console.log(error);
       showNotification(
-        "Your team's image has been updated.",
-        "!border-primary"
-      );
-    } else {
-      showNotification(
-        "There was an issue when trying to upload your image. Please make sure your image is below 500kb."
+        "Couldn't save the image — keep it under 500kb and try again."
       );
     }
   };
 
-  const handleCloseCropper = () => {
-    setCropping(false);
-  };
-
-  const get_name_size = (name) => {
-    if (name) {
-      if (name.length <= 14) {
-        return "26px";
-      } else if (name.length <= 16) {
-        return "26px";
-      } else if (name.length <= 24) {
-        return "22px";
-      } else {
-        return "18px";
+  const saveName = async () => {
+    const next = teamName.trim();
+    if (next && next !== name) {
+      try {
+        await updateTeam(uuid, { name: next });
+      } catch (error) {
+        console.log(error);
+        showNotification("Couldn't save the team name.");
+        setTeamName(name);
       }
     }
+    setEditing(false);
   };
 
-  const onEditClick = () => {
-    setEditOpen((editOpen) => !editOpen);
-  };
-
-  const [popupTeamOpen, setPopupTeamOpen] = useState(false);
-  const [popupPlayerOpen, setPopupPlayerOpen] = useState(false);
-  const [removePlayer, setRemovePlayer] = useState();
-
-  const onRemovePlayer = (player) => {
-    setRemovePlayer(player);
-    setPopupPlayerOpen(true);
-  };
-
-  const removePlayerFunc = async () => {
+  const leave = async () => {
     try {
-      await removePlayerFromTeam(uuid, removePlayer.uuid);
+      await leaveTeam(uuid);
       location.reload();
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const deleteClicked = () => {
-    setPopupTeamOpen(true);
-  };
-
-  const deleteTeamFunc = async () => {
-    const response = await deleteTeam(uuid);
-    if (response.ok) {
-      location.reload();
+      showNotification("Couldn't leave the team.");
     }
   };
 
   return (
-    <div className="relative flex items-start w-full gap-3 p-3 border rounded-md border-primary">
-      <input
-        type="file"
-        accept="image/*"
-        id="file_team"
-        onChange={handleImageUpload}
-        hidden
-      />
-      <label
-        htmlFor="file_team"
-        className="inline-flex bg-white rounded-md cursor-pointer"
-      >
-        {savedImg ? (
-          <img
+    <div className="p-3 bg-white border border-gray-200 rounded-lg">
+      <div className="flex items-start gap-3">
+        <input
+          type="file"
+          accept="image/*"
+          id="file_team"
+          onChange={handleImageUpload}
+          hidden
+        />
+        <label htmlFor="file_team" className="relative cursor-pointer shrink-0">
+          <Img
             src={savedImg}
-            className="rounded-md w-[80px] h-[80px]"
-            alt="Team logo"
+            alt={name}
+            kind="team"
+            className="object-cover w-16 h-16 rounded-lg"
           />
-        ) : (
-          <div className="w-[100px] h-[100px] rounded-md flex items-center justify-center">
-            <CameraAltIcon
-              className="bg-white w-[100px] text-neutral"
-              sx={{ fontSize: 60 }}
-            />
+          <span className="absolute p-0.5 bg-white border border-gray-200 rounded-full -bottom-1 -right-1">
+            <CameraAltIcon sx={{ fontSize: 14 }} className="text-light" />
+          </span>
+        </label>
+
+        <div className="flex flex-col min-w-0 gap-0.5 flex-grow">
+          {editing ? (
+            <div className="flex items-center gap-2">
+              <input
+                className="min-w-0 flex-grow input-primary !py-1.5"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                autoFocus
+              />
+              <button
+                className="text-sm font-semibold shrink-0 text-primary"
+                onClick={saveName}
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <h3 className="font-semibold leading-tight">{name}</h3>
+          )}
+          {players.map((player) => (
+            <span className="text-sm text-light" key={player.uuid}>
+              {player.name}
+            </span>
+          ))}
+          {editing && (
+            <button
+              className="self-start pt-1 text-xs font-semibold text-red"
+              onClick={() => setLeaveOpen(true)}
+            >
+              Leave this team
+            </button>
+          )}
+        </div>
+
+        <button
+          className="shrink-0 text-light"
+          onClick={() => setEditing((v) => !v)}
+        >
+          {editing ? (
+            <CloseIcon sx={{ fontSize: 20 }} />
+          ) : (
+            <EditIcon sx={{ fontSize: 20 }} />
+          )}
+        </button>
+      </div>
+
+      {is_available !== false && (
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <span className="text-xs font-semibold tracking-wide uppercase text-light">
+            Room on the roster
+          </span>
+          <div className="flex items-center gap-2 mt-1">
+            <CopyWrapper copyString={inviteLinkTeam(uuid)}>
+              <div className="flex items-center flex-grow min-w-0 gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer">
+                <ContentCopyIcon
+                  sx={{ fontSize: 14 }}
+                  className="shrink-0 text-light"
+                />
+                <span className="text-xs truncate text-light">
+                  {inviteLinkTeam(uuid)}
+                </span>
+              </div>
+            </CopyWrapper>
+            <button
+              className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-white rounded-full shrink-0 bg-primary"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator
+                    .share({
+                      title: name,
+                      text: `Join my team "${name}": ${inviteLinkTeam(uuid)}`,
+                    })
+                    .catch(() => {});
+                } else {
+                  navigator.clipboard?.writeText(inviteLinkTeam(uuid));
+                }
+              }}
+            >
+              <IosShareIcon sx={{ fontSize: 14 }} /> Share
+            </button>
           </div>
-        )}
-      </label>
+        </div>
+      )}
+
       {cropping && (
         <ImageCropper
           img={imgSrc}
           setCroppedImage={setCroppedImage}
-          handleCloseCropper={handleCloseCropper}
+          handleCloseCropper={() => setCropping(false)}
         />
       )}
-
-      {editOpen ? (
-        <div className="">
-          <div className="relative">
-            <input
-              className="p-2 my-1 rounded-md bg-neutralLight"
-              value={teamName}
-              onChange={handleTeamNameChange}
-            />
-            <SaveIcon className="absolute right-2 top-3 text-primary" />
-          </div>
-          {player_1 && (
-            <div>
-              <button onClick={() => onRemovePlayer(player_1)}>
-                <RemoveIcon className="text-errorRed" />
-                {player_1.name}
-              </button>
-            </div>
-          )}
-          {player_2 && (
-            <div>
-              <button onClick={() => onRemovePlayer(player_2)}>
-                <RemoveIcon className="text-errorRed" />
-                {player_2.name}
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-start">
-          <h2
-            className={`text-[${get_name_size(
-              name
-            )}] font-semibold leading-none`}
-          >
-            {name}
-          </h2>
-          <span className="text-sm">{player_1 && player_1.name}</span>
-          <span className="text-sm">{player_2 && player_2.name}</span>
-        </div>
-      )}
-
-      <button className="absolute top-2 right-2" onClick={onEditClick}>
-        {editOpen ? <CloseIcon /> : <EditIcon />}
-      </button>
-      {editOpen && (
-        <button
-          className="absolute px-1 rounded-md bottom-2 right-2 bg-errorRed"
-          onClick={deleteClicked}
-        >
-          Delete Team
-        </button>
-      )}
-      {!editOpen && !(player_1 && player_2) && (
-        <div className="absolute px-1 py-0 border rounded-md bottom-2 right-2 border-primary">
-          <CopyWrapper copyString={getInviteLinkTeam(uuid)} size={20}>
-            <span className="mr-1 text-sm">Copy Invite Link</span>
-          </CopyWrapper>
-        </div>
-      )}
-      <div className="text-neutralDark">
-        <PopupContinue
-          open={popupTeamOpen}
-          setOpen={setPopupTeamOpen}
-          header={"Delete this Team?"}
-          desc={"Doing this will permanently delete this team."}
-          continueText={"Delete"}
-          continueFunc={deleteTeamFunc}
-        />
-        <PopupContinue
-          open={popupPlayerOpen}
-          setOpen={setPopupPlayerOpen}
-          header={`Remove ${
-            removePlayer && removePlayer.full_name
-          } from this team?`}
-          desc={`Doing this will permanently remove ${
-            removePlayer && removePlayer.first_name
-          }. If you do, you can always add them back to the team later.`}
-          continueText={"Delete"}
-          continueFunc={removePlayerFunc}
-        />
-      </div>
+      <PopupContinue
+        open={leaveOpen}
+        setOpen={setLeaveOpen}
+        header="Leave this team?"
+        desc="You can rejoin later with the team's invite link."
+        continueText="Leave"
+        continueFunc={leave}
+      />
     </div>
   );
 };
 
-const TeamCard = ({ broUuid, team }) => {
-  const navigate = useNavigate();
-
-  const handleSelect = () => {
-    navigate(`/b/${broUuid}/team/${team.uuid}`);
-  };
-
-  return (
-    <button
-      className="flex items-center w-full p-4 space-x-4 card"
-      onClick={handleSelect}
-    >
-      <img
-        src={team.img}
-        className="object-cover w-16 h-16 rounded-md"
-        alt={`${team.name} logo`}
-      />
-      <div className="">
-        <h3 className="text-xl font-semibold">{team.name}</h3>
-        <div className="text-sm text-light">
-          <div>{team.players?.[0] && team.players[0].name}</div>
-          <div>{team.players?.[1] && team.players[1].name}</div>
-        </div>
-      </div>
-    </button>
-  );
-};
-
-const HomePre = ({
-  events,
-  img,
-  projected_start_date,
-  projected_end_date,
-  teams,
-  user_team,
-}) => {
-  const [newTeamName, setNewTeamName] = useState("");
-  const [newTeamImg, setNewTeamImg] = useState();
+/** No team yet: create one here or join an open one below. */
+const CreateTeamCard = ({ broUuid }) => {
+  const [open, setOpen] = useState(false);
+  const [teamName, setTeamName] = useState("");
+  const [teamImg, setTeamImg] = useState(null);
   const [cropping, setCropping] = useState(false);
-  const onTeamNameChange = (e) => setNewTeamName(e.target.value);
-  const { uuid } = useParams();
+  const [busy, setBusy] = useState(false);
   const { showNotification } = useNotification();
 
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      let imageDataUrl = await readImageFile(file);
-
-      setNewTeamImg(imageDataUrl);
+      setTeamImg(await readImageFile(e.target.files[0]));
       setCropping(true);
     }
   };
 
-  const setCroppedImage = (croppedImage) => {
-    setNewTeamImg(croppedImage);
-    setCropping(false);
-  };
-
-  const onCreateTeamClick = async () => {
+  const create = async () => {
+    if (!teamName.trim() || busy) return;
+    setBusy(true);
     try {
-      const team = await createTeam({ name: newTeamName, brolympics: uuid });
-      if (newTeamImg) {
-        await updateTeamImage(team.uuid, newTeamImg);
-      }
+      const team = await createTeam({
+        name: teamName.trim(),
+        brolympics: broUuid,
+      });
+      if (teamImg) await updateTeam(team.uuid, { img: teamImg });
+      await joinTeam(team.uuid);
       location.reload();
     } catch (error) {
       console.log(error);
-      showNotification(
-        "There was an error when attempting to create this team."
-      );
+      showNotification("Couldn't create the team. Try again in a second.");
+      setBusy(false);
     }
   };
 
   return (
-    <div className="p-2 space-y-8">
-      <div>
-        {user_team ? (
-          <OwnTeamCard {...user_team} />
-        ) : (
-          <div className="p-6 space-y-4 bg-white border border-gray-100 rounded-md shadow-md">
-            <h3 className="text-2xl font-bold text-primary">
-              Create Your Team
-            </h3>
-            <div>
-              <label
-                htmlFor="teamName"
-                className="block mb-1 text-sm font-medium text-gray-700"
-              >
-                Team Name
-              </label>
-              <input
-                id="teamName"
-                className="w-full p-2 text-lg border border-gray-300 rounded-md focus:border-primary focus:ring-1 focus:ring-primary"
-                value={newTeamName}
-                onChange={onTeamNameChange}
-                placeholder="Enter your team name"
-              />
-            </div>
-            <div>
-              <h3 className="block mb-1 text-sm font-medium text-gray-700">
-                Upload a Logo{" "}
-                <span className="text-xs text-gray-500">(Optional)</span>
-              </h3>
-              <input
-                type="file"
-                accept="image/*"
-                id="file_league"
-                onChange={handleImageUpload}
-                hidden
-              />
-              <label
-                htmlFor="file_league"
-                className="inline-flex transition-colors duration-200 border rounded-md cursor-pointer"
-              >
-                {newTeamImg ? (
-                  <img
-                    src={newTeamImg}
-                    className="object-cover w-24 h-24 rounded-md"
-                    alt="New team logo"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-24 h-24 rounded-md">
-                    <CameraAltIcon
-                      className="text-gray-400"
-                      sx={{ fontSize: 40 }}
-                    />
-                  </div>
-                )}
-              </label>
-              {cropping && (
-                <ImageCropper
-                  img={newTeamImg}
-                  setCroppedImage={setCroppedImage}
-                  handleCloseCropper={() => setCropping(false)}
+    <div className="p-3 bg-white border border-gray-200 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold">You're not on a team yet</h3>
+          <p className="text-xs text-light">
+            Start your own, or join an open team below.
+          </p>
+        </div>
+        <button
+          className="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-white rounded-full shrink-0 bg-primary"
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? (
+            <CloseIcon sx={{ fontSize: 16 }} />
+          ) : (
+            <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
+          )}
+          {open ? "Close" : "Create"}
+        </button>
+      </div>
+
+      {open && (
+        <div className="flex flex-col gap-3 pt-3 mt-3 border-t border-gray-100">
+          <div>
+            <label htmlFor="new-team-name" className="form-label">
+              Team name <span className="text-red">*</span>
+            </label>
+            <input
+              id="new-team-name"
+              className="w-full input-primary"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              placeholder="The Dream Team"
+              autoComplete="off"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              accept="image/*"
+              id="file_new_team"
+              onChange={handleImageUpload}
+              hidden
+            />
+            <label htmlFor="file_new_team" className="cursor-pointer shrink-0">
+              {teamImg ? (
+                <img
+                  src={teamImg}
+                  className="object-cover w-16 h-16 rounded-lg"
+                  alt="New team logo"
                 />
+              ) : (
+                <div className="flex flex-col items-center justify-center w-16 h-16 gap-0.5 border-2 border-dashed border-gray-300 rounded-lg text-light">
+                  <CameraAltIcon sx={{ fontSize: 20 }} />
+                  <span className="text-[9px]">Logo</span>
+                </div>
               )}
-            </div>
+            </label>
             <button
-              className="w-full p-3 text-xl font-semibold text-white transition-colors duration-200 rounded-md bg-primary hover:bg-primary-dark"
-              onClick={onCreateTeamClick}
+              className={`flex-grow py-2.5 font-semibold rounded-full transition-colors ${
+                teamName.trim() && !busy
+                  ? "text-white bg-primary"
+                  : "text-gray-400 bg-gray-100 cursor-not-allowed"
+              }`}
+              onClick={create}
+              disabled={!teamName.trim() || busy}
             >
-              Create Team
+              {busy ? "Creating..." : "Create & join"}
             </button>
           </div>
-        )}
-      </div>
-      <div className="">
-        <div className="space-y-2">
-          {events && events.length > 0 ? (
-            <Schedule events={events} />
-          ) : (
-            <p className="text-light">No events have been registered yet.</p>
+          {cropping && (
+            <ImageCropper
+              img={teamImg}
+              setCroppedImage={(cropped) => {
+                setTeamImg(cropped);
+                setCropping(false);
+              }}
+              handleCloseCropper={() => setCropping(false)}
+            />
           )}
         </div>
-      </div>
-      <div className="">
-        <h2 className="mb-4 text-2xl font-bold text-tertiary">Other Teams</h2>
-        <div className="space-y-2">
-          {teams && teams.length > 0 ? (
-            teams.map(
-              (team, i) =>
-                (!user_team || team.uuid !== user_team.uuid) && (
-                  <TeamCard broUuid={uuid} team={team} key={i + "_teamCard"} />
-                )
-            )
-          ) : (
-            <p className="text-light">No teams have been registered yet.</p>
-          )}
-        </div>
-      </div>
+      )}
+    </div>
+  );
+};
+
+/** This year's events, dated ones first, tap through to the event page. */
+export const EventLineup = ({ events = [] }) => {
+  const navigate = useNavigate();
+  const { uuid } = useParams();
+  if (events.length === 0) {
+    return (
+      <p className="text-sm text-light">
+        No events on the slate yet — check back soon.
+      </p>
+    );
+  }
+  const sorted = [...events].sort((a, b) => {
+    if (a.projected_start_date && b.projected_start_date) {
+      return new Date(a.projected_start_date) - new Date(b.projected_start_date);
+    }
+    if (a.projected_start_date) return -1;
+    if (b.projected_start_date) return 1;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+  return (
+    <div className="overflow-hidden bg-white border border-gray-200 rounded-lg divide-y">
+      {sorted.map((event) => (
+        <button
+          key={event.uuid}
+          className="flex items-center justify-between w-full gap-3 px-3 py-2.5 text-left"
+          onClick={() =>
+            navigate(`/b/${uuid}/event/${event.type}/${event.uuid}`)
+          }
+        >
+          <div className="min-w-0">
+            <h4 className="text-sm font-medium leading-tight">{event.name}</h4>
+            <p className="text-[11px] text-light">
+              {FORMAT_LABEL[event.type] || event.type}
+              {event.location ? ` · ${event.location}` : ""}
+            </p>
+          </div>
+          <span className="text-xs shrink-0 text-light">
+            {event.projected_start_date
+              ? format(parseISO(event.projected_start_date), "EEE MMM d")
+              : "TBD"}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+/** Every team, mine pinned on top; open ones are joinable when I'm teamless. */
+const TeamsSection = ({ teams = [], user_team, team_size, broUuid }) => {
+  const navigate = useNavigate();
+  const { showNotification } = useNotification();
+  const individual = team_size === 1;
+
+  const join = async (team) => {
+    try {
+      await joinTeam(team.uuid);
+      location.reload();
+    } catch (error) {
+      console.log(error);
+      showNotification("Couldn't join the team.");
+    }
+  };
+
+  const ordered = [...teams].sort((a, b) => {
+    if (user_team) {
+      if (a.uuid === user_team.uuid) return -1;
+      if (b.uuid === user_team.uuid) return 1;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
+  if (ordered.length === 0) {
+    return (
+      <p className="text-sm text-light">
+        {individual ? "Nobody has joined yet." : "No teams yet — start one!"}
+      </p>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden bg-white border border-gray-200 rounded-lg divide-y">
+      {ordered.map((team) => {
+        const isMine = user_team && team.uuid === user_team.uuid;
+        return (
+          <div key={team.uuid} className="flex items-center gap-3 px-3 py-2">
+            <button
+              className="flex items-center flex-grow min-w-0 gap-3 text-left"
+              onClick={() => navigate(`/b/${broUuid}/team/${team.uuid}`)}
+            >
+              <Img
+                src={team.img}
+                alt={team.name}
+                kind={individual ? "player" : "team"}
+                className="object-cover w-10 h-10 rounded-lg shrink-0"
+              />
+              <div className="min-w-0">
+                <h4 className="text-sm font-medium leading-tight truncate">
+                  {team.name}
+                </h4>
+                {!individual && (
+                  <p className="text-[11px] truncate text-light">
+                    {(team.players || []).map((p) => p.name).join(", ") ||
+                      "no players yet"}
+                  </p>
+                )}
+              </div>
+            </button>
+            {isMine ? (
+              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 bg-primary/10 text-primary">
+                Your team
+              </span>
+            ) : (
+              !individual &&
+              !user_team &&
+              team.is_available !== false && (
+                <button
+                  className="px-3 py-1 text-xs font-semibold border rounded-full shrink-0 text-primary border-primary"
+                  onClick={() => join(team)}
+                >
+                  Join
+                </button>
+              )
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const Section = ({ title, children }) => (
+  <div>
+    <h2 className="mb-2 text-lg font-bold">{title}</h2>
+    {children}
+  </div>
+);
+
+const HomePre = (props) => {
+  const { events = [], teams = [], user_team, team_size } = props;
+  const { uuid } = useParams();
+  const individual = team_size === 1;
+
+  return (
+    <div className="flex flex-col max-w-md gap-6 px-2 py-4 mx-auto">
+      <StatusCard {...props} />
+
+      {!individual &&
+        (user_team ? (
+          <MyTeamCard {...user_team} />
+        ) : (
+          <CreateTeamCard broUuid={uuid} />
+        ))}
+
+      <Section title="Event Lineup">
+        <EventLineup events={events} />
+      </Section>
+
+      <Section
+        title={
+          individual
+            ? `Who's In (${teams.length})`
+            : `Teams (${teams.length})`
+        }
+      >
+        <TeamsSection
+          teams={teams}
+          user_team={user_team}
+          team_size={team_size}
+          broUuid={uuid}
+        />
+      </Section>
     </div>
   );
 };
