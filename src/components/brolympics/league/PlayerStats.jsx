@@ -46,7 +46,10 @@ const ContestRow = ({ contest, myTeamUuids, playerUuid, seasonBreak }) => {
           {result}
         </span>
         <span className="flex-grow">
-          {mine.score ?? "—"}–{opp?.score ?? "—"} vs {opp?.team_name ?? "TBD"}
+          {mine.score != null || opp?.score != null
+            ? `${mine.score ?? "—"}–${opp?.score ?? "—"} `
+            : ""}
+          vs {opp?.team_name ?? "TBD"}
         </span>
       </>
     );

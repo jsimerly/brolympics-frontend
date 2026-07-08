@@ -18,6 +18,11 @@ const Comp_h2h = ({ entries = [], is_complete }) => {
   const winStyle = (entry) =>
     entry?.outcome === "w" ? "font-bold text-primaryLight" : "";
 
+  // winner-known-but-score-unknown games show W/L letters, ties show T
+  const scoreOf = (entry) =>
+    entry?.score ??
+    ({ w: "W", l: "L", t: "T" }[entry?.outcome] || "—");
+
   return (
     <div className={`flex items-center justify-center py-3 px-4`}>
       <div className="flex items-center justify-center w-full">
@@ -30,9 +35,9 @@ const Comp_h2h = ({ entries = [], is_complete }) => {
         <div className="w-1/5 text-center">
           {is_complete ? (
             <>
-              <span className={winStyle(entry_1)}>{entry_1?.score}</span>
+              <span className={winStyle(entry_1)}>{scoreOf(entry_1)}</span>
               <span className="px-1">:</span>
-              <span className={winStyle(entry_2)}>{entry_2?.score}</span>
+              <span className={winStyle(entry_2)}>{scoreOf(entry_2)}</span>
             </>
           ) : (
             "vs"
