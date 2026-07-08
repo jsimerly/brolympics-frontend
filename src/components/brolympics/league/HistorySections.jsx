@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -8,45 +6,11 @@ import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import {
-  fetchLeagueAllTime,
-  fetchEventTypes,
   fetchPlayerCareer,
   fetchEventTypeHistory,
 } from "../../../api/client";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
-
-const Championships = ({ championships }) => (
-  <section>
-    <h2 className="mb-4 header-3">Championships</h2>
-    <div className="space-y-3">
-      {championships.map((row, i) => (
-        <div className="p-4 card" key={i + "_championship"}>
-          <div className="flex items-center gap-3">
-            <img src={Gold} alt="Champion" className="h-6" />
-            <div>
-              <h3 className="font-bold text-near-black">{row.brolympics}</h3>
-              {row.champions.map((champ, j) => (
-                <p className="text-sm" key={j + "_champ"}>
-                  <span className="font-semibold">{champ.team}</span>
-                  {champ.players.length > 0 && (
-                    <span className="text-light">
-                      {" — "}
-                      {champ.players.join(" & ")}
-                    </span>
-                  )}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-      {championships.length === 0 && (
-        <p className="text-light">No completed Brolympics yet.</p>
-      )}
-    </div>
-  </section>
-);
 
 const PlayerCareer = ({ playerUuid }) => {
   const [career, setCareer] = useState(null);
@@ -65,9 +29,7 @@ const PlayerCareer = ({ playerUuid }) => {
         <div className="p-2 border rounded-md" key={i + "_discipline"}>
           <div className="flex items-center justify-between">
             <h4 className="font-semibold">{d.event_type}</h4>
-            <span className="text-sm text-light">
-              {d.years.join(", ")}
-            </span>
+            <span className="text-sm text-light">{d.years.join(", ")}</span>
           </div>
           <div className="grid grid-cols-2 gap-x-4 text-sm">
             <span>Points: {d.points}</span>
@@ -98,8 +60,10 @@ const PlayerCareer = ({ playerUuid }) => {
   );
 };
 
-const Leaderboard = ({ leaderboard }) => {
+export const Leaderboard = ({ leaderboard }) => {
   const [openPlayer, setOpenPlayer] = useState(null);
+
+  if (!leaderboard?.length) return null;
 
   return (
     <section>
@@ -170,8 +134,7 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
       .catch((error) => console.error("Error fetching history:", error));
   }, [eventTypeUuid]);
 
-  if (!history)
-    return <div className="p-2 text-sm text-light">Loading...</div>;
+  if (!history) return <div className="p-2 text-sm text-light">Loading...</div>;
 
   return (
     <div className="p-2 space-y-3">
@@ -186,7 +149,11 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
           <div className="space-y-1">
             {year.podium.map((row) => (
               <div className="flex items-center gap-2 text-sm" key={row.rank}>
-                <img src={medalFor[row.rank]} alt={`#${row.rank}`} className="h-4" />
+                <img
+                  src={medalFor[row.rank]}
+                  alt={`#${row.rank}`}
+                  className="h-4"
+                />
                 <span>{row.team}</span>
               </div>
             ))}
@@ -211,8 +178,10 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
   );
 };
 
-const Events = ({ eventTypes }) => {
+export const EventsThroughYears = ({ eventTypes }) => {
   const [openType, setOpenType] = useState(null);
+
+  if (!eventTypes?.length) return null;
 
   return (
     <section>
@@ -232,83 +201,33 @@ const Events = ({ eventTypes }) => {
             )}
           </div>
         ))}
-        {eventTypes.length === 0 && (
-          <p className="text-light">No events yet.</p>
-        )}
       </div>
     </section>
   );
 };
 
-const Lineages = ({ lineages }) => (
-  <section>
-    <h2 className="mb-4 header-3">Team Lineages</h2>
-    <div className="space-y-3">
-      {(lineages?.by_duo || []).map((duo, i) => (
-        <div className="p-4 card" key={i + "_duo"}>
-          <h3 className="font-semibold">{duo.players.join(" & ")}</h3>
-          <div className="text-sm text-light">
-            {duo.appearances.map((a, j) => (
-              <p key={j + "_appearance"}>
-                {a.brolympics}: <span className="text-near-black">{a.team_name}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-      ))}
-      {(lineages?.by_duo || []).length === 0 && (
-        <p className="text-light">
-          No repeat duos yet — lineages appear once a pair teams up twice.
-        </p>
-      )}
-    </div>
-  </section>
-);
-
-const LeagueHistory = () => {
-  const { uuid } = useParams();
-  const navigate = useNavigate();
-  const [allTime, setAllTime] = useState(null);
-  const [eventTypes, setEventTypes] = useState([]);
-
-  useEffect(() => {
-    const getHistory = async () => {
-      try {
-        const [allTimeData, types] = await Promise.all([
-          fetchLeagueAllTime(uuid),
-          fetchEventTypes(uuid),
-        ]);
-        setAllTime(allTimeData);
-        setEventTypes(types);
-      } catch (error) {
-        console.error("Error fetching league history:", error);
-      }
-    };
-    getHistory();
-  }, [uuid]);
-
-  if (!allTime) {
-    return (
-      <div className="flex items-center justify-center h-64">Loading...</div>
-    );
-  }
+export const Lineages = ({ lineages }) => {
+  const duos = lineages?.by_duo || [];
+  if (!duos.length) return null;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] container-padding py-6 space-y-8">
-      <div>
-        <button className="flex items-center gap-1" onClick={() => navigate(`/league/${uuid}`)}>
-          <ArrowBackIcon /> Back
-        </button>
-        <h1 className="text-[32px] font-bold leading-none pt-3 text-primary">
-          {allTime.league} History
-        </h1>
+    <section>
+      <h2 className="mb-4 header-3">Team Lineages</h2>
+      <div className="space-y-3">
+        {duos.map((duo, i) => (
+          <div className="p-4 card" key={i + "_duo"}>
+            <h3 className="font-semibold">{duo.players.join(" & ")}</h3>
+            <div className="text-sm text-light">
+              {duo.appearances.map((a, j) => (
+                <p key={j + "_appearance"}>
+                  {a.brolympics}:{" "}
+                  <span className="text-near-black">{a.team_name}</span>
+                </p>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      <Championships championships={allTime.championships} />
-      <Leaderboard leaderboard={allTime.leaderboard} />
-      <Events eventTypes={eventTypes} />
-      <Lineages lineages={allTime.team_lineages} />
-    </div>
+    </section>
   );
 };
-
-export default LeagueHistory;

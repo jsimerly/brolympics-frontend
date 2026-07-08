@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { fetchLeagueDetail } from "../../../api/client";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import LeagueSettings from "./LeagueSettings";
-import LeagueHistory from "./LeagueHistory";
 import League from "./League";
 
 const LeagueRouter = () => {
@@ -34,7 +33,6 @@ const LeagueRouter = () => {
           path="/settings"
           element={<LeagueSettings leagueInfo={leagueInfo} />}
         />
-        <Route path="/history" element={<LeagueHistory />} />
         <Route
           path="/create-brolympics"
           element={<CreateBrolympicsManager />}

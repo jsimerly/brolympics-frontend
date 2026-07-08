@@ -5,7 +5,8 @@ export const fetchLeagues = () =>
   api.get("/api/leagues/").then((r) => r.data);
 
 /** League page data: the league + its brolympics categorized by state.
- * Completed bros get their podium attached (winner/second/third names). */
+ * Completed bros get their podium attached (top-3 rows with team img +
+ * roster names), newest first. */
 export const fetchLeagueDetail = async (uuid) => {
   const [league, bros] = await Promise.all([
     fetchLeague(uuid),
@@ -15,15 +16,13 @@ export const fetchLeagueDetail = async (uuid) => {
     bros
       .filter((b) => b.is_complete)
       .map(async (bro) => {
-        const standings = await fetchBrolympicsStandings(bro.uuid);
-        const at = (rank) =>
-          standings
-            .filter((row) => row.rank === rank)
-            .map((row) => row.team.name)
-            .join(", ") || null;
-        return { ...bro, winner: at(1), second: at(2), third: at(3) };
+        const standings = await fetchBrolympicsStandings(bro.uuid).catch(
+          () => []
+        );
+        return { ...bro, podium: standings.filter((row) => row.rank <= 3) };
       })
   );
+  completed.reverse();
   return {
     ...league,
     current_brolympics: bros.filter((b) => b.is_active),
