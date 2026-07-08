@@ -137,25 +137,25 @@ const Team = ({ status, teams, default_uuid }) => {
 
   return (
     <div className="max-w-4xl p-2">
-      <div className="mb-4">
-        <label
-          htmlFor="team-select"
-          className="block mb-2 text-sm font-medium text-gray-700"
-        >
-          Select a team:
-        </label>
-        <select
-          id="team-select"
-          value={selectedTeamId}
-          onChange={handleTeamChange}
-          className="block w-full p-2 text-2xl bg-white border rounded-md shadow-sm border-tertiary focus:outline-none focus:ring-tertiary focus:border-tertiary"
-        >
-          {teams.map((team) => (
-            <option className="text-sm" key={team.uuid} value={team.uuid}>
-              {team.name}
-            </option>
-          ))}
-        </select>
+      <div
+        className="flex gap-2 px-2 py-3 -mx-2 overflow-x-auto"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+      >
+        {teams.map((team) => (
+          <button
+            key={team.uuid}
+            onClick={() =>
+              handleTeamChange({ target: { value: team.uuid } })
+            }
+            className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full border transition-colors ${
+              team.uuid === selectedTeamId
+                ? "bg-tertiary text-white border-tertiary"
+                : "bg-white text-near-black border-gray-200"
+            }`}
+          >
+            {team.name}
+          </button>
+        ))}
       </div>
       {teamInfo && <TeamInfo team={teamInfo.team} />}
 

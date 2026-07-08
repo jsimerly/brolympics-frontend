@@ -65,8 +65,7 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
     getEventInfo();
   }, [selectedEventId, eventType]);
 
-  const handleEventChange = (e) => {
-    const selectedEvent = events.find((event) => event.uuid === e.target.value);
+  const handleEventSelect = (selectedEvent) => {
     if (selectedEvent) {
       setSelectedEventId(selectedEvent.uuid);
       localStorage.setItem("selectedEventUuid", selectedEvent.uuid);
@@ -74,6 +73,8 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
       navigate(`/b/${uuid}/event/${selectedEvent.type}/${selectedEvent.uuid}`);
     }
   };
+  const handleEventChange = (e) =>
+    handleEventSelect(events.find((event) => event.uuid === e.target.value));
 
   const renderEventComponent = () => {
     if (status === "pre" || status === "pre_admin") {
@@ -98,25 +99,23 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="p-2 mb-4">
-        <label
-          htmlFor="event-select"
-          className="block mb-2 text-sm font-medium text-gray-700"
-        >
-          Select an event:
-        </label>
-        <select
-          id="event-select"
-          value={selectedEventId || ""}
-          onChange={handleEventChange}
-          className="block w-full p-2 text-2xl bg-white border rounded-md shadow-sm border-secondary focus:outline-none focus:ring-secondary focus:border-secondary"
-        >
-          {events.map((event) => (
-            <option key={event.uuid} value={event.uuid}>
-              {event.name}
-            </option>
-          ))}
-        </select>
+      <div
+        className="flex gap-2 px-2 py-3 -mx-2 overflow-x-auto"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+      >
+        {events.map((event) => (
+          <button
+            key={event.uuid}
+            onClick={() => handleEventSelect(event)}
+            className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full border transition-colors ${
+              event.uuid === selectedEventId
+                ? "bg-primary text-white border-primary"
+                : "bg-white text-near-black border-gray-200"
+            }`}
+          >
+            {event.name}
+          </button>
+        ))}
       </div>
       {eventInfo ? (
         renderEventComponent()
