@@ -47,10 +47,12 @@ const Brolympics = () => {
 
   useEffect(() => {
     if (broInfo) {
-      if (broInfo.is_active) setStatus("active");
-      else if (!broInfo.is_complete && broInfo.is_admin) setStatus("pre_admin");
-      else if (!broInfo.is_complete && !broInfo.is_admin) setStatus("pre");
-      else if (broInfo.is_complete) setStatus("post");
+      // complete wins over active: a finished bro is history even if a
+      // stale is_active flag survives
+      if (broInfo.is_complete) setStatus("post");
+      else if (broInfo.is_active) setStatus("active");
+      else if (broInfo.is_admin) setStatus("pre_admin");
+      else setStatus("pre");
     }
   }, [broInfo]);
 
