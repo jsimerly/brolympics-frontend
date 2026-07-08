@@ -5,6 +5,8 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import SearchIcon from "@mui/icons-material/Search";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 import HistoryIcon from "@mui/icons-material/History";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -24,7 +26,7 @@ const AddButton = ({ added }) => (
   </span>
 );
 
-const PresetGrid = ({ presets, isAdded, toggle }) => (
+const PresetGrid = ({ presets, isAdded, toggle, onInfo }) => (
   <div className="grid grid-cols-2 gap-1.5">
     {presets.map((row) => {
       const added = isAdded(row.name, row.format);
@@ -37,8 +39,19 @@ const PresetGrid = ({ presets, isAdded, toggle }) => (
           }`}
         >
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium leading-tight truncate">
+            <span className="flex items-center gap-1 text-sm font-medium leading-tight truncate">
               {row.name}
+              <span
+                role="button"
+                aria-label={`About ${row.name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInfo(row);
+                }}
+                className="text-light hover:text-primary"
+              >
+                <InfoOutlinedIcon sx={{ fontSize: 14 }} />
+              </span>
             </span>
             <span className="text-[10px] text-light">
               {FORMAT_LABEL[row.format] || row.format}
@@ -105,6 +118,7 @@ const AddEvent = ({
   const [showCustom, setShowCustom] = useState(false);
   const [query, setQuery] = useState("");
   const [browsing, setBrowsing] = useState(false);
+  const [infoPreset, setInfoPreset] = useState(null);
   const { data: eventTypes } = useCachedFetch(
     leagueUuid ? `event-types:${leagueUuid}` : null,
     () => fetchEventTypes(leagueUuid)
@@ -144,7 +158,11 @@ const AddEvent = ({
             fromLineage: true,
             lastPlayed: row.last_played,
           }
-        : { name: row.name, is_high_score_wins: row.is_high_score_wins },
+        : {
+            name: row.name,
+            is_high_score_wins: row.is_high_score_wins,
+            ...(row.rules && { rules: row.rules }),
+          },
     ]);
   };
 
@@ -235,6 +253,7 @@ const AddEvent = ({
                   presets={presetResults}
                   isAdded={isAdded}
                   toggle={toggle}
+                  onInfo={setInfoPreset}
                 />
                 {presetResults.length === 0 && (
                   <p className="px-1 text-sm text-light">
@@ -253,6 +272,7 @@ const AddEvent = ({
                       presets={presets}
                       isAdded={isAdded}
                       toggle={toggle}
+                      onInfo={setInfoPreset}
                     />
                   </div>
                 ))}
@@ -272,6 +292,7 @@ const AddEvent = ({
                   presets={presetResults}
                   isAdded={isAdded}
                   toggle={toggle}
+                  onInfo={setInfoPreset}
                 />
                 <button
                   className="w-full py-2 text-sm font-semibold border border-gray-200 rounded-lg text-primary bg-white"
@@ -318,6 +339,46 @@ const AddEvent = ({
           </div>
         )}
       </div>
+      {infoPreset && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setInfoPreset(null)}
+        >
+          <div
+            className="w-full max-w-md p-4 bg-white rounded-t-2xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-bold">{infoPreset.name}</h3>
+                <span className="text-xs text-light">
+                  {FORMAT_LABEL[infoPreset.format] || infoPreset.format}
+                  {infoPreset.is_high_score_wins === false &&
+                    " · low score wins"}
+                </span>
+              </div>
+              <button onClick={() => setInfoPreset(null)} aria-label="Close">
+                <CloseIcon className="text-light" />
+              </button>
+            </div>
+            <p className="pt-3 text-sm">
+              {infoPreset.description ||
+                "No write-up for this one yet — you know how you play it."}
+            </p>
+            <button
+              className="w-full py-2.5 mt-4 font-semibold text-white rounded-full bg-primary"
+              onClick={() => {
+                toggle(infoPreset);
+                setInfoPreset(null);
+              }}
+            >
+              {isAdded(infoPreset.name, infoPreset.format)
+                ? "Remove from lineup"
+                : "Add to lineup"}
+            </button>
+          </div>
+        </div>
+      )}
     </CreateWrapper>
   );
 };

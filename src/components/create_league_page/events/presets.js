@@ -5,21 +5,21 @@
  * "Popular" before the user searches. */
 export const PRESET_EVENTS = [
   // the classics
-  { name: "Cornhole", format: "h2h" , category: "The Classics" },
-  { name: "Beer Pong", format: "h2h" , category: "The Classics" },
-  { name: "Flip Cup", format: "h2h" , category: "The Classics" },
-  { name: "Spikeball", format: "h2h" , category: "The Classics" },
-  { name: "Beer Die", format: "h2h" , category: "The Classics" },
-  { name: "Kan Jam", format: "h2h" , category: "The Classics" },
-  { name: "Mini-Golf", format: "ind", is_high_score_wins: false , category: "The Classics" },
-  { name: "Bowling", format: "ind" , category: "The Classics" },
-  { name: "Trivia", format: "team" , category: "The Classics" },
-  { name: "Mario Kart", format: "ffa" , category: "The Classics" },
+  { description: "Toss bags at a raised board: 3 for the hole, 1 on the board. First to 21 by cancel scoring.", name: "Cornhole", format: "h2h" , category: "The Classics" },
+  { description: "Sink your cups into theirs across the table. Standard 10-cup racks, re-racks by house rule.", name: "Beer Pong", format: "h2h" , category: "The Classics" },
+  { description: "Relay chug-and-flip. First team to run the table wins the leg.", name: "Flip Cup", format: "h2h" , category: "The Classics" },
+  { description: "Roundnet: 2v2 around the net, 3 touches a side, rally scoring to 21.", name: "Spikeball", format: "h2h" , category: "The Classics" },
+  { description: "Table dice: loft the die at the far edge, defend your side, points to 11. House rules vary wildly.", name: "Beer Die", format: "h2h" , category: "The Classics" },
+  { description: "Frisbee at the can: deflections score, slot shots win instantly.", name: "Kan Jam", format: "h2h" , category: "The Classics" },
+  { description: "Lowest combined strokes across the course wins. Par is a suggestion.", name: "Mini-Golf", format: "ind", is_high_score_wins: false , category: "The Classics" },
+  { description: "Standard ten-pin, one game per player. Highest combined pins.", name: "Bowling", format: "ind" , category: "The Classics" },
+  { description: "Pub-style rounds, one answer sheet per team. Highest total score.", name: "Trivia", format: "team" , category: "The Classics" },
+  { description: "Grand Prix heats: race for placements, points by finishing position.", name: "Mario Kart", format: "ffa" , category: "The Classics" },
 
   // backyard + bar games
   { name: "Ladder Toss", format: "h2h" , category: "Backyard & Bar" },
   { name: "Washers", format: "h2h" , category: "Backyard & Bar" },
-  { name: "Horseshoes", format: "h2h" , category: "Backyard & Bar" },
+  { description: "Ringers are 3, leaners 1, closest counts. First to 21.", name: "Horseshoes", format: "h2h" , category: "Backyard & Bar" },
   { name: "Bocce", format: "h2h" , category: "Backyard & Bar" },
   { name: "Croquet", format: "h2h" , category: "Backyard & Bar" },
   { name: "Polish Horseshoes", format: "h2h" , category: "Backyard & Bar" },
@@ -39,7 +39,7 @@ export const PRESET_EVENTS = [
   { name: "Slip N Slide Kickball", format: "team" , category: "Backyard & Bar" },
 
   // racket + net sports
-  { name: "Pickleball", format: "h2h" , category: "Racket & Net" },
+  { description: "Doubles to 11, win by 2, serve underhand. The kitchen is lava.", name: "Pickleball", format: "h2h" , category: "Racket & Net" },
   { name: "Tennis", format: "h2h" , category: "Racket & Net" },
   { name: "Badminton", format: "h2h" , category: "Racket & Net" },
   { name: "Volleyball", format: "h2h" , category: "Racket & Net" },
@@ -58,7 +58,7 @@ export const PRESET_EVENTS = [
 
   // strength + feats
   { name: "Arm Wrestling", format: "h2h" , category: "Strength & Feats" },
-  { name: "Home Run Derby", format: "ind" , category: "Strength & Feats" },
+  { description: "Fixed pitch count, most homers wins. Pick a fence, any fence.", name: "Home Run Derby", format: "ind" , category: "Strength & Feats" },
   { name: "Free Throw Contest", format: "ind" , category: "Strength & Feats" },
   { name: "Three-Point Contest", format: "ind" , category: "Strength & Feats" },
   { name: "Longest Drive", format: "ind" , category: "Strength & Feats" },
@@ -89,7 +89,7 @@ export const PRESET_EVENTS = [
   { name: "100m Dash", format: "ind", is_high_score_wins: false , category: "Races" },
   { name: "Swimming Race", format: "ind", is_high_score_wins: false , category: "Races" },
   { name: "Go-Karting", format: "ind", is_high_score_wins: false , category: "Races" },
-  { name: "Beer Mile", format: "ind", is_high_score_wins: false , category: "Races" },
+  { description: "A mile in four laps, a beer before each lap. Fastest finisher wins; puke-penalty by house rule.", name: "Beer Mile", format: "ind", is_high_score_wins: false , category: "Races" },
   { name: "Relay Race", format: "team", is_high_score_wins: false , category: "Races" },
   { name: "Canoe Race", format: "team", is_high_score_wins: false , category: "Races" },
   { name: "Three-Legged Race", format: "team", is_high_score_wins: false , category: "Races" },
@@ -103,7 +103,7 @@ export const PRESET_EVENTS = [
   { name: "Chug Race", format: "ind", is_high_score_wins: false , category: "Eating & Drinking" },
 
   // brains + party
-  { name: "Poker", format: "ffa" , category: "Brains & Party" },
+  { description: "Texas Hold'em freezeout: placements by knockout order.", name: "Poker", format: "ffa" , category: "Brains & Party" },
   { name: "Blackjack", format: "ffa" , category: "Brains & Party" },
   { name: "Euchre", format: "h2h" , category: "Brains & Party" },
   { name: "Spades", format: "h2h" , category: "Brains & Party" },
