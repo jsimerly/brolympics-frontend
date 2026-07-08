@@ -20,14 +20,16 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
       : null);
 
   return (
-    <div className="flex items-center gap-2 py-1 text-sm border-t first:border-t-0">
+    <div className="flex items-start gap-2 py-1 text-sm border-t first:border-t-0">
       {showGameNumber && (
-        <span className="w-14 text-xs text-light">Game {gameNumber}</span>
+        <span className="w-14 pt-0.5 text-xs shrink-0 text-light">
+          Game {gameNumber}
+        </span>
       )}
-      <span className="w-10 font-bold">
+      <span className="w-10 font-bold shrink-0">
         {contest.is_complete && total != null ? total : "–"}
       </span>
-      <span className="flex-grow truncate text-light">
+      <span className="flex-grow min-w-0 text-light">
         {playerEntries.length > 0
           ? playerEntries
               .map((e) => `${e.player_name} ${e.score ?? "—"}`)
