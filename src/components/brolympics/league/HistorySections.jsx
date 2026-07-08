@@ -93,25 +93,25 @@ const PlayerCareer = ({ playerUuid }) => {
   const wins = career.disciplines
     .filter((d) => d.event_wins > 0)
     .map((d) => ({ name: d.event_type, count: d.event_wins }));
-  // podium chips only count finishes beyond the wins already shown
-  const podiums = career.disciplines
-    .filter((d) => d.podiums - d.event_wins > 0)
-    .map((d) => ({ name: d.event_type, count: d.podiums - d.event_wins }));
+  const seconds = career.disciplines
+    .filter((d) => d.seconds > 0)
+    .map((d) => ({ name: d.event_type, count: d.seconds }));
+  const thirds = career.disciplines
+    .filter((d) => d.thirds > 0)
+    .map((d) => ({ name: d.event_type, count: d.thirds }));
   const records = career.records || [];
 
   return (
     <div className="p-2 space-y-3">
       <PlayerTeams teams={career.teams} />
-      {(wins.length > 0 || podiums.length > 0 || records.length > 0) && (
+      {(wins.length > 0 ||
+        seconds.length > 0 ||
+        thirds.length > 0 ||
+        records.length > 0) && (
         <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
           {wins.map((it) => (
             <AchievementChip
-              icon={
-                <EmojiEventsOutlinedIcon
-                  sx={{ fontSize: 14 }}
-                  className="text-yellow-500"
-                />
-              }
+              icon={<img src={Gold} alt="" className="h-3.5" />}
               name={it.name}
               count={it.count}
               title="Event wins"
@@ -119,19 +119,24 @@ const PlayerCareer = ({ playerUuid }) => {
               key={"win_" + it.name}
             />
           ))}
-          {podiums.map((it) => (
+          {seconds.map((it) => (
             <AchievementChip
-              icon={
-                <WorkspacePremiumOutlinedIcon
-                  sx={{ fontSize: 14 }}
-                  className="text-gray-400"
-                />
-              }
+              icon={<img src={Silver} alt="" className="h-3.5" />}
               name={it.name}
               count={it.count}
-              title="Podium finishes"
+              title="Second-place finishes"
               className="bg-gray-50"
-              key={"podium_" + it.name}
+              key={"second_" + it.name}
+            />
+          ))}
+          {thirds.map((it) => (
+            <AchievementChip
+              icon={<img src={Bronze} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Third-place finishes"
+              className="bg-gray-50"
+              key={"third_" + it.name}
             />
           ))}
           {records.map((r) => (
