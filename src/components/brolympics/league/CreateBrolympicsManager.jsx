@@ -9,17 +9,25 @@ import {
   createEvent,
   defaultStagesFor,
 } from "../../../api/client";
+import usePersistentState, {
+  clearPersistentState,
+} from "../../../hooks/usePersistentState";
 
 const CreateBrolympicsManager = () => {
-  const [step, setStep] = useState(1);
-  const [brolympics, setBrolympics] = useState({});
-  const [h2hEvents, setH2hEvents] = useState([]);
-  const [indEvents, setIndEvents] = useState([]);
-  const [teamEvents, setTeamEvents] = useState([]);
-  const [ffaEvents, setFfaEvents] = useState([]);
+  const { uuid } = useParams();
+  const K = (name) => `wizard:bro:${uuid}:${name}`;
+  const [step, setStep] = usePersistentState(K("step"), 1);
+  const [brolympics, setBrolympics] = usePersistentState(K("bro"), {});
+  const [h2hEvents, setH2hEvents] = usePersistentState(K("h2h"), []);
+  const [indEvents, setIndEvents] = usePersistentState(K("ind"), []);
+  const [teamEvents, setTeamEvents] = usePersistentState(K("team"), []);
+  const [ffaEvents, setFfaEvents] = usePersistentState(K("ffa"), []);
   const [link, setLink] = useState();
   const { showNotification } = useNotification();
-  const { uuid } = useParams();
+  const clearWizard = () =>
+    clearPersistentState(
+      ...["step", "bro", "h2h", "ind", "team", "ffa", "form"].map(K)
+    );
 
   const nextStep = () => {
     if (step < 3) {
@@ -65,6 +73,7 @@ const CreateBrolympicsManager = () => {
         showNotification(warnings.join(" — "), "border-yellow-500");
       }
       setLink(newBro.uuid);
+      clearWizard();
       nextStep();
     } catch (error) {
       console.log(error);
@@ -86,10 +95,12 @@ const CreateBrolympicsManager = () => {
           totalSteps={3}
           nextStep={nextStep}
           setBrolympics={setBrolympics}
+          storageKey={K("form")}
         />
         <AddEvent
           step={2}
           totalSteps={3}
+          back={prevStep}
           leagueUuid={uuid}
           h2hEvents={h2hEvents}
           indEvents={indEvents}

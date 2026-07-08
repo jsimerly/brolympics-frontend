@@ -58,6 +58,7 @@ const EventComp = ({ header, events, setter }) => {
 const AddEvent = ({
   step,
   totalSteps,
+  back,
   leagueUuid,
   h2hEvents,
   indEvents,
@@ -131,6 +132,7 @@ const AddEvent = ({
       button_text={totalEvents > 0 ? `Create ${totalEvents} Events` : "Skip for now"}
       step={step}
       totalSteps={totalSteps}
+      back={back}
       submit={createAll}
       title="Add Events"
       description="These are the events that make up the competition. You can reshape any of them later."

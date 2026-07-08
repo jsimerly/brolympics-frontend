@@ -2,15 +2,22 @@ import { useState } from "react";
 import CreateWrapper from "./CreateWrapper";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
+import usePersistentState from "../../hooks/usePersistentState";
 
-const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
-  const [form, setForm] = useState({
+const CreateBrolympics = ({
+  step,
+  totalSteps,
+  nextStep,
+  setBrolympics,
+  storageKey,
+}) => {
+  const [form, setForm] = usePersistentState(storageKey || "wizard:bro-form", {
     name: "",
     img: null,
-    imgSrc: null,
     projected_start_date: "",
     projected_end_date: "",
   });
+  const [imgSrc, setImgSrc] = useState(null); // pre-crop original, not persisted
   const [cropping, setCropping] = useState(false);
 
   const set = (key) => (e) =>
@@ -37,7 +44,7 @@ const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const imageDataUrl = await readImageFile(file);
-      setForm((prev) => ({ ...prev, img: file, imgSrc: imageDataUrl }));
+      setImgSrc(imageDataUrl);
       setCropping(true);
     }
   };
@@ -143,7 +150,7 @@ const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
             )}
           </label>
           {cropping && (
-            <ImageCropper img={form.imgSrc} setCroppedImage={setCroppedImage} />
+            <ImageCropper img={imgSrc} setCroppedImage={setCroppedImage} />
           )}
         </div>
       </div>

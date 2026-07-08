@@ -1,5 +1,6 @@
 import React from "react";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 /** Shared wizard shell: step dots, title block, scrollable body, and a
  * primary action that disables until the page is valid. */
@@ -8,6 +9,7 @@ const CreateWrapper = ({
   step,
   totalSteps,
   submit,
+  back,
   disabled = false,
   title,
   description,
@@ -39,7 +41,14 @@ const CreateWrapper = ({
               </span>
             </div>
           )}
-          <h2 className="header-3 text-near-black">{title}</h2>
+          <div className="flex items-center gap-2">
+            {back && (
+              <button onClick={back} aria-label="Back" className="text-light">
+                <ArrowBackIcon />
+              </button>
+            )}
+            <h2 className="header-3 text-near-black">{title}</h2>
+          </div>
           <p className="text-sm text-light">{description}</p>
         </div>
         <div className="flex-grow px-4 overflow-y-auto">{children}</div>
