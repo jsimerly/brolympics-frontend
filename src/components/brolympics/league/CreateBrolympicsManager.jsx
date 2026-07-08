@@ -49,6 +49,12 @@ const CreateBrolympicsManager = () => {
           event_type_name: event.name,
           format: event.format,
           stages: event.stages || defaultStagesFor(event.format),
+          ...(event.is_high_score_wins != null && {
+            is_high_score_wins: event.is_high_score_wins,
+          }),
+          ...(event.location && { location: event.location }),
+          ...(event.rules && { rules: event.rules }),
+          ...(event.config && { config: event.config }),
         });
         if (created.warnings?.length) {
           warnings.push(`${event.name}: ${created.warnings.join(" ")}`);
@@ -82,6 +88,8 @@ const CreateBrolympicsManager = () => {
         />
         <AddEvent
           step={2}
+          totalSteps={3}
+          leagueUuid={uuid}
           h2hEvents={h2hEvents}
           indEvents={indEvents}
           teamEvents={teamEvents}
