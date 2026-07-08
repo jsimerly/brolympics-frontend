@@ -1,7 +1,9 @@
 import React from "react";
 
-const Comp_ind = ({ entries = [], is_complete }) => {
-  const teamEntry = entries.find((e) => e.team && !e.player);
+/** One outing result card: the team, its players' scores when present, and
+ * the team score when present. Covers both ind and team formats. */
+const Comp_outing = ({ entries = [], is_complete }) => {
+  const teamEntry = entries.find((e) => e.team && !e.player) || entries[0];
   const playerEntries = entries.filter((e) => e.player);
 
   return (
@@ -36,4 +38,4 @@ const Comp_ind = ({ entries = [], is_complete }) => {
   );
 };
 
-export default Comp_ind;
+export default Comp_outing;

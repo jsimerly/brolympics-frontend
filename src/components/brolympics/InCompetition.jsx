@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import InCompetitions_h2h from "./inCompetitions/InCompetitions_h2h";
-import InCompetition_ind from "./inCompetitions/InCompetition_ind";
-import InCompetition_team from "./inCompetitions/InCompetition_team";
+import InCompetition_outing from "./inCompetitions/InCompetition_outing";
 import { fetchContest } from "../../api/client";
 
 const InCompetition = () => {
@@ -26,9 +25,8 @@ const InCompetition = () => {
     case "h2h":
       return <InCompetitions_h2h contest={contest} />;
     case "ind":
-      return <InCompetition_ind contest={contest} />;
     case "team":
-      return <InCompetition_team contest={contest} />;
+      return <InCompetition_outing contest={contest} />;
     default:
       return (
         <div className="p-6 text-center">

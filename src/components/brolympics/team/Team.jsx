@@ -6,8 +6,7 @@ import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 
 import Event_h2h from "./events/Event_h2h";
-import Event_ind from "./events/Event_ind";
-import Event_team from "./events/Event_team";
+import Event_outing from "./events/Event_outing";
 import { fetchTeamInfo } from "../../../api/client";
 
 const Team = ({ status, teams, default_uuid }) => {
@@ -131,16 +130,8 @@ const Team = ({ status, teams, default_uuid }) => {
   };
 
   const getEventComponent = (type, props) => {
-    switch (type) {
-      case "h2h":
-        return <Event_h2h {...props} teamUuid={selectedTeamId} />;
-      case "ind":
-        return <Event_ind {...props} teamUuid={selectedTeamId} />;
-      case "team":
-        return <Event_team {...props} teamUuid={selectedTeamId} />;
-      default:
-        return null;
-    }
+    const Component = type === "h2h" ? Event_h2h : Event_outing;
+    return <Component {...props} teamUuid={selectedTeamId} />;
   };
 
   return (

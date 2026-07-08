@@ -4,18 +4,11 @@ import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Bracket from "./Bracket";
 import Comp_h2h from "./Competitions/Comp_h2h";
-import Comp_ind from "./Competitions/Comp_ind.jsx";
-import Comp_team from "./Competitions/Comp_team.jsx";
+import Comp_outing from "./Competitions/Comp_outing.jsx";
 import { EventInfo } from "./EventInfo.jsx";
 
 const EventActive = ({ eventInfo }) => {
-  const componentMap = {
-    h2h: Comp_h2h,
-    ind: Comp_ind,
-    team: Comp_team,
-  };
-
-  const CompComp = componentMap[eventInfo?.type] || Comp_ind;
+  const CompComp = eventInfo?.type === "h2h" ? Comp_h2h : Comp_outing;
 
   const getFontSize = (name) => {
     if (name) {

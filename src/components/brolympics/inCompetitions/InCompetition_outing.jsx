@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
-const InCompetition_ind = ({ contest }) => {
+/** Score entry for outing contests: one input per roster player for ind
+ * events, a single team input for team events. */
+const InCompetition_outing = ({ contest }) => {
+  const isInd = contest.format === "ind";
   const [scores, setScores] = useState({});
+  const [teamScore, setTeamScore] = useState("");
   const [team, setTeam] = useState(null);
   const { showNotification } = useNotification();
 
@@ -11,6 +15,7 @@ const InCompetition_ind = ({ contest }) => {
     contest.entries.find((e) => e.team && !e.player) || contest.entries[0];
 
   useEffect(() => {
+    if (!isInd) return;
     const getTeam = async () => {
       try {
         setTeam(await fetchTeam(teamEntry.team));
@@ -20,30 +25,42 @@ const InCompetition_ind = ({ contest }) => {
       }
     };
     getTeam();
-  }, [teamEntry.team]);
+  }, [teamEntry.team, isInd]);
 
-  const handleScoreChange = (playerUuid) => (e) => {
+  const numericChange = (setter) => (e) => {
     const value = e.target.value;
     if (value === "" || /^\d+$/.test(value)) {
-      setScores((prev) => ({ ...prev, [playerUuid]: value }));
+      setter(value);
     }
   };
 
+  const handleScoreChange = (playerUuid) =>
+    numericChange((value) =>
+      setScores((prev) => ({ ...prev, [playerUuid]: value }))
+    );
+
   const handleSubmitClicked = async () => {
-    const missing = team.players.some((p) => !scores[p.uuid]?.length);
-    if (missing) {
-      showNotification(
-        "Please enter a score for every player.",
-        "border-yellow-500"
-      );
-      return;
-    }
     try {
-      await recordContest(contest.uuid, {
-        player_scores: Object.fromEntries(
-          team.players.map((p) => [p.uuid, Number(scores[p.uuid])])
-        ),
-      });
+      if (isInd) {
+        if (team.players.some((p) => !scores[p.uuid]?.length)) {
+          showNotification(
+            "Please enter a score for every player.",
+            "border-yellow-500"
+          );
+          return;
+        }
+        await recordContest(contest.uuid, {
+          player_scores: Object.fromEntries(
+            team.players.map((p) => [p.uuid, Number(scores[p.uuid])])
+          ),
+        });
+      } else {
+        if (teamScore === "") {
+          showNotification("Please enter a score.", "border-yellow-500");
+          return;
+        }
+        await recordContest(contest.uuid, { team_score: Number(teamScore) });
+      }
       showNotification("Scores submitted successfully", "border-primary");
       window.location.reload();
     } catch (error) {
@@ -62,7 +79,7 @@ const InCompetition_ind = ({ contest }) => {
     }
   };
 
-  if (!team) return <div className="p-6 text-center">Loading...</div>;
+  if (isInd && !team) return <div className="p-6 text-center">Loading...</div>;
 
   return (
     <div className="min-h-[calc(100vh-160px)] flex flex-col justify-between p-2">
@@ -75,28 +92,44 @@ const InCompetition_ind = ({ contest }) => {
         <div className="p-4">
           <div className="flex items-center gap-4 mb-6">
             <img
-              src={team.img}
-              alt={`${team.name} logo`}
+              src={isInd ? team.img : teamEntry?.team_img}
+              alt="team logo"
               className="object-cover w-20 h-20 rounded-md"
             />
-            <h3 className="text-3xl font-semibold">{team.name}</h3>
+            <h3 className="text-3xl font-semibold">
+              {isInd ? team.name : teamEntry?.team_name}
+            </h3>
           </div>
-          {team.players.map((player) => (
-            <div
-              key={player.uuid}
-              className="flex items-center justify-between mb-4 last:mb-0"
-            >
-              <span className="text-lg">{player.name}</span>
+          {isInd ? (
+            team.players.map((player) => (
+              <div
+                key={player.uuid}
+                className="flex items-center justify-between mb-4 last:mb-0"
+              >
+                <span className="text-lg">{player.name}</span>
+                <input
+                  value={scores[player.uuid] || ""}
+                  onChange={handleScoreChange(player.uuid)}
+                  className="w-20 h-12 text-lg font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d*"
+                />
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-semibold">Team Score</span>
               <input
-                value={scores[player.uuid] || ""}
-                onChange={handleScoreChange(player.uuid)}
-                className="w-20 h-12 text-lg font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
+                value={teamScore}
+                onChange={numericChange(setTeamScore)}
+                className="w-24 h-14 text-xl font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
                 type="text"
                 inputMode="numeric"
                 pattern="\d*"
               />
             </div>
-          ))}
+          )}
         </div>
       </div>
       <div className="flex gap-2 mt-4">
@@ -117,4 +150,4 @@ const InCompetition_ind = ({ contest }) => {
   );
 };
 
-export default InCompetition_ind;
+export default InCompetition_outing;

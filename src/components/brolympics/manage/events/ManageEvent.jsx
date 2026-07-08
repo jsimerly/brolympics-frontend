@@ -2,14 +2,19 @@ import ManageEventWrapper from "./ManageEventWrapper";
 import { useState, useEffect } from "react";
 import ScoringSettings from "./ScoringSettings";
 import { updateEvent, deleteEvent } from "../../../../api/client";
+import ToggleButton from "../../../Util/ToggleButton";
 import PopupContinue from "../../../Util/PopupContinue";
 import { useNotification } from "../../../Util/Notification";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-const ManageEvent_h2h = ({ event }) => {
+/** Settings editor for any event. h2h events expose their stage config
+ * (matches per team, bracket size) while unstarted; ind/team events expose
+ * the score-display toggle. Everything else is shared. */
+const ManageEvent = ({ event }) => {
   const [formValues, setFormValues] = useState({});
   const { showNotification } = useNotification();
+  const isH2h = (event.format || event.type) === "h2h";
   const structureLocked = event.is_active || event.is_complete;
 
   useEffect(() => {
@@ -33,6 +38,20 @@ const ManageEvent_h2h = ({ event }) => {
       ...prevFormValues,
       [name]: value,
     }));
+  };
+
+  const handleRulesChange = (content) => {
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      rules: content,
+    }));
+  };
+
+  const displayAvgToggle = () => {
+    setFormValues({
+      ...formValues,
+      display_avg_scores: !formValues.display_avg_scores,
+    });
   };
 
   const buildStages = () =>
@@ -62,11 +81,14 @@ const ManageEvent_h2h = ({ event }) => {
           min_score: formValues.min_score ?? null,
           max_score: formValues.max_score ?? null,
           decimal_places: formValues.decimal_places ?? null,
+          ...(isH2h
+            ? {}
+            : { display_avg_scores: !!formValues.display_avg_scores }),
         },
         ...(formValues.name && formValues.name !== event.name
           ? { name_override: formValues.name }
           : {}),
-        ...(structureLocked ? {} : { stages: buildStages() }),
+        ...(isH2h && !structureLocked ? { stages: buildStages() } : {}),
       };
       await updateEvent(event.uuid, patch);
       showNotification(`${event.name} has been updated.`, "!border-primary");
@@ -78,13 +100,6 @@ const ManageEvent_h2h = ({ event }) => {
           : "There was an issue when attemping to update this event."
       );
     }
-  };
-
-  const handleRulesChange = (content) => {
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      rules: content,
-    }));
   };
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -123,7 +138,6 @@ const ManageEvent_h2h = ({ event }) => {
     ],
   };
 
-  // Quill editor formats
   const formats = [
     "header",
     "font",
@@ -150,44 +164,74 @@ const ManageEvent_h2h = ({ event }) => {
         continueFunc={deleteEventFunc}
       />
       <div className="flex flex-col">
-        <h2 className="py-2">Match Settings</h2>
-        {structureLocked && (
-          <p className="text-[10px] text-errorRed">
-            This event has started; its structure can no longer change.
-          </p>
+        {isH2h ? (
+          <>
+            <h2 className="py-2">Match Settings</h2>
+            {structureLocked && (
+              <p className="text-[10px] text-errorRed">
+                This event has started; its structure can no longer change.
+              </p>
+            )}
+            <div className="flex items-center justify-between min-h-[50px]">
+              <div>
+                <h3 className="font-semibold">Number of Matches</h3>
+                <p className="text-[10px]">
+                  The number of matches each team will compete in during group
+                  play.
+                </p>
+              </div>
+              <input
+                value={formValues.n_matches || ""}
+                name="n_matches"
+                onChange={handleInputChange}
+                disabled={structureLocked}
+                className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+                type="number"
+              />
+            </div>
+            <div className="flex items-center justify-between min-h-[50px]">
+              <div>
+                <h3 className="font-semibold">Bracket Size</h3>
+                <p className="text-[10px]">
+                  The number of teams to make the playoffs.
+                </p>
+              </div>
+              <input
+                value={formValues.bracket_take || ""}
+                name="bracket_take"
+                onChange={handleInputChange}
+                disabled={structureLocked}
+                className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+                type="number"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="py-2">Competition Settings</h2>
+            <div className="flex items-center justify-between min-h-[50px]">
+              <div>
+                <h3 className="font-semibold">Display Average Scores</h3>
+                <p className="text-[10px]">
+                  {" "}
+                  Do you want to display average scores or combined scores?{" "}
+                  <br /> Currently set to:{" "}
+                  <span className="font-bold">
+                    {formValues.display_avg_scores
+                      ? "Average Score"
+                      : "Combined Score"}
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={displayAvgToggle}
+                className="text-primary w-[60px]"
+              >
+                <ToggleButton size={50} on={formValues.display_avg_scores} />
+              </button>
+            </div>
+          </>
         )}
-        <div className="flex items-center justify-between min-h-[50px]">
-          <div>
-            <h3 className="font-semibold">Number of Matches</h3>
-            <p className="text-[10px]">
-              The number of matches each team will compete in during group play.
-            </p>
-          </div>
-          <input
-            value={formValues.n_matches || ""}
-            name="n_matches"
-            onChange={handleInputChange}
-            disabled={structureLocked}
-            className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-            type="number"
-          />
-        </div>
-        <div className="flex items-center justify-between min-h-[50px]">
-          <div>
-            <h3 className="font-semibold">Bracket Size</h3>
-            <p className="text-[10px]">
-              The number of teams to make the playoffs.
-            </p>
-          </div>
-          <input
-            value={formValues.bracket_take || ""}
-            name="bracket_take"
-            onChange={handleInputChange}
-            disabled={structureLocked}
-            className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-            type="number"
-          />
-        </div>
 
         <div className="flex flex-col mt-4 space-y-4">
           <div>
@@ -235,4 +279,4 @@ const ManageEvent_h2h = ({ event }) => {
   );
 };
 
-export default ManageEvent_h2h;
+export default ManageEvent;

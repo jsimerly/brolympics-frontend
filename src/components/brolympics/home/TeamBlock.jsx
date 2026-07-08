@@ -15,30 +15,30 @@ const TeamsBlock = ({name, team_1_name, team_1_record, team_1_img, team_2_name, 
             fontSize = '10px'
           }
         }
-        
+
         return (
           <div className=''>
             <div className={`flex ${reverse ? 'flex-row-reverse justify-start' : 'flex-row justify-start'} gap-2`}>
-              <img src={img} className='h-[60px] w-[60px] min-w-[60px] rounded-md'/>              
+              <img src={img} className='h-[60px] w-[60px] min-w-[60px] rounded-md'/>
               <div className={`flex flex-col justify-center items-${reverse ? 'end' : 'start'}`}>
-                <div 
+                <div
                   className={`flex font-bold items-center ${reverse ? 'justify-end text-end' : 'justify-start text-start'}`}
                   style={{ fontSize }}
                 >
                     {name}
                 </div>
-                  {seed ? 
+                  {seed ?
                     <div>#{seed}</div>
-                    :  
+                    :
                     <div className='text-[12px]'>{record}</div>
                   }
-          
+
               </div>
             </div>
         </div>
         );
       };
-      
+
   return (
     <>
         <h2 className='pb-2 font-bold'>{name}</h2>
