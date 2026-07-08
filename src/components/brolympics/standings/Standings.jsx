@@ -173,40 +173,55 @@ const Standings = ({ status, teams }) => {
     );
   };
 
-  const renderPodiums = () =>
-    standingData?.podiums &&
-    standingData.podiums.length > 0 && (
+  const renderPodiums = () => {
+    if (!standingData?.podiums?.length) return null;
+    const medals = [
+      ["first", Gold],
+      ["second", Silver],
+      ["third", Bronze],
+    ];
+    const imgOf = (name) => teams?.find((t) => t.name === name)?.img;
+    return (
       <div>
         <h2 className="mb-4 header-3">Event Podiums</h2>
-        <ul className="space-y-6">
+        <div className="grid gap-3 md:grid-cols-2">
           {standingData.podiums.map((event, i) => (
-            <li key={i + "_podium"} className="p-4 card">
-              <h3 className="mb-3 header-4">{event.event}</h3>
-              <div className="space-y-2">
-                {event.first.map((name, i) => (
-                  <div className="flex items-center gap-2" key={`first_${i}`}>
-                    <img src={Gold} alt="Gold" className="h-5" />
-                    <span>{name}</span>
-                  </div>
-                ))}
-                {event.second.map((name, i) => (
-                  <div className="flex items-center gap-2" key={`second_${i}`}>
-                    <img src={Silver} alt="Silver" className="h-5" />
-                    <span>{name}</span>
-                  </div>
-                ))}
-                {event.third.map((name, i) => (
-                  <div className="flex items-center gap-2" key={`third_${i}`}>
-                    <img src={Bronze} alt="Bronze" className="h-5" />
-                    <span>{name}</span>
-                  </div>
-                ))}
+            <div key={i + "_podium"} className="overflow-hidden card">
+              <h3 className="px-3 pt-3 pb-2 font-bold border-b">
+                {event.event}
+              </h3>
+              <div className="divide-y">
+                {medals.map(
+                  ([key, icon]) =>
+                    event[key]?.length > 0 && (
+                      <div
+                        className="flex items-center gap-2 px-3 py-2 text-sm"
+                        key={key}
+                      >
+                        <img src={icon} alt={key} className="h-4" />
+                        {event[key].map((name) => (
+                          <span
+                            className="flex items-center gap-1.5 font-medium"
+                            key={name}
+                          >
+                            <Img
+                              src={imgOf(name)}
+                              alt={name}
+                              className="object-cover w-6 h-6 rounded"
+                            />
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )
+                )}
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
+  };
 
   return (
     <div className="py-6 container-padding w-full max-w-3xl mx-auto space-y-8">
