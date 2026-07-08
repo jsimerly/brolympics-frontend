@@ -17,7 +17,7 @@ import InCompetition from "./InCompetition.jsx";
 import ManageRouter from "./manage/ManageRouter.jsx";
 import { fetchBrolympicsDetail, fetchMyOpenContests } from "../../api/client";
 import useCachedFetch from "../../hooks/useCachedFetch";
-import { SkeletonPage } from "../Util/Skeleton";
+import { SkeletonBroPage } from "../Util/Skeleton";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const Brolympics = () => {
@@ -84,8 +84,8 @@ const Brolympics = () => {
 
   if (!broInfo) {
     return (
-      <div className="w-full max-w-3xl px-4 mx-auto">
-        <SkeletonPage />
+      <div className="w-full max-w-3xl mx-auto">
+        <SkeletonBroPage />
       </div>
     );
   }

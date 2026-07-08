@@ -5,26 +5,17 @@ import { Routes, Route } from "react-router-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { fetchLeagueDetail } from "../../../api/client";
+import useCachedFetch from "../../../hooks/useCachedFetch";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import LeagueSettings from "./LeagueSettings";
 import PlayerStats from "./PlayerStats";
 import League from "./League";
 
 const LeagueRouter = () => {
-  const [leagueInfo, setLeagueInfo] = useState();
   const { uuid } = useParams();
-
-  useEffect(() => {
-    const getLeagueInfo = async () => {
-      try {
-        const data = await fetchLeagueDetail(uuid);
-        setLeagueInfo(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getLeagueInfo();
-  }, [uuid]);
+  const { data: leagueInfo } = useCachedFetch(`league-detail:${uuid}`, () =>
+    fetchLeagueDetail(uuid)
+  );
 
   return (
     <div className="h-screen-minus-nav">

@@ -11,6 +11,7 @@ import RingStrip from "../../Util/RingStrip";
 import PlayerNames from "../../Util/PlayerNames";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
+import { SkeletonPage } from "../../Util/Skeleton";
 
 const formatFounded = (iso) => {
   if (!iso) return null;
@@ -221,7 +222,9 @@ const League = ({ leagueInfo }) => {
 
   if (!leagueInfo) {
     return (
-      <div className="flex items-center justify-center h-64">Loading...</div>
+      <div className="w-full max-w-5xl mx-auto container-padding">
+        <SkeletonPage />
+      </div>
     );
   }
 
