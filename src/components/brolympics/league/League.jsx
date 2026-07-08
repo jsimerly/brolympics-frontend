@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import SettingsIcon from "@mui/icons-material/Settings";
+import HistoryEduIcon from "@mui/icons-material/HistoryEdu";
 
 const BrolympicsCard_Upcoming = ({
   img,
@@ -142,11 +143,16 @@ const League = ({ leagueInfo }) => {
               Founded: {leagueInfo?.founded || "Unknown"}
             </span>
           </div>
-          {isOwner && (
-            <Link to="settings">
-              <SettingsIcon sx={{ fontSize: 40 }} className="text-light" />
+          <div className="flex items-center gap-2">
+            <Link to="history" title="League history">
+              <HistoryEduIcon sx={{ fontSize: 40 }} className="text-light" />
             </Link>
-          )}
+            {isOwner && (
+              <Link to="settings">
+                <SettingsIcon sx={{ fontSize: 40 }} className="text-light" />
+              </Link>
+            )}
+          </div>
         </div>
         <div className="space-y-6">
           <section>
