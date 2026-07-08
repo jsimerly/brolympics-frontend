@@ -4,11 +4,10 @@ import {
   fetchBrolympicsStandings,
   fetchBrolympicsPodiums,
 } from "../../../api/client";
-import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import Img from "../../Util/Img";
+import PlayerNames from "../../Util/PlayerNames";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
-import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -107,59 +106,68 @@ const Standings = ({ status, teams }) => {
 
     const imgFor = (row) =>
       row.team.img ?? teams?.find((t) => t.uuid === row.team.uuid)?.img;
+    const playersOf = (row) =>
+      (row.team.players || []).map((p) => (typeof p === "string" ? p : p.name));
+    const fmt = (points) =>
+      Number.isInteger(points) ? points : points?.toFixed(1);
+
+    const rows = [...standingsData].sort((a, b) => a.rank - b.rank);
+    const leaderPoints = rows[0]?.points || 0;
+    const medal = { 1: Gold, 2: Silver, 3: Bronze };
 
     return (
       <div>
         <h2 className="mb-4 header-3">Overall Standings</h2>
-        <div className="overflow-hidden card">
-        <table className="w-full">
-          <thead>
-            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
-              <th className="p-2 w-[60px]">
-                <NumbersOutlinedIcon />
-              </th>
-              <th className="p-2 text-left">Team</th>
-              <th className="p-2 w-[80px]">
-                <DiamondOutlinedIcon />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {standingsData
-              .sort((a, b) => a.rank - b.rank)
-              .map((ranking, i) => (
-                <tr
-                  key={i + "_row"}
-                  className={i % 2 === 0 ? "bg-gray-50" : ""}
-                >
-                  <td className="p-3 text-lg font-semibold text-center border-r">
-                    {ranking.rank}
-                  </td>
-                  <td className="p-3 border-r">
-                    <div className="flex items-center gap-2">
-                      <Img
-                        src={imgFor(ranking)}
-                        alt={ranking.team.name}
-                        className="w-[30px] h-[30px] rounded-md"
-                      />
-                      <span
-                        className={`${getFontSize(
-                          ranking.team.name
-                        )} font-medium`}
-                      >
-                        {ranking.team?.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-3 text-lg font-semibold text-center">
-                    {Number.isInteger(ranking?.points)
-                      ? ranking.points
-                      : ranking.points.toFixed(1)}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="overflow-hidden card divide-y">
+          {rows.map((ranking, i) => {
+            const behind = leaderPoints - ranking.points;
+            return (
+              <div
+                className={`flex items-center gap-3 p-3 ${
+                  ranking.rank === 1 ? "bg-secondary/10" : ""
+                }`}
+                key={i + "_row"}
+              >
+                <div className="flex items-center justify-center w-7">
+                  {medal[ranking.rank] ? (
+                    <img
+                      src={medal[ranking.rank]}
+                      alt={`#${ranking.rank}`}
+                      className="h-5"
+                    />
+                  ) : (
+                    <span className="font-semibold text-light">
+                      {ranking.rank}
+                    </span>
+                  )}
+                </div>
+                <Img
+                  src={imgFor(ranking)}
+                  alt={ranking.team.name}
+                  className="object-cover w-10 h-10 rounded-md"
+                />
+                <div className="flex flex-col flex-grow min-w-0">
+                  <span className="font-semibold leading-tight truncate">
+                    {ranking.team?.name}
+                  </span>
+                  <PlayerNames
+                    players={playersOf(ranking)}
+                    className="text-xs leading-tight text-light truncate"
+                  />
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-lg font-bold leading-none">
+                    {fmt(ranking.points)}
+                  </span>
+                  {ranking.rank !== 1 && ranking.rank !== "-" && behind > 0 && (
+                    <span className="text-[11px] text-light">
+                      -{fmt(behind)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
