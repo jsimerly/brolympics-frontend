@@ -1,5 +1,8 @@
 import api from "../axios";
-import { fetchMyOpenContests } from "./contests";
+import {
+  fetchMyOpenContests,
+  fetchMyPendingConfirmations,
+} from "./contests";
 
 /** filters: { league: <uuid> } */
 export const fetchBrolympicsList = (filters = {}) =>
@@ -73,9 +76,10 @@ export const fetchBrolympicsPodiums = (uuid) =>
 /** Active-home page data: running/upcoming events + my open contests split by
  * whether I've checked in. `type` mirrors the event format for card routing. */
 export const fetchActiveHome = async (broUuid) => {
-  const [events, myOpen] = await Promise.all([
+  const [events, myOpen, pending] = await Promise.all([
     fetchBrolympicsEvents(broUuid),
     fetchMyOpenContests(),
+    fetchMyPendingConfirmations(),
   ]);
   const mine = myOpen
     // ffa heats are run from the event page, not the check-in cards
@@ -89,6 +93,10 @@ export const fetchActiveHome = async (broUuid) => {
     ),
     available_competitions: mine.filter((c) => !c.is_active),
     active_competitions: mine.filter((c) => c.is_active),
+    // self-reported results where I'm the eligible attester
+    pending_confirmations: pending.filter(
+      (c) => c.brolympics === broUuid && c.can_confirm
+    ),
   };
 };
 

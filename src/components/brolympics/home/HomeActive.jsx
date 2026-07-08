@@ -5,8 +5,50 @@ import AvailableCompetition from "./AvailableCompetition.jsx";
 import ActiveCompetition from "./ActiveCompetition.jsx";
 import HomeAdminActive from "./HomeAdminActive.jsx";
 
-import { fetchActiveHome } from "../../../api/client";
+import { fetchActiveHome, confirmContest } from "../../../api/client";
 import Schedule from "./Schedule.jsx";
+
+/** A self-reported result from the other side, waiting on my word. */
+const ConfirmCard = ({ uuid, event_name, entries = [], recorded_by_name }) => {
+  const [busy, setBusy] = useState(false);
+  const [entry_1, entry_2] = entries;
+  const scoreOf = (entry) =>
+    entry?.score ?? ({ w: "W", l: "L", t: "T" }[entry?.outcome] || "—");
+
+  const confirm = async () => {
+    setBusy(true);
+    try {
+      await confirmContest(uuid);
+      location.reload();
+    } catch (error) {
+      console.error("Error confirming result:", error);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 p-4 bg-white border rounded-lg shadow-md">
+      <div className="min-w-0">
+        <h3 className="font-semibold">{event_name}</h3>
+        <p className="text-sm text-gray-600">
+          {entry_1?.team_name} {scoreOf(entry_1)} : {scoreOf(entry_2)}{" "}
+          {entry_2?.team_name}
+        </p>
+        <p className="text-xs text-gray-400">
+          recorded by {recorded_by_name} — wrong? ask your commissioner to undo
+          it
+        </p>
+      </div>
+      <button
+        className="px-4 py-2 text-sm font-semibold text-white rounded-full bg-tertiary shrink-0 disabled:opacity-50"
+        onClick={confirm}
+        disabled={busy}
+      >
+        {busy ? "..." : "Confirm"}
+      </button>
+    </div>
+  );
+};
 
 const CurrentEventCard = ({ name, percent_complete }) => (
   <div className="p-4 mb-4 bg-white border rounded-lg shadow-md">
@@ -75,6 +117,7 @@ const HomeActive = ({ is_admin }) => {
     available_competitions: [],
     active_competitions: [],
     upcoming_events: [],
+    pending_confirmations: [],
   });
 
   const { uuid } = useParams();
@@ -100,6 +143,13 @@ const HomeActive = ({ is_admin }) => {
         <HomeAdminActive />
       ) : (
         <div>
+          {(homeData.pending_confirmations || []).length > 0 && (
+            <EventBlock
+              title="Unconfirmed Result"
+              items={homeData.pending_confirmations}
+              component_func={(type, props) => <ConfirmCard {...props} />}
+            />
+          )}
           {homeData.active_events.length > 0 && (
             <>
               <EventBlock

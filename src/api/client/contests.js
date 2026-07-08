@@ -45,3 +45,12 @@ export const abandonContest = (uuid) =>
 /** Convenience: everything I'm currently supposed to be playing. */
 export const fetchMyOpenContests = () =>
   fetchContests({ mine: true, open: true });
+
+/** Self-reported results in my games still waiting on the other side.
+ * Rows carry can_confirm -- true when *I* am eligible to attest. */
+export const fetchMyPendingConfirmations = () =>
+  fetchContests({ mine: true, pending_confirmation: true });
+
+/** Attest a result someone from the other team recorded. */
+export const confirmContest = (uuid) =>
+  api.post(`/api/contests/${uuid}/confirm/`).then((r) => r.data);

@@ -194,7 +194,7 @@ const CreateEvent = ({ handleEventAdded }) => {
           <span className="form-label">Structure</span>
           <SelectRow
             label="Group Play"
-            hint="How teams are matched before the playoffs."
+            hint="Round robin schedules every matchup up front — ideal for events played out over weeks. Swiss pairs each round as the last one finishes."
           >
             <select
               value={groupPlay}
