@@ -52,7 +52,7 @@ const Standings = ({ status, teams }) => {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="text-white bg-primary">
+            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
               <th className="px-4 py-2 text-left">Place</th>
               <th className="px-4 py-2 text-left">Points</th>
             </tr>
@@ -114,7 +114,7 @@ const Standings = ({ status, teams }) => {
         <div className="overflow-hidden card">
         <table className="w-full">
           <thead>
-            <tr className="text-white bg-primary">
+            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
               <th className="p-2 w-[60px]">
                 <NumbersOutlinedIcon />
               </th>

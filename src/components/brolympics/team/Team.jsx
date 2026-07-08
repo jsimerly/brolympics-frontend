@@ -58,7 +58,7 @@ const Team = ({ status, teams, default_uuid }) => {
 
     const StatItem = ({ icon, value, description }) => (
       <div className="flex flex-col items-center gap-1 p-3 text-center bg-white border rounded-lg">
-        <div className="text-tertiary">{icon}</div>
+        <div className="text-primary">{icon}</div>
         <span className="font-bold leading-none">{value}</span>
         <span className="text-[11px] text-light">{description}</span>
       </div>
@@ -140,7 +140,7 @@ const Team = ({ status, teams, default_uuid }) => {
             }
             className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full border transition-colors ${
               team.uuid === selectedTeamId
-                ? "bg-tertiary text-white border-tertiary"
+                ? "bg-primary text-white border-primary"
                 : "bg-white text-near-black border-gray-200"
             }`}
           >

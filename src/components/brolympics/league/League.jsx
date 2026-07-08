@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AddIcon from "@mui/icons-material/Add";
 import Img from "../../Util/Img";
+import RingStrip from "../../Util/RingStrip";
 import PlayerNames from "../../Util/PlayerNames";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
@@ -246,6 +247,7 @@ const League = ({ leagueInfo }) => {
                 {leagueInfo.name}
               </h1>
               {founded && <p className="text-sm text-light">Est. {founded}</p>}
+              <RingStrip className="w-20 mt-2" />
             </div>
           </div>
           {isAdmin && (

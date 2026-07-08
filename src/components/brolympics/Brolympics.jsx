@@ -8,6 +8,7 @@ import {
   useParams,
 } from "react-router-dom";
 import Toolbar from "./toolbar/Toolbar.jsx";
+import RingStrip from "../Util/RingStrip";
 import Events from "./events/Events.jsx";
 import Standings from "./standings/Standings.jsx";
 import Home from "./home/Home.jsx";
@@ -102,6 +103,7 @@ const Brolympics = () => {
           {broInfo.name || "Name Missing"}
         </h1>
         <p className="text-sm">{broInfo.league_name || ""}</p>
+        <RingStrip className="w-24 mx-auto mt-3" />
       </header>
 
       <main className="flex-grow container-padding">

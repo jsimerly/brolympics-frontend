@@ -111,7 +111,7 @@ const HomePost = ({ events = [] }) => {
           <div className="overflow-hidden card">
             <table className="w-full">
               <thead>
-                <tr className="text-white bg-primary">
+                <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
                   <th className="p-2 w-[40px]">#</th>
                   <th className="p-2 text-left">Team</th>
                   <th className="p-2 w-[60px]">Pts</th>

@@ -54,7 +54,7 @@ const EventActive = ({ eventInfo, is_admin }) => {
         <div className="overflow-hidden card">
           <table className="w-full">
             <thead>
-              <tr className="text-white bg-primary">
+              <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
                 <th className="w-[60px] p-2">
                   <NumbersOutlinedIcon sx={{ fontSize: 20 }} />
                 </th>

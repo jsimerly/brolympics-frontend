@@ -31,7 +31,7 @@ const EventWrapper = ({
           <h3 className="font-bold leading-tight">
             {name}
             {is_active && (
-              <span className="ml-2 text-[10px] font-semibold text-secondary uppercase">
+              <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark">
                 live
               </span>
             )}
