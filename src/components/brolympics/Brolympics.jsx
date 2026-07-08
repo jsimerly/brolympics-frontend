@@ -138,6 +138,7 @@ const Brolympics = () => {
                 default_uuid={broInfo.events?.[0]?.uuid}
                 default_type={broInfo.events?.[0]?.type}
                 status={status}
+                is_admin={broInfo.is_admin}
               />
             }
           />

@@ -5,7 +5,7 @@ import { fetchEventInfo } from "../../../api/client";
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
 
-const Events = ({ events, default_uuid, default_type, status }) => {
+const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
   const [eventInfo, setEventInfo] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const navigate = useNavigate();
@@ -91,6 +91,7 @@ const Events = ({ events, default_uuid, default_type, status }) => {
         eventInfo={eventInfo}
         onEventChange={handleEventChange}
         selectedEventId={selectedEventId}
+        is_admin={is_admin}
       />
     );
   };

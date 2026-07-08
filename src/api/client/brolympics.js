@@ -78,7 +78,8 @@ export const fetchActiveHome = async (broUuid) => {
     fetchMyOpenContests(),
   ]);
   const mine = myOpen
-    .filter((c) => c.brolympics === broUuid)
+    // ffa heats are run from the event page, not the check-in cards
+    .filter((c) => c.brolympics === broUuid && c.format !== "ffa")
     .map((c) => ({ ...c, type: c.format }));
   const live = events.filter((e) => e.is_active && !e.is_cancelled);
   return {

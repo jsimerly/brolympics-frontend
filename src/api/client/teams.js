@@ -1,11 +1,4 @@
 import api from "../axios";
-import {
-  fetchBrolympicsStandings,
-  fetchBrolympicsPodiums,
-  fetchBrolympicsEvents,
-} from "./brolympics";
-import { fetchContests } from "./contests";
-import { fetchEventRankings } from "./events";
 
 export const fetchTeam = (uuid) =>
   api.get(`/api/teams/${uuid}/`).then((r) => r.data);
@@ -36,59 +29,10 @@ export const removePlayerFromTeam = (teamUuid, playerUuid) =>
     .post(`/api/teams/${teamUuid}/remove-player/`, { player: playerUuid })
     .then((r) => r.data);
 
-/** Team page data: the team + overall ranking + a per-event breakdown
- * (rank/points/stats where known, plus this team's contests). */
-export const fetchTeamInfo = async (teamUuid) => {
-  const team = await fetchTeam(teamUuid);
-  const broUuid = team.brolympics;
-  const [standings, podiums, events, contests] = await Promise.all([
-    fetchBrolympicsStandings(broUuid).catch(() => []),
-    fetchBrolympicsPodiums(broUuid).catch(() => []),
-    fetchBrolympicsEvents(broUuid),
-    fetchContests({ team: teamUuid }),
-  ]);
-  const rankingLists = await Promise.all(
-    events.map((e) => fetchEventRankings(e.uuid).catch(() => []))
-  );
-
-  const overall = standings.find((row) => row.team.uuid === teamUuid);
-  const finished = podiums.flatMap((p) => [p.first, p.second, p.third]);
-  const overall_ranking = {
-    rank: overall?.rank,
-    total_points: overall?.points,
-    event_wins: podiums.filter((p) => p.first.includes(team.name)).length,
-    event_podiums: finished.filter((names) => names.includes(team.name))
-      .length,
-  };
-
-  const myEntry = (c) => c.entries.find((e) => e.team === teamUuid);
-  const eventsOut = events.map((event, i) => {
-    const ranking = rankingLists[i].find((r) => r.team.uuid === teamUuid);
-    const mine = contests.filter((c) => c.event === event.uuid);
-    const done = mine.filter((c) => c.is_complete);
-    const stats = ranking?.stats && Object.keys(ranking.stats).length
-      ? ranking.stats
-      : {
-          wins: done.filter((c) => myEntry(c)?.outcome === "w").length,
-          losses: done.filter((c) => myEntry(c)?.outcome === "l").length,
-          ties: done.filter((c) => myEntry(c)?.outcome === "t").length,
-          total: done.reduce((sum, c) => sum + (myEntry(c)?.score ?? 0), 0),
-        };
-    return {
-      uuid: event.uuid,
-      name: event.name,
-      type: event.format,
-      is_active: event.is_active,
-      is_final: !!ranking?.is_final,
-      rank: ranking?.rank,
-      points: ranking?.points,
-      stats,
-      contests: mine,
-    };
-  });
-
-  return { team: { ...team, overall_ranking }, events: eventsOut };
-};
+/** Team page data in one request: the team + overall ranking + a per-event
+ * breakdown (rank/points/stats where known, plus this team's contests). */
+export const fetchTeamInfo = (teamUuid) =>
+  api.get(`/api/teams/${teamUuid}/summary/`).then((r) => r.data);
 
 /** Multipart image update (crop-tool File objects). */
 export const updateTeamImage = (uuid, file) => {

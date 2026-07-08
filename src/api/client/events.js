@@ -54,6 +54,10 @@ export const addHeat = (uuid, playerUuids) =>
     .post(`/api/events/${uuid}/add-heat/`, { players: playerUuids })
     .then((r) => r.data);
 
+/** Admin: finish an open-ended heats/open-play stage (advance or finalize). */
+export const closeEventStage = (uuid) =>
+  api.post(`/api/events/${uuid}/close-stage/`).then((r) => r.data);
+
 /** Default stage lists per format for quick event creation; the manage page
  * can reshape any event later. */
 export const defaultStagesFor = (format) =>

@@ -3,11 +3,12 @@ import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Bracket from "./Bracket";
+import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import Comp_outing from "./Competitions/Comp_outing.jsx";
 import { EventInfo } from "./EventInfo.jsx";
 
-const EventActive = ({ eventInfo }) => {
+const EventActive = ({ eventInfo, is_admin }) => {
   const CompComp = eventInfo?.type === "h2h" ? Comp_h2h : Comp_outing;
 
   const getFontSize = (name) => {
@@ -104,22 +105,27 @@ const EventActive = ({ eventInfo }) => {
           <Bracket key={bracket.stage} {...bracket} />
         ))}
       </div>
-      {eventInfo.contests && eventInfo.contests.length > 0 && (
-        <div className="pb-6">
-          <h2 className="font-bold text-[20px] px-6">Competitions</h2>
-          <div className="space-y-2">
-            {eventInfo.contests.map((contest, i) => (
-              <div key={contest.uuid}>
-                {i !== 0 && (
-                  <div className="w-full px-6">
-                    <div className="w-full h-[1px]" />
-                  </div>
-                )}
-                <CompComp {...contest} />
-              </div>
-            ))}
+      {eventInfo.type === "ffa" ? (
+        <HeatManager event={eventInfo} is_admin={is_admin} />
+      ) : (
+        eventInfo.contests &&
+        eventInfo.contests.length > 0 && (
+          <div className="pb-6">
+            <h2 className="font-bold text-[20px] px-6">Competitions</h2>
+            <div className="space-y-2">
+              {eventInfo.contests.map((contest, i) => (
+                <div key={contest.uuid}>
+                  {i !== 0 && (
+                    <div className="w-full px-6">
+                      <div className="w-full h-[1px]" />
+                    </div>
+                  )}
+                  <CompComp {...contest} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       <EventInfo event={eventInfo} />
