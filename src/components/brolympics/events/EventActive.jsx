@@ -20,7 +20,7 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
       : null);
 
   return (
-    <div className="flex items-start gap-2 py-1 text-sm border-t first:border-t-0">
+    <div className="flex items-start gap-2 py-1 ml-9 text-sm border-t first:border-t-0">
       {showGameNumber && (
         <span className="w-14 pt-0.5 text-xs shrink-0 text-light">
           Game {gameNumber}
@@ -72,7 +72,7 @@ const TeamOutings = ({ contests, standings }) => {
     <div className="overflow-hidden card divide-y">
       {ordered.map(([key, { teamEntry, games }]) => (
         <div className="px-4 py-3" key={key}>
-          <h3 className="flex items-center gap-2 pb-1 font-semibold">
+          <h3 className="flex items-center gap-2 pb-1.5 font-semibold">
             <Img
               src={teamEntry?.team_img}
               alt={teamEntry?.team_name}
