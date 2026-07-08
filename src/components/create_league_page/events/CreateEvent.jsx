@@ -13,6 +13,7 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [groupPlay, setGroupPlay] = useState("round_robin");
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
+  const [placements, setPlacements] = useState("third");
 
   const buildStages = () => {
     if (selectedType === "ffa") return [{ structure: "heats", config: {} }];
@@ -26,7 +27,18 @@ const CreateEvent = ({ handleEventAdded }) => {
       stages.push({ structure: "swiss", config: { rounds: n } });
     }
     if (playoffTake !== "none" || stages.length === 0) {
-      const config = { third_place: true, byes: "seeded" };
+      const config = { byes: "seeded" };
+      if (placements === "third") config.third_place = true;
+      if (placements === "full" || placements === "full-skip-last") {
+        config.classification = true;
+      }
+      if (placements === "full-skip-last") {
+        const take = playoffTake !== "all" && playoffTake !== "none"
+          ? Number(playoffTake) : null;
+        // skip the last placement game (e.g. 7th/8th in a top-8) -- the pair
+        // splits the points instead of playing
+        if (take && take >= 4) config.unplayed_places = [take - 1];
+      }
       if (playoffTake !== "all" && playoffTake !== "none") {
         config.take = Number(playoffTake);
       }
@@ -176,6 +188,27 @@ const CreateEvent = ({ handleEventAdded }) => {
                 onChange={(e) => setGroupGames(e.target.value)}
                 className="p-1 border rounded-md border-primary h-[40px] w-[60px] text-center"
               />
+            </div>
+          )}
+          {playoffTake !== "none" && (
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-sm">Placement Games</h4>
+                <p className="text-[10px]">
+                  Full placement runs 5th/6th, 7th/8th run-offs so every team
+                  places by playing.
+                </p>
+              </div>
+              <select
+                value={placements}
+                onChange={(e) => setPlacements(e.target.value)}
+                className="p-2 border rounded-md border-primary bg-white"
+              >
+                <option value="third">3rd place game only</option>
+                <option value="full">Full placement</option>
+                <option value="full-skip-last">Full, split last place</option>
+                <option value="none">Winners only</option>
+              </select>
             </div>
           )}
           <div className="flex items-center justify-between">
