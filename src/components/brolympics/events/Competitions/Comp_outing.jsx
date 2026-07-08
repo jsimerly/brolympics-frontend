@@ -8,7 +8,7 @@ const Comp_outing = ({ entries = [], is_complete }) => {
   const playerEntries = entries.filter((e) => e.player);
 
   return (
-    <div className="flex flex-col px-6 py-3 card">
+    <div className="flex flex-col px-4 py-3">
       <h3 className="flex items-center gap-2 pb-1 font-semibold">
         <Img
           src={teamEntry?.team_img}

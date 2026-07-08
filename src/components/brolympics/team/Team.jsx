@@ -54,32 +54,29 @@ const Team = ({ status, teams, default_uuid }) => {
     const isPre = status === "pre" || status === "pre_admin";
 
     const StatItem = ({ icon, value, description }) => (
-      <div className="flex flex-col items-start">
-        <div className="flex items-center mb-1">
-          {React.cloneElement(icon, { className: "mr-2 text-tertiary" })}
-          <span className="font-bold">{value}</span>
-        </div>
-        {isPre && <span className="text-sm text-light">{description}</span>}
+      <div className="flex flex-col items-center gap-1 p-3 text-center bg-white border rounded-lg">
+        <div className="text-tertiary">{icon}</div>
+        <span className="font-bold leading-none">{value}</span>
+        <span className="text-[11px] text-light">{description}</span>
       </div>
     );
 
     return (
       <div className="p-4 mb-6 card">
-        <div className="flex flex-col justify-between mb-4 md:flex-row">
-          <div className="flex items-center justify-start space-x-6">
-            <div>
-              <Img src={team.img} className="rounded-md w-[60px] h-[60px]" />
-            </div>
-            <div className="flex flex-col">
+        <div className="flex items-center gap-4 mb-4">
+          <Img
+            src={team.img}
+            className="object-cover rounded-lg w-16 h-16"
+          />
+          <div className="flex flex-col">
               {(team.players || []).map((player) => (
-                <span className="text-lg font-bold" key={player.uuid}>
+                <span className="text-lg font-bold leading-tight" key={player.uuid}>
                   {player.name}
                 </span>
               ))}
-            </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <StatItem
             icon={<NumbersOutlinedIcon />}
             value={

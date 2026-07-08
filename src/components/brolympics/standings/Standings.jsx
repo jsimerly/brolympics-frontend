@@ -28,7 +28,7 @@ const Standings = ({ status, teams }) => {
 
   if (loading) {
     return (
-      <div className="py-6 container-padding">
+      <div className="py-6 container-padding w-full max-w-3xl mx-auto space-y-8">
         <SkeletonPage />
       </div>
     );
@@ -109,8 +109,9 @@ const Standings = ({ status, teams }) => {
       row.team.img ?? teams?.find((t) => t.uuid === row.team.uuid)?.img;
 
     return (
-      <div className="p-4 overflow-hidden card">
-        <h2 className="p-4 header-3">Overall Standings</h2>
+      <div>
+        <h2 className="mb-4 header-3">Overall Standings</h2>
+        <div className="overflow-hidden card">
         <table className="w-full">
           <thead>
             <tr className="text-white bg-primary">
@@ -159,6 +160,7 @@ const Standings = ({ status, teams }) => {
               ))}
           </tbody>
         </table>
+        </div>
       </div>
     );
   };
@@ -166,7 +168,7 @@ const Standings = ({ status, teams }) => {
   const renderPodiums = () =>
     standingData?.podiums &&
     standingData.podiums.length > 0 && (
-      <div className="mt-6">
+      <div>
         <h2 className="mb-4 header-3">Event Podiums</h2>
         <ul className="space-y-6">
           {standingData.podiums.map((event, i) => (
@@ -199,7 +201,7 @@ const Standings = ({ status, teams }) => {
     );
 
   return (
-    <div className="py-6 container-padding">
+    <div className="py-6 container-padding w-full max-w-3xl mx-auto space-y-8">
       {(status === "pre" || status == "pre_admin") && renderScoringInfo()}
       {renderStandings()}
       {renderPodiums()}

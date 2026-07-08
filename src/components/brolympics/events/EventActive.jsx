@@ -42,7 +42,7 @@ const EventActive = ({ eventInfo, is_admin }) => {
     <div className="max-w-4xl">
       <div className="px-4">
         <div className="flex items-center justify-between pb-2">
-          <h2 className="font-bold text-[20px] flex items-center">
+          <h2 className="flex items-center header-3">
             Standings
             {eventInfo.is_complete && (
               <span className="ml-2 pt-2 text-secondary text-[10px] flex items-center gap-1">
@@ -114,18 +114,11 @@ const EventActive = ({ eventInfo, is_admin }) => {
       ) : (
         eventInfo.contests &&
         eventInfo.contests.length > 0 && (
-          <div className="pb-6">
-            <h2 className="font-bold text-[20px] px-6">Competitions</h2>
-            <div className="space-y-2">
-              {eventInfo.contests.map((contest, i) => (
-                <div key={contest.uuid}>
-                  {i !== 0 && (
-                    <div className="w-full px-6">
-                      <div className="w-full h-[1px]" />
-                    </div>
-                  )}
-                  <CompComp {...contest} />
-                </div>
+          <div className="px-4 pb-6">
+            <h2 className="mb-4 header-3">Competitions</h2>
+            <div className="overflow-hidden card divide-y">
+              {eventInfo.contests.map((contest) => (
+                <CompComp {...contest} key={contest.uuid} />
               ))}
             </div>
           </div>

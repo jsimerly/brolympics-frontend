@@ -19,7 +19,7 @@ const Comp_h2h = ({ entries = [], is_complete }) => {
     entry?.outcome === "w" ? "font-bold text-primaryLight" : "";
 
   return (
-    <div className={`flex items-center justify-center py-3 px-6`}>
+    <div className={`flex items-center justify-center py-3 px-4`}>
       <div className="flex items-center justify-center w-full">
         <div
           className={`w-2/5 ${winStyle(entry_1)}`}
