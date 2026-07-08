@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
+import Img from "../../Util/Img";
 import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
@@ -13,8 +16,35 @@ import {
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 
+/** Chips for every team a player has suited up for; gold medal = that team
+ * won its Brolympics. Shared by the leaderboard expand and the stats page. */
+export const PlayerTeams = ({ teams }) => {
+  if (!teams?.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {teams.map((row, i) => (
+        <div
+          className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-white border rounded-full"
+          key={i + "_played_for"}
+        >
+          <Img
+            src={row.img}
+            alt={row.team}
+            className="object-cover w-5 h-5 rounded-full"
+          />
+          <span className="font-medium">{row.team}</span>
+          <span className="text-light">{row.brolympics}</span>
+          {row.champion && <img src={Gold} alt="Champion" className="h-3.5" />}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const PlayerCareer = ({ playerUuid }) => {
   const [career, setCareer] = useState(null);
+  const navigate = useNavigate();
+  const { uuid: leagueUuid } = useParams();
 
   useEffect(() => {
     fetchPlayerCareer(playerUuid)
@@ -26,6 +56,7 @@ const PlayerCareer = ({ playerUuid }) => {
 
   return (
     <div className="p-2 space-y-2">
+      <PlayerTeams teams={career.teams} />
       {career.disciplines.map((d, i) => (
         <div className="p-2 border rounded-md" key={i + "_discipline"}>
           <div className="flex items-center justify-between">
@@ -57,6 +88,14 @@ const PlayerCareer = ({ playerUuid }) => {
       {career.disciplines.length === 0 && (
         <p className="text-sm text-light">No recorded events.</p>
       )}
+      <button
+        className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
+        onClick={() =>
+          navigate(`/league/${leagueUuid}/player/${playerUuid}/stats`)
+        }
+      >
+        View full stats <ArrowForwardIcon sx={{ fontSize: 16 }} />
+      </button>
     </div>
   );
 };
