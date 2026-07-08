@@ -112,7 +112,6 @@ const Standings = ({ status, teams }) => {
       Number.isInteger(points) ? points : points?.toFixed(1);
 
     const rows = [...standingsData].sort((a, b) => a.rank - b.rank);
-    const leaderPoints = rows[0]?.points || 0;
     const medal = { 1: Gold, 2: Silver, 3: Bronze };
 
     return (
@@ -120,7 +119,9 @@ const Standings = ({ status, teams }) => {
         <h2 className="mb-4 header-3">Overall Standings</h2>
         <div className="overflow-hidden card divide-y">
           {rows.map((ranking, i) => {
-            const behind = leaderPoints - ranking.points;
+            // gap to the team directly ahead -- small, chaseable numbers
+            // for everyone instead of a giant deficit behind the leader
+            const behind = i > 0 ? rows[i - 1].points - ranking.points : 0;
             return (
               <div
                 className={`flex items-center gap-3 p-3 ${
