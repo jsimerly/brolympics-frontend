@@ -29,6 +29,16 @@ export const removePlayerFromTeam = (teamUuid, playerUuid) =>
     .post(`/api/teams/${teamUuid}/remove-player/`, { player: playerUuid })
     .then((r) => r.data);
 
+/** Dormant players keep their roster spot and history but sit out preset
+ * heats. Admins (or the player themself) can toggle. */
+export const setPlayerActive = (teamUuid, playerUuid, isActive) =>
+  api
+    .post(`/api/teams/${teamUuid}/set-active/`, {
+      player: playerUuid,
+      is_active: isActive,
+    })
+    .then((r) => r.data);
+
 /** Team page data in one request: the team + overall ranking + a per-event
  * breakdown (rank/points/stats where known, plus this team's contests). */
 export const fetchTeamInfo = (teamUuid) =>

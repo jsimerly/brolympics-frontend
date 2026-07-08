@@ -12,13 +12,13 @@ import {
   createTeam,
   deleteTeam,
   removePlayerFromTeam,
+  setPlayerActive,
   updateTeamImage,
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification.jsx";
 import ImageCropper from "../../Util/ImageCropper.jsx";
 
-export const TeamCard = ({ name, players = [], img, uuid }) => {
-  const [player_1, player_2] = players;
+export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
   const [editing, setEditing] = useState(false);
   const [imageSrc, setImageSrc] = useState(img);
   const [cropping, setCropping] = useState(false);
@@ -37,9 +37,26 @@ export const TeamCard = ({ name, players = [], img, uuid }) => {
   };
 
   const removePlayerFunc = async () => {
-    await removePlayerFromTeam(uuid, removePlayer.uuid);
-    if (response.ok) {
+    try {
+      await removePlayerFromTeam(uuid, removePlayer.uuid);
       location.reload();
+    } catch (error) {
+      const detail = error.response?.data;
+      showNotification(
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "Error while removing the player."
+      );
+    }
+  };
+
+  const toggleActive = async (player) => {
+    try {
+      await setPlayerActive(uuid, player.uuid, player.is_active === false);
+      location.reload();
+    } catch (error) {
+      console.log(error);
+      showNotification("Error while updating the player.");
     }
   };
 
@@ -136,34 +153,56 @@ export const TeamCard = ({ name, players = [], img, uuid }) => {
           <h3 className="font-bold text-[18px]">{name}</h3>
           <div className="text-[16px]">
             {editing ? (
-              <div className="flex flex-col">
-                {player_1 && (
-                  <div onClick={() => onRemovePlayer(player_1)}>
-                    <RemoveIcon
-                      className="text-errorRed"
-                      sx={{ fontSize: 20 }}
-                    />
-                    {player_1.name}
+              <div className="flex flex-col gap-1 pr-6">
+                {players.map((player) => (
+                  <div key={player.uuid} className="flex items-center gap-1">
+                    <button onClick={() => onRemovePlayer(player)}>
+                      <RemoveIcon
+                        className="text-errorRed"
+                        sx={{ fontSize: 20 }}
+                      />
+                    </button>
+                    <span
+                      className={`text-[14px] ${
+                        player.is_active === false ? "text-light" : ""
+                      }`}
+                    >
+                      {player.name}
+                    </span>
+                    <button
+                      className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full border ${
+                        player.is_active === false
+                          ? "border-gray-300 text-light"
+                          : "border-tertiary text-tertiary"
+                      }`}
+                      onClick={() => toggleActive(player)}
+                    >
+                      {player.is_active === false ? "Dormant" : "Active"}
+                    </button>
                   </div>
-                )}
-
-                {player_2 && (
-                  <div onClick={() => onRemovePlayer(player_2)}>
-                    <RemoveIcon
-                      className="text-errorRed"
-                      sx={{ fontSize: 20 }}
-                    />
-                    {player_2.name}
-                  </div>
-                )}
+                ))}
               </div>
             ) : (
               <div className="text-[14px] font-semibold">
-                {player_1 && player_1.name}
-                {player_1 && player_2 && (
-                  <span className="text-[12px] font-normal"> & </span>
-                )}
-                {player_2 && player_2.name}
+                {players.map((player, i) => (
+                  <span
+                    key={player.uuid}
+                    className={
+                      player.is_active === false ? "text-light font-normal" : ""
+                    }
+                  >
+                    {i > 0 && (
+                      <span className="text-[12px] font-normal">
+                        {" "}
+                        &{" "}
+                      </span>
+                    )}
+                    {player.name}
+                    {player.is_active === false && (
+                      <span className="text-[10px]"> (dormant)</span>
+                    )}
+                  </span>
+                ))}
               </div>
             )}
           </div>
@@ -183,7 +222,7 @@ export const TeamCard = ({ name, players = [], img, uuid }) => {
             Delete Team
           </button>
         )}
-        {!editing && !(player_1 && player_2) && (
+        {!editing && is_available !== false && (
           <div className="absolute bottom-2 right-2 text-primary text-[12px] border-primary border p-1 rounded-md flex items-center gap-1">
             <CopyWrapper copyString={inviteUrl} size={20}>
               <span className="mr-1">Copy Invite Link</span>
@@ -205,9 +244,10 @@ export const TeamCard = ({ name, players = [], img, uuid }) => {
         header={`Remove ${
           removePlayer && removePlayer.name
         } from this team?`}
-        desc={`Doing this will perminately remove ${
+        desc={`This permanently removes ${
           removePlayer && removePlayer.name
-        }. If you do, you can always add them back to the team later.`}
+        } from the roster. If the team has already played, removal is blocked —
+        mark them dormant instead so their history stays put.`}
         continueText={"Delete"}
         continueFunc={removePlayerFunc}
       />
