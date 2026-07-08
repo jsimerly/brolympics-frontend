@@ -23,12 +23,10 @@ const ordinal = (n) => {
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 };
 
-/** Chips for a player's teams with their Brolympics finish (medal for top 3).
- * medalOnly narrows to podium finishes -- the leaderboard-expand view. */
-export const PlayerTeams = ({ teams, medalOnly = false }) => {
-  const shown = medalOnly
-    ? (teams || []).filter((t) => t.finish && t.finish <= 3)
-    : teams || [];
+/** Chips for every team a player has suited up for, with the team's overall
+ * Brolympics finish -- a medal for top-3 years, the ordinal otherwise. */
+export const PlayerTeams = ({ teams }) => {
+  const shown = teams || [];
   if (!shown.length) return null;
   return (
     <div className="flex flex-wrap gap-2">
@@ -104,7 +102,7 @@ const PlayerCareer = ({ playerUuid }) => {
 
   return (
     <div className="p-2 space-y-2">
-      <PlayerTeams teams={career.teams} medalOnly />
+      <PlayerTeams teams={career.teams} />
       <HighlightLine
         icon={<EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />}
         label="Event wins"
@@ -120,14 +118,6 @@ const PlayerCareer = ({ playerUuid }) => {
         label="Record holder"
         items={records}
       />
-      {wins.length === 0 &&
-        podiums.length === 0 &&
-        records.length === 0 &&
-        !(career.teams || []).some((t) => t.finish && t.finish <= 3) && (
-          <p className="text-sm text-light">
-            No hardware yet — the full history is on their stats page.
-          </p>
-        )}
       <button
         className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
         onClick={() =>
