@@ -1,15 +1,51 @@
 import { useState } from "react";
 
-import GroupIcon from "@mui/icons-material/Group";
+import GroupsIcon from "@mui/icons-material/Groups";
 import PersonIcon from "@mui/icons-material/Person";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import SportsMotorsportsIcon from "@mui/icons-material/SportsMotorsports";
-import EmojiObjectsOutlinedIcon from "@mui/icons-material/EmojiObjectsOutlined";
+
+const FORMATS = [
+  {
+    type: "h2h",
+    label: "Head to Head",
+    hint: "Teams face off",
+    Icon: SportsKabaddiIcon,
+  },
+  {
+    type: "ind",
+    label: "Individual",
+    hint: "Everyone scores solo",
+    Icon: PersonIcon,
+  },
+  {
+    type: "team",
+    label: "Team",
+    hint: "One score per team",
+    Icon: GroupsIcon,
+  },
+  {
+    type: "ffa",
+    label: "Free-for-All",
+    hint: "Heats and placements",
+    Icon: SportsMotorsportsIcon,
+  },
+];
+
+const SelectRow = ({ label, hint, children }) => (
+  <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0">
+      <h4 className="text-sm font-semibold">{label}</h4>
+      <p className="text-[10px] text-light">{hint}</p>
+    </div>
+    {children}
+  </div>
+);
 
 const CreateEvent = ({ handleEventAdded }) => {
-  const [selectedType, setSelectedType] = useState("ind");
+  const [selectedType, setSelectedType] = useState("h2h");
   const [eventName, setEventName] = useState("");
-  // h2h structure choices; other formats have one natural structure.
+  const [highWins, setHighWins] = useState(true);
   const [groupPlay, setGroupPlay] = useState("round_robin");
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
@@ -33,10 +69,10 @@ const CreateEvent = ({ handleEventAdded }) => {
         config.classification = true;
       }
       if (placements === "full-skip-last") {
-        const take = playoffTake !== "all" && playoffTake !== "none"
-          ? Number(playoffTake) : null;
-        // skip the last placement game (e.g. 7th/8th in a top-8) -- the pair
-        // splits the points instead of playing
+        const take =
+          playoffTake !== "all" && playoffTake !== "none"
+            ? Number(playoffTake)
+            : null;
         if (take && take >= 4) config.unplayed_places = [take - 1];
       }
       if (playoffTake !== "all" && playoffTake !== "none") {
@@ -47,195 +83,166 @@ const CreateEvent = ({ handleEventAdded }) => {
     return stages;
   };
 
-  const addClicked = async () => {
-    handleEventAdded(eventName, selectedType, buildStages());
+  const addClicked = () => {
+    handleEventAdded(eventName, selectedType, buildStages(), {
+      is_high_score_wins: highWins,
+    });
     setEventName("");
   };
 
-  const TypeCard = ({ e_type, description, examples, Icon }) => (
-    <div className="flex w-full h-[115px] rounded-md p-2 border bg-white">
-      <div className="w-[80px] text-neutral flex justify-center items-center mr-3">
-        <Icon sx={{ fontSize: 60 }} />
-      </div>
-      <div className="flex flex-col justify-between w-full">
-        <div>
-          <h3 className="font-bold">{e_type}</h3>
-          <p className="text-[10px]">{description}</p>
-        </div>
-        <div className="flex items-center">
-          <EmojiObjectsOutlinedIcon sx={{ fontSize: 20 }} />
-          <p className="ml-1">{examples}</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const typeCards = [
-    {
-      type: "ind",
-      e_type: "Individual Event",
-      description:
-        "Events where everyone will compete independant of eachother; each partner's scores are then combined or averaged to determine a winner.",
-      examples: "Bowling, Golf, Darts",
-      Icon: PersonIcon,
-    },
-    {
-      type: "h2h",
-      e_type: "Head to Head Event",
-      description:
-        "Events where teams will compete against eachother directly. These competitions can be by points or win/loss.",
-      examples: "Cornhole, Tug-o-War, Tennis",
-      Icon: SportsKabaddiIcon,
-    },
-    {
-      type: "team",
-      e_type: "Team Event",
-      description:
-        "Events where both partners will work towards a combined goal and the team only has 1 score.",
-      examples: "Trivia, Rowing, Relay Races",
-      Icon: GroupIcon,
-    },
-    {
-      type: "ffa",
-      e_type: "Free-for-All Event",
-      description:
-        "Everyone competes at once in heats; placements earn points toward the event standings.",
-      examples: "Mario Kart, Foot Races, Poker",
-      Icon: SportsMotorsportsIcon,
-    },
-  ];
-
-  const eventText = {
-    ind: "Individual Event",
-    h2h: "Head to Head Event",
-    team: "Team Event",
-    ffa: "Free-for-All Event",
-  };
-
   return (
-    <div className="flex flex-col w-full gap-3">
+    <div className="flex flex-col w-full gap-4 p-3 bg-white border border-gray-200 rounded-lg">
       <div>
-        <h3>Event Name *</h3>
+        <label htmlFor="custom-event-name" className="form-label">
+          Event name <span className="text-red">*</span>
+        </label>
         <input
+          id="custom-event-name"
           type="text"
           value={eventName}
           onChange={(e) => setEventName(e.target.value)}
-          placeholder="Enter the name of your event"
-          className="w-full p-2 border border-gray-200 rounded-md"
+          placeholder="Backyard Biathlon"
+          autoComplete="off"
+          className="w-full input-primary"
         />
       </div>
+
       <div>
-        <h2 className="font-bold">Event Type</h2>
-        <p className="text-[12px]">
-          {" "}
-          Select the type of event you're trying to register.
-        </p>
-      </div>
-      {typeCards.map((card) => (
-        <div
-          key={card.type}
-          onClick={() => setSelectedType(card.type)}
-          className={`${
-            selectedType === card.type
-              ? "outline rounded-md outline-tertiary outline-2"
-              : ""
-          }`}
-        >
-          <TypeCard
-            e_type={card.e_type}
-            description={card.description}
-            examples={card.examples}
-            Icon={card.Icon}
-          />
+        <span className="form-label">Format</span>
+        <div className="grid grid-cols-2 gap-1.5">
+          {FORMATS.map(({ type, label, hint, Icon }) => (
+            <button
+              key={type}
+              onClick={() => setSelectedType(type)}
+              className={`flex items-center gap-2 px-2.5 py-2 text-left transition-colors border rounded-lg ${
+                selectedType === type
+                  ? "border-primary bg-primary/5"
+                  : "bg-white border-gray-200"
+              }`}
+            >
+              <Icon
+                sx={{ fontSize: 22 }}
+                className={selectedType === type ? "text-primary" : "text-light"}
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium leading-tight">
+                  {label}
+                </span>
+                <span className="text-[10px] text-light">{hint}</span>
+              </div>
+            </button>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {selectedType !== "ffa" && (
+        <div>
+          <span className="form-label">Scoring</span>
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              [true, "High score wins", "Points, makes, distance"],
+              [false, "Low score wins", "Golf strokes, race times"],
+            ].map(([value, label, hint]) => (
+              <button
+                key={String(value)}
+                onClick={() => setHighWins(value)}
+                className={`px-2.5 py-2 text-left transition-colors border rounded-lg ${
+                  highWins === value
+                    ? "border-primary bg-primary/5"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <span className="block text-sm font-medium leading-tight">
+                  {label}
+                </span>
+                <span className="text-[10px] text-light">{hint}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {selectedType === "h2h" && (
-        <div className="p-3 bg-white border rounded-md space-y-3">
-          <h3 className="font-bold">Structure</h3>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-sm">Group Play</h4>
-              <p className="text-[10px]">
-                How teams are matched before the playoffs.
-              </p>
-            </div>
+        <div className="flex flex-col gap-3">
+          <span className="form-label">Structure</span>
+          <SelectRow
+            label="Group Play"
+            hint="How teams are matched before the playoffs."
+          >
             <select
               value={groupPlay}
               onChange={(e) => setGroupPlay(e.target.value)}
-              className="p-2 border rounded-md border-primary bg-white"
+              className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
             >
               <option value="round_robin">Round Robin</option>
               <option value="swiss">Swiss</option>
               <option value="none">None (bracket only)</option>
             </select>
-          </div>
+          </SelectRow>
           {groupPlay !== "none" && (
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">
-                  {groupPlay === "swiss" ? "Rounds" : "Games per team"}
-                </h4>
-                <p className="text-[10px]">
-                  {groupPlay === "swiss"
-                    ? "Each round pairs teams with similar records."
-                    : "Everyone plays the same number of group games."}
-                </p>
-              </div>
+            <SelectRow
+              label={groupPlay === "swiss" ? "Rounds" : "Games per team"}
+              hint={
+                groupPlay === "swiss"
+                  ? "Each round pairs similar records."
+                  : "Everyone plays the same number."
+              }
+            >
               <input
                 type="number"
                 value={groupGames}
                 onChange={(e) => setGroupGames(e.target.value)}
-                className="p-1 border rounded-md border-primary h-[40px] w-[60px] text-center"
+                className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
               />
-            </div>
+            </SelectRow>
           )}
-          {playoffTake !== "none" && (
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-sm">Placement Games</h4>
-                <p className="text-[10px]">
-                  Full placement runs 5th/6th, 7th/8th run-offs so every team
-                  places by playing.
-                </p>
-              </div>
-              <select
-                value={placements}
-                onChange={(e) => setPlacements(e.target.value)}
-                className="p-2 border rounded-md border-primary bg-white"
-              >
-                <option value="third">3rd place game only</option>
-                <option value="full">Full placement</option>
-                <option value="full-skip-last">Full, split last place</option>
-                <option value="none">Winners only</option>
-              </select>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-sm">Playoff Bracket</h4>
-              <p className="text-[10px]">
-                Any size works — byes go to the top seeds.
-              </p>
-            </div>
+          <SelectRow
+            label="Playoff Bracket"
+            hint="Any size works — byes go to top seeds."
+          >
             <select
               value={playoffTake}
               onChange={(e) => setPlayoffTake(e.target.value)}
-              className="p-2 border rounded-md border-primary bg-white"
+              className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
             >
               <option value="none">No playoffs</option>
-              <option value="2">Top 2 (finals)</option>
+              <option value="2">Top 2</option>
               <option value="4">Top 4</option>
               <option value="6">Top 6</option>
               <option value="8">Top 8</option>
               <option value="all">All teams</option>
             </select>
-          </div>
+          </SelectRow>
+          {playoffTake !== "none" && (
+            <SelectRow
+              label="Placement Games"
+              hint="Full placement runs 5th/6th, 7th/8th run-offs."
+            >
+              <select
+                value={placements}
+                onChange={(e) => setPlacements(e.target.value)}
+                className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+              >
+                <option value="third">3rd place game</option>
+                <option value="full">Full placement</option>
+                <option value="full-skip-last">Full, split last</option>
+                <option value="none">Winners only</option>
+              </select>
+            </SelectRow>
+          )}
         </div>
       )}
 
-      <button className="tertiary-btn" onClick={addClicked}>
-        Add {eventText[selectedType] || ""}
+      <button
+        className={`w-full py-2.5 font-semibold rounded-full transition-colors ${
+          eventName.trim()
+            ? "text-white bg-primary"
+            : "text-gray-400 bg-gray-100 cursor-not-allowed"
+        }`}
+        onClick={eventName.trim() ? addClicked : undefined}
+        disabled={!eventName.trim()}
+      >
+        Add {eventName.trim() || "event"}
       </button>
     </div>
   );

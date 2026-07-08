@@ -9,12 +9,12 @@ const CreateEventManger = ({
 }) => {
   const { showNotification } = useNotification();
 
-  const handleEventAdded = (eventName, selectedType, stages) => {
+  const handleEventAdded = (eventName, selectedType, stages, extra = {}) => {
     if (!eventName) {
       showNotification("You must enter an event name.");
       return;
     }
-    const newEvent = { name: eventName, stages };
+    const newEvent = { name: eventName.trim(), stages, ...extra };
     const setters = {
       ind: setIndEvents,
       h2h: setH2hEvents,
