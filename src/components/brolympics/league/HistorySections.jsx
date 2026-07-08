@@ -5,6 +5,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -16,13 +17,22 @@ import {
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 
-/** Chips for every team a player has suited up for; gold medal = that team
- * won its Brolympics. Shared by the leaderboard expand and the stats page. */
-export const PlayerTeams = ({ teams }) => {
-  if (!teams?.length) return null;
+const ordinal = (n) => {
+  const suffixes = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+};
+
+/** Chips for a player's teams with their Brolympics finish (medal for top 3).
+ * medalOnly narrows to podium finishes -- the leaderboard-expand view. */
+export const PlayerTeams = ({ teams, medalOnly = false }) => {
+  const shown = medalOnly
+    ? (teams || []).filter((t) => t.finish && t.finish <= 3)
+    : teams || [];
+  if (!shown.length) return null;
   return (
     <div className="flex flex-wrap gap-2">
-      {teams.map((row, i) => (
+      {shown.map((row, i) => (
         <div
           className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 text-xs bg-white border rounded-full"
           key={i + "_played_for"}
@@ -34,13 +44,40 @@ export const PlayerTeams = ({ teams }) => {
           />
           <span className="font-medium">{row.team}</span>
           <span className="text-light">{row.brolympics}</span>
-          {row.champion && <img src={Gold} alt="Champion" className="h-3.5" />}
+          {row.finish && row.finish <= 3 ? (
+            <img
+              src={medalFor[row.finish]}
+              alt={ordinal(row.finish)}
+              className="h-3.5"
+            />
+          ) : row.finish ? (
+            <span className="text-light">{ordinal(row.finish)}</span>
+          ) : null}
         </div>
       ))}
     </div>
   );
 };
 
+/** One compact icon line: "🏆 Cornhole ×2, Trivia". */
+const HighlightLine = ({ icon, label, items }) => {
+  if (!items.length) return null;
+  return (
+    <div className="flex items-start gap-2 text-sm">
+      <span className="text-primary pt-0.5">{icon}</span>
+      <span>
+        <span className="font-semibold">{label}: </span>
+        {items
+          .map((it) => (it.count > 1 ? `${it.name} ×${it.count}` : it.name))
+          .join(", ")}
+      </span>
+    </div>
+  );
+};
+
+/** The leaderboard expand: a highlight reel, not the full record. Medal
+ * finishes, event wins/podiums, records held -- details live on the stats
+ * page. */
 const PlayerCareer = ({ playerUuid }) => {
   const [career, setCareer] = useState(null);
   const navigate = useNavigate();
@@ -54,40 +91,43 @@ const PlayerCareer = ({ playerUuid }) => {
 
   if (!career) return <div className="p-2 text-sm text-light">Loading...</div>;
 
+  const wins = career.disciplines
+    .filter((d) => d.event_wins > 0)
+    .map((d) => ({ name: d.event_type, count: d.event_wins }));
+  const podiums = career.disciplines
+    .filter((d) => d.podiums > 0)
+    .map((d) => ({ name: d.event_type, count: d.podiums }));
+  const records = (career.records || []).map((r) => ({
+    name: `${r.event_type} (${r.score})`,
+    count: 1,
+  }));
+
   return (
     <div className="p-2 space-y-2">
-      <PlayerTeams teams={career.teams} />
-      {career.disciplines.map((d, i) => (
-        <div className="p-2 border rounded-md" key={i + "_discipline"}>
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold">{d.event_type}</h4>
-            <span className="text-sm text-light">{d.years.join(", ")}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 text-sm">
-            <span>Points: {d.points}</span>
-            {d.format === "h2h" ? (
-              <span>
-                Record: {d.record.wins}-{d.record.losses}
-                {d.record.ties ? `-${d.record.ties}` : ""}
-              </span>
-            ) : d.heats.played > 0 ? (
-              <span>
-                Heats: {d.heats.wins} wins / {d.heats.played}
-              </span>
-            ) : (
-              <span>
-                Best: {d.best_score ?? "—"}
-                {d.avg_score != null && ` (avg ${d.avg_score.toFixed(1)})`}
-              </span>
-            )}
-            <span>Event wins: {d.event_wins}</span>
-            <span>Podiums: {d.podiums}</span>
-          </div>
-        </div>
-      ))}
-      {career.disciplines.length === 0 && (
-        <p className="text-sm text-light">No recorded events.</p>
-      )}
+      <PlayerTeams teams={career.teams} medalOnly />
+      <HighlightLine
+        icon={<EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />}
+        label="Event wins"
+        items={wins}
+      />
+      <HighlightLine
+        icon={<WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />}
+        label="Podiums"
+        items={podiums}
+      />
+      <HighlightLine
+        icon={<WhatshotOutlinedIcon sx={{ fontSize: 18 }} />}
+        label="Record holder"
+        items={records}
+      />
+      {wins.length === 0 &&
+        podiums.length === 0 &&
+        records.length === 0 &&
+        !(career.teams || []).some((t) => t.finish && t.finish <= 3) && (
+          <p className="text-sm text-light">
+            No hardware yet — the full history is on their stats page.
+          </p>
+        )}
       <button
         className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
         onClick={() =>
