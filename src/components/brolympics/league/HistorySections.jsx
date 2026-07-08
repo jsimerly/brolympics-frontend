@@ -57,21 +57,18 @@ export const PlayerTeams = ({ teams }) => {
   );
 };
 
-/** One compact icon line: "🏆 Cornhole ×2, Trivia". */
-const HighlightLine = ({ icon, label, items }) => {
-  if (!items.length) return null;
-  return (
-    <div className="flex items-start gap-2 text-sm">
-      <span className="text-primary pt-0.5">{icon}</span>
-      <span>
-        <span className="font-semibold">{label}: </span>
-        {items
-          .map((it) => (it.count > 1 ? `${it.name} ×${it.count}` : it.name))
-          .join(", ")}
-      </span>
-    </div>
-  );
-};
+/** Achievement chips in the same visual language as the team chips: an icon,
+ * the event, and a ×count when it happened more than once. */
+const AchievementChip = ({ icon, name, count = 1, title }) => (
+  <div
+    className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 text-xs bg-white border rounded-full"
+    title={title}
+  >
+    {icon}
+    <span className="font-medium">{name}</span>
+    {count > 1 && <span className="text-light">×{count}</span>}
+  </div>
+);
 
 /** The leaderboard expand: a highlight reel, not the full record. Medal
  * finishes, event wins/podiums, records held -- details live on the stats
@@ -92,32 +89,60 @@ const PlayerCareer = ({ playerUuid }) => {
   const wins = career.disciplines
     .filter((d) => d.event_wins > 0)
     .map((d) => ({ name: d.event_type, count: d.event_wins }));
+  // podium chips only count finishes beyond the wins already shown
   const podiums = career.disciplines
-    .filter((d) => d.podiums > 0)
-    .map((d) => ({ name: d.event_type, count: d.podiums }));
-  const records = (career.records || []).map((r) => ({
-    name: `${r.event_type} (${r.score})`,
-    count: 1,
-  }));
+    .filter((d) => d.podiums - d.event_wins > 0)
+    .map((d) => ({ name: d.event_type, count: d.podiums - d.event_wins }));
+  const records = career.records || [];
 
   return (
     <div className="p-2 space-y-2">
       <PlayerTeams teams={career.teams} />
-      <HighlightLine
-        icon={<EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />}
-        label="Event wins"
-        items={wins}
-      />
-      <HighlightLine
-        icon={<WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />}
-        label="Podiums"
-        items={podiums}
-      />
-      <HighlightLine
-        icon={<WhatshotOutlinedIcon sx={{ fontSize: 18 }} />}
-        label="Record holder"
-        items={records}
-      />
+      {(wins.length > 0 || podiums.length > 0 || records.length > 0) && (
+        <div className="flex flex-wrap gap-2">
+          {wins.map((it) => (
+            <AchievementChip
+              icon={
+                <EmojiEventsOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-yellow-500"
+                />
+              }
+              name={it.name}
+              count={it.count}
+              title="Event wins"
+              key={"win_" + it.name}
+            />
+          ))}
+          {podiums.map((it) => (
+            <AchievementChip
+              icon={
+                <WorkspacePremiumOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-gray-400"
+                />
+              }
+              name={it.name}
+              count={it.count}
+              title="Podium finishes"
+              key={"podium_" + it.name}
+            />
+          ))}
+          {records.map((r) => (
+            <AchievementChip
+              icon={
+                <WhatshotOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-orange-500"
+                />
+              }
+              name={`${r.event_type} · ${r.score}`}
+              title="All-time record"
+              key={"record_" + r.event_type}
+            />
+          ))}
+        </div>
+      )}
       <button
         className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
         onClick={() =>
