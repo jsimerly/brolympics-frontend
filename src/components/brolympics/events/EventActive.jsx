@@ -6,11 +6,90 @@ import Bracket from "./Bracket";
 import Img from "../../Util/Img";
 import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
-import Comp_outing from "./Competitions/Comp_outing.jsx";
 import { EventInfo } from "./EventInfo.jsx";
 
+/** One outing line inside a team's group: total up front, players after. */
+const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
+  const entries = contest.entries || [];
+  const teamEntry = entries.find((e) => e.team && !e.player) || entries[0];
+  const playerEntries = entries.filter((e) => e.player);
+  const total =
+    teamEntry?.score ??
+    (playerEntries.length
+      ? playerEntries.reduce((sum, e) => sum + (e.score ?? 0), 0)
+      : null);
+
+  return (
+    <div className="flex items-center gap-2 py-1 text-sm border-t first:border-t-0">
+      {showGameNumber && (
+        <span className="w-14 text-xs text-light">Game {gameNumber}</span>
+      )}
+      <span className="w-10 font-bold">
+        {contest.is_complete && total != null ? total : "–"}
+      </span>
+      <span className="flex-grow truncate text-light">
+        {playerEntries.length > 0
+          ? playerEntries
+              .map((e) => `${e.player_name} ${e.score ?? "—"}`)
+              .join(" · ")
+          : contest.is_complete
+          ? "team score"
+          : "not played yet"}
+      </span>
+      {contest.is_active && (
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark shrink-0">
+          live
+        </span>
+      )}
+    </div>
+  );
+};
+
+/** Outings grouped one block per team, in standings order. */
+const TeamOutings = ({ contests, standings }) => {
+  const order = new Map(
+    (standings || []).map((row, i) => [String(row.team.uuid), i])
+  );
+  const groups = new Map();
+  for (const contest of contests) {
+    const teamEntry =
+      contest.entries?.find((e) => e.team && !e.player) ||
+      contest.entries?.[0];
+    const key = String(teamEntry?.team ?? contest.uuid);
+    if (!groups.has(key)) groups.set(key, { teamEntry, games: [] });
+    groups.get(key).games.push(contest);
+  }
+  const ordered = [...groups.entries()].sort(
+    ([a], [b]) => (order.get(a) ?? 99) - (order.get(b) ?? 99)
+  );
+
+  return (
+    <div className="overflow-hidden card divide-y">
+      {ordered.map(([key, { teamEntry, games }]) => (
+        <div className="px-4 py-3" key={key}>
+          <h3 className="flex items-center gap-2 pb-1 font-semibold">
+            <Img
+              src={teamEntry?.team_img}
+              alt={teamEntry?.team_name}
+              className="object-cover rounded-md w-7 h-7"
+            />
+            {teamEntry?.team_name}
+          </h3>
+          {games.map((contest, i) => (
+            <OutingLine
+              contest={contest}
+              gameNumber={i + 1}
+              showGameNumber={games.length > 1}
+              key={contest.uuid}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const EventActive = ({ eventInfo, is_admin }) => {
-  const CompComp = eventInfo?.type === "h2h" ? Comp_h2h : Comp_outing;
 
   const getFontSize = (name) => {
     if (name) {
@@ -116,11 +195,18 @@ const EventActive = ({ eventInfo, is_admin }) => {
         eventInfo.contests.length > 0 && (
           <div className="px-4 pb-6">
             <h2 className="mb-4 header-3">Competitions</h2>
-            <div className="overflow-hidden card divide-y">
-              {eventInfo.contests.map((contest) => (
-                <CompComp {...contest} key={contest.uuid} />
-              ))}
-            </div>
+            {eventInfo.type === "h2h" ? (
+              <div className="overflow-hidden card divide-y">
+                {eventInfo.contests.map((contest) => (
+                  <Comp_h2h {...contest} key={contest.uuid} />
+                ))}
+              </div>
+            ) : (
+              <TeamOutings
+                contests={eventInfo.contests}
+                standings={eventInfo.standings}
+              />
+            )}
           </div>
         )
       )}
