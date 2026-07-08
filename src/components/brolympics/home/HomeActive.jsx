@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
-import AvailableCompetition_h2h from "./h2h/AvailableCompetition_h2h.jsx";
-import ActiveCompetition_h2h from "./h2h/ActiveCompetition_h2h.jsx";
-import AvailableCompetition_ind from "./ind/AvailableCompetition_ind.jsx";
-import ActiveCompetition_ind from "./ind/ActiveCompetition_ind.jsx";
-import AvailableCompetition_team from "./team/AvailableCompetition_team.jsx";
-import ActiveCompetition_team from "./team/ActiveCompetition_team.jsx";
+import AvailableCompetition from "./AvailableCompetition.jsx";
+import ActiveCompetition from "./ActiveCompetition.jsx";
 import HomeAdminActive from "./HomeAdminActive.jsx";
 
-import { fetchHome } from "../../../api/activeBro/home.js";
+import { fetchActiveHome } from "../../../api/client";
 import Schedule from "./Schedule.jsx";
 
 const CurrentEventCard = ({ name, percent_complete }) => (
@@ -26,14 +22,8 @@ const CurrentEventCard = ({ name, percent_complete }) => (
 );
 
 const getComponent = (type, props, isAvailable) => {
-  const components = {
-    h2h: isAvailable ? AvailableCompetition_h2h : ActiveCompetition_h2h,
-    ind: isAvailable ? AvailableCompetition_ind : ActiveCompetition_ind,
-    team: isAvailable ? AvailableCompetition_team : ActiveCompetition_team,
-    bracket: isAvailable ? AvailableCompetition_h2h : ActiveCompetition_h2h,
-  };
-  const Component = components[type] || null;
-  return Component ? <Component {...props} /> : null;
+  const Component = isAvailable ? AvailableCompetition : ActiveCompetition;
+  return <Component {...props} />;
 };
 
 const EventBlock = ({ title, items, component_func }) => (
@@ -78,7 +68,7 @@ const AdminSwitch = ({ adminView, setAdminView }) => (
   </div>
 );
 
-const HomeActive = ({ is_owner }) => {
+const HomeActive = ({ is_admin }) => {
   const [adminView, setAdminView] = useState(false);
   const [homeData, setHomeData] = useState({
     active_events: [],
@@ -92,7 +82,7 @@ const HomeActive = ({ is_owner }) => {
   useEffect(() => {
     const getHomeInfo = async () => {
       try {
-        const data = await fetchHome(uuid);
+        const data = await fetchActiveHome(uuid);
         setHomeData(data);
       } catch (error) {
         console.error("Error fetching home data:", error);
@@ -103,7 +93,7 @@ const HomeActive = ({ is_owner }) => {
 
   return (
     <div className="max-w-md px-4 py-6 mx-auto sm:px-6 lg:px-8">
-      {is_owner && (
+      {is_admin && (
         <AdminSwitch adminView={adminView} setAdminView={setAdminView} />
       )}
       {adminView ? (

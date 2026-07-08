@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import Img from "../../Util/Img";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
-const LeagueCard = ({ name, img, founded, is_owner, uuid }) => {
+const LeagueCard = ({ name, img, founded, is_admin, uuid }) => {
   const navigate = useNavigate();
 
   const onLeagueClick = () => {
@@ -14,12 +15,12 @@ const LeagueCard = ({ name, img, founded, is_owner, uuid }) => {
       className="flex items-center gap-4 p-4 card-clickable"
       onClick={onLeagueClick}
     >
-      <img className="object-cover w-16 h-16 rounded-lg" src={img} alt={name} />
+      <Img className="object-cover w-16 h-16 rounded-lg" src={img} alt={name} kind="league" />
       <div className="flex flex-col flex-grow">
         <h2 className="header-4 text-near-black">{name}</h2>
         <span className="text-sm text-light">Founded: {founded}</span>
       </div>
-      {is_owner && (
+      {is_admin && (
         <div className="text-primary">
           <AutoAwesomeIcon sx={{ fontSize: 24 }} />
         </div>

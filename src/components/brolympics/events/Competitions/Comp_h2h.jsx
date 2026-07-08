@@ -1,12 +1,6 @@
-const Comp_h2h = ({
-  team_1,
-  team_1_score,
-  team_2,
-  team_2_score,
-  winner,
-  is_active,
-  is_complete,
-}) => {
+const Comp_h2h = ({ entries = [], is_complete }) => {
+  const [entry_1, entry_2] = entries;
+
   const getFontSize = (name) => {
     if (name) {
       if (name.length <= 10) {
@@ -21,51 +15,34 @@ const Comp_h2h = ({
     }
   };
 
+  const winStyle = (entry) =>
+    entry?.outcome === "w" ? "font-bold text-primaryLight" : "";
+
   return (
     <div className={`flex items-center justify-center py-3 px-6`}>
       <div className="flex items-center justify-center w-full">
         <div
-          className={`w-2/5 ${
-            team_1.uuid === winner?.uuid ? "font-bold text-primaryLight" : ""
-          }`}
-          style={{ fontSize: getFontSize(team_1.name) }}
+          className={`w-2/5 ${winStyle(entry_1)}`}
+          style={{ fontSize: getFontSize(entry_1?.team_name) }}
         >
-          {team_1.name}
+          {entry_1?.team_name || "TBD"}
         </div>
         <div className="w-1/5 text-center">
           {is_complete ? (
             <>
-              <span
-                className={`${
-                  team_1.uuid === winner?.uuid
-                    ? "font-bold text-primaryLight"
-                    : ""
-                }`}
-              >
-                {team_1_score}
-              </span>
+              <span className={winStyle(entry_1)}>{entry_1?.score}</span>
               <span className="px-1">:</span>
-              <span
-                className={`${
-                  team_2.uuid === winner?.uuid
-                    ? "font-bold text-primaryLight"
-                    : ""
-                } `}
-              >
-                {team_2_score}
-              </span>
+              <span className={winStyle(entry_2)}>{entry_2?.score}</span>
             </>
           ) : (
             "vs"
           )}
         </div>
         <div
-          className={`w-2/5 ${
-            team_2.uuid === winner?.uuid ? "font-bold text-primaryLight" : ""
-          } text-end`}
-          style={{ fontSize: getFontSize(team_2.name) }}
+          className={`w-2/5 ${winStyle(entry_2)} text-end`}
+          style={{ fontSize: getFontSize(entry_2?.team_name) }}
         >
-          {team_2.name}
+          {entry_2?.team_name || "TBD"}
         </div>
       </div>
     </div>

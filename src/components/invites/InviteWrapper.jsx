@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../Util/Notification";
 
+/**
+ * Shared invite landing flow. fetchInfo returns the unified invite preview
+ * ({kind, uuid, name, league_name, img, detail}); fetchJoin returns a
+ * navigation payload ({brolympics?, league?, welcome_message?}).
+ */
 const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
   const { uuid } = useParams();
   const [info, setInfo] = useState();
@@ -9,19 +14,16 @@ const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getinfo = async () => {
+    const getInfo = async () => {
       try {
-        const data = await fetchInfo(uuid);
-        setInfo(data);
+        setInfo(await fetchInfo(uuid));
       } catch (error) {
-        if (error.status === 404) {
+        if (error.response?.status === 404) {
           showNotification(
             "We could not find this invite. We're rerouting you to the leagues page now.",
             "error"
           );
-          setTimeout(() => {
-            navigate("/");
-          }, 3000);
+          setTimeout(() => navigate("/"), 3000);
         } else {
           showNotification(
             "There was an error attempting to retrieve this invite.",
@@ -30,22 +32,24 @@ const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
         }
       }
     };
-    getinfo();
+    getInfo();
   }, [uuid, fetchInfo, showNotification, navigate]);
 
   const joinClick = async () => {
     try {
       const data = await fetchJoin(uuid);
-      if ("league_uuid" in data) {
-        navigate(`/league/${data.league_uuid}`);
+      if (data?.brolympics) {
+        navigate(`/b/${data.brolympics}/home`);
+      } else if (data?.league) {
+        navigate(`/league/${data.league}`);
       }
-      if ("bro_uuid" in data) {
-        navigate(`/b/${data.bro_uuid}/home`);
-      }
-      showNotification(data.welcome_message, "success");
+      showNotification(data?.welcome_message ?? "Welcome!", "success");
     } catch (error) {
-      if (error.status === 409) {
-        showNotification(error.data, "warning");
+      if (error.response?.status === 403) {
+        showNotification(
+          error.response.data?.detail ?? "Registration is closed.",
+          "warning"
+        );
       } else {
         showNotification(
           "There was an error while attempting to accept this invite.",
@@ -53,10 +57,6 @@ const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
         );
       }
     }
-  };
-
-  const declineClick = () => {
-    navigate("/");
   };
 
   return (
@@ -67,7 +67,7 @@ const InviteWrapper = ({ fetchInfo, fetchJoin, joinText, children }) => {
           <button className="w-full primary-btn" onClick={joinClick}>
             {joinText}
           </button>
-          <button className="w-full red-btn" onClick={declineClick}>
+          <button className="w-full red-btn" onClick={() => navigate("/")}>
             Decline
           </button>
         </div>

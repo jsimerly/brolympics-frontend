@@ -6,7 +6,7 @@ import Options from "./Options.jsx";
 import UpcomingBrolympics from "./UpcomingBrolympics";
 import UpcomingCompetitions from "./UpcomingComps";
 import Account from "./Account.jsx";
-import { fetchUpcoming } from "../../api/league.js";
+import { fetchUpcoming } from "../../api/client";
 
 const Slideout = ({ open, leagues, setOpen }) => {
   const [view, setView] = useState("leagues");

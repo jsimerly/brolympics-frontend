@@ -94,46 +94,26 @@ export const EventInfo = ({ event }) => {
               <strong>Scoring:</strong>{" "}
               {event.is_high_score_wins ? "High score wins" : "Low score wins"}
             </p>
-            {event.min_score !== null && (
+            {event.config?.min_score != null && (
               <p>
-                <strong>Minimum Score:</strong> {event.min_score}
+                <strong>Minimum Score:</strong> {event.config.min_score}
               </p>
             )}
-            {event.max_score !== null && (
+            {event.config?.max_score != null && (
               <p>
-                <strong>Maximum Score:</strong> {event.max_score}
+                <strong>Maximum Score:</strong> {event.config.max_score}
               </p>
             )}
-            <p>
-              <strong>Decimal Places:</strong> {event.decimal_places}
-            </p>
-            {event.n_matches && (
-              <p>
-                <strong>Number of Matches:</strong> {event.n_matches}
+            {(event.stages || []).map((stage) => (
+              <p key={stage.uuid}>
+                <strong>Stage {stage.order + 1}:</strong>{" "}
+                {stage.structure.replace("_", " ")}
+                {stage.config?.games_per_team &&
+                  ` — ${stage.config.games_per_team} games per team`}
+                {stage.config?.rounds && ` — ${stage.config.rounds} rounds`}
+                {stage.config?.take && ` — top ${stage.config.take} advance`}
               </p>
-            )}
-            {event.n_competitions && (
-              <p>
-                <strong>Number of Competitions:</strong> {event.n_competitions}
-              </p>
-            )}
-            {event.n_active_limit && (
-              <p>
-                <strong>Active Limit:</strong> {event.n_active_limit}
-              </p>
-            )}
-            {event.n_bracket_teams && (
-              <p>
-                <strong>Number of Bracket Teams:</strong>{" "}
-                {event.n_bracket_teams}
-              </p>
-            )}
-            {(event.type === "ind" || event.type === "team") && (
-              <p>
-                <strong>Display Average Scores:</strong>{" "}
-                {event.display_avg_scores ? "Yes" : "No"}
-              </p>
-            )}
+            ))}
           </div>
         </div>
 

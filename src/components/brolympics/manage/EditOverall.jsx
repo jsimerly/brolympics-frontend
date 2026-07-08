@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { fetchForceOverallUpdate } from "../../../api/brolympics";
 import { useParams } from "react-router-dom";
 
 const TeamRank = ({ rank, team, points, onRankChange, onPointsChange }) => {
@@ -46,9 +45,8 @@ const EditOverall = () => {
     setRankingData(newRankingData);
   };
 
-  const onUpdateClick = async () => {
-    fetchForceOverallUpdate(uuid);
-  };
+  // Standings compute live from event results now; there is nothing to force.
+  const onUpdateClick = () => {};
 
   return (
     <div className="flex flex-col gap-3">

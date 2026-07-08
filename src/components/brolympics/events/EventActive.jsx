@@ -1,43 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React from "react";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
-import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
-import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import Bracket from "./Bracket";
+import Img from "../../Util/Img";
+import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
-import Comp_ind from "./Competitions/Comp_ind.jsx";
-import Comp_team from "./Competitions/Comp_team.jsx";
+import Comp_outing from "./Competitions/Comp_outing.jsx";
 import { EventInfo } from "./EventInfo.jsx";
 
-const EventActive = ({ events, eventInfo }) => {
-  const { uuid, type, eventUuid } = useParams();
-  const navigate = useNavigate();
-  const [selectedEventId, setSelectedEventId] = useState(
-    eventUuid || events[0]?.uuid || ""
-  );
-
-  useEffect(() => {
-    if (!eventUuid && events[0]?.uuid) {
-      const firstEvent = events[0];
-      navigate(`/b/${uuid}/event/${firstEvent.type}/${firstEvent.uuid}`);
-    }
-  }, [eventUuid, events, navigate, uuid]);
-
-  useEffect(() => {
-    if (eventUuid) {
-      setSelectedEventId(eventUuid);
-    }
-  }, [eventUuid]);
-
-  const componentMap = {
-    h2h: Comp_h2h,
-    ind: Comp_ind,
-    team: Comp_team,
-  };
-
-  const CompComp = componentMap[eventInfo?.type] || Comp_ind;
+const EventActive = ({ eventInfo, is_admin }) => {
+  const CompComp = eventInfo?.type === "h2h" ? Comp_h2h : Comp_outing;
 
   const getFontSize = (name) => {
     if (name) {
@@ -47,22 +20,20 @@ const EventActive = ({ events, eventInfo }) => {
     }
   };
 
-  const getDisplayInfo = (ranking) => {
+  const getDisplayInfo = (row) => {
+    const stats = row.stats || {};
     if (eventInfo?.type === "h2h") {
-      return `${ranking.wins}-${ranking.losses} ${
-        ranking.ties != 0 ? `${ranking.ties}` : ""
+      if (stats.wins == null) return "";
+      return `${stats.wins}-${stats.losses}${
+        stats.ties ? `-${stats.ties}` : ""
       }`;
-    } else if (eventInfo?.type === "ind" || eventInfo?.type === "team") {
-      return ranking.score;
     }
+    return stats.total ?? stats.placement_points ?? "";
   };
 
-  const handleEventInfoClick = () => {
-    setShowEventInfo(true);
-  };
-
-  const handleCloseEventInfo = () => {
-    setShowEventInfo(false);
+  const displayPoints = (points) => {
+    if (points == null) return "—";
+    return Number.isInteger(points) ? points : points.toFixed(1);
   };
 
   if (!eventInfo) return <div>Loading...</div>;
@@ -79,12 +50,6 @@ const EventActive = ({ events, eventInfo }) => {
               </span>
             )}
           </h2>
-          <button
-            className="flex flex-col items-start justify-center"
-            onClick={handleEventInfoClick}
-          >
-            <MenuBookOutlinedIcon sx={{ fontSize: 30 }} />
-          </button>
         </div>
         <div className="">
           <table className="w-full border">
@@ -101,64 +66,67 @@ const EventActive = ({ events, eventInfo }) => {
             </thead>
             <tbody>
               {eventInfo.standings &&
-                eventInfo.standings
-                  .sort((a, b) => a.rank - b.rank)
-                  .map((ranking, i) => (
-                    <tr key={i + "_row"}>
-                      <td className="p-3 font-semibold text-center text-[18px] border-r">
-                        {ranking.rank}
-                      </td>
-                      <td className="pl-3 text-start text-[20px] border-r">
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={ranking.team.img}
-                            className="w-[30px] h-[30px] rounded-md"
-                            alt={ranking.team.name}
-                          />
-                          <div className="flex flex-col justify-center">
-                            <span
-                              className={`text-[${getFontSize(
-                                ranking.team.name
-                              )}] leading-5`}
-                            >
-                              {ranking.team.name}
-                            </span>
-                            <span className="text-[10px]">
-                              {getDisplayInfo(ranking)}
-                            </span>
-                          </div>
+                eventInfo.standings.map((row, i) => (
+                  <tr key={i + "_row"}>
+                    <td className="p-3 font-semibold text-center text-[18px] border-r">
+                      {row.rank}
+                    </td>
+                    <td className="pl-3 text-start text-[20px] border-r">
+                      <div className="flex items-center gap-2">
+                        <Img
+                          src={row.team.img}
+                          className="w-[30px] h-[30px] rounded-md"
+                          alt={row.team.name}
+                        />
+                        <div className="flex flex-col justify-center">
+                          <span
+                            className={`text-[${getFontSize(
+                              row.team.name
+                            )}] leading-5`}
+                          >
+                            {row.team.name}
+                          </span>
+                          <span className="text-[10px]">
+                            {getDisplayInfo(row)}
+                          </span>
                         </div>
-                      </td>
-                      <td className="p-2 text-center border-r text-[18px]">
-                        {Number.isInteger(ranking?.points)
-                          ? ranking.points
-                          : ranking.points.toFixed(1)}
-                      </td>
-                    </tr>
-                  ))}
+                      </div>
+                    </td>
+                    <td className="p-2 text-center border-r text-[18px]">
+                      {displayPoints(row.points)}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
       </div>
       <div className="py-3">
-        {eventInfo.type === "h2h" && <Bracket {...eventInfo.bracket} />}
+        {(eventInfo.brackets || []).map((bracket) => (
+          <Bracket key={bracket.stage} {...bracket} />
+        ))}
       </div>
-      {eventInfo.competitions && (
-        <div className="pb-6">
-          <h2 className="font-bold text-[20px] px-6">Competitions</h2>
-          <div className="space-y-2">
-            {eventInfo.competitions.map((comp, i) => (
-              <div key={i + "_events"}>
-                {i !== 0 && (
-                  <div className="w-full px-6">
-                    <div className="w-full h-[1px]" />
-                  </div>
-                )}
-                <CompComp {...comp} key={i} />
-              </div>
-            ))}
+      {eventInfo.type === "ffa" ? (
+        <HeatManager event={eventInfo} is_admin={is_admin} />
+      ) : (
+        eventInfo.contests &&
+        eventInfo.contests.length > 0 && (
+          <div className="pb-6">
+            <h2 className="font-bold text-[20px] px-6">Competitions</h2>
+            <div className="space-y-2">
+              {eventInfo.contests.map((contest, i) => (
+                <div key={contest.uuid}>
+                  {i !== 0 && (
+                    <div className="w-full px-6">
+                      <div className="w-full h-[1px]" />
+                    </div>
+                  )}
+                  <CompComp {...contest} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       <EventInfo event={eventInfo} />

@@ -1,5 +1,6 @@
 import DataList from "./DataList";
 import { useNavigate } from "react-router-dom";
+import Img from "../Util/Img";
 
 const Card = (info, index, setOpen) => {
   const navigate = useNavigate();
@@ -19,9 +20,10 @@ const Card = (info, index, setOpen) => {
       key={index}
       onClick={onClick}
     >
-      <img
+      <Img
         src={info.img}
         alt={info.name}
+        kind="brolympics"
         className="object-cover w-12 h-12 bg-white rounded-lg"
       />
       <div className="flex flex-col">

@@ -1,42 +1,48 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCreateEvent } from "../../../api/events.js";
+import { createEvent, defaultStagesFor } from "../../../api/client";
 
-import ManageEvent_h2h from "./events/ManageEvent_h2h.jsx";
-import ManageEvent_ind from "./events/ManageEvent_ind.jsx";
-import ManageEvent_team from "./events/ManageEvent_team.jsx";
+import ManageEvent from "./events/ManageEvent.jsx";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CreateEvent from "../../create_league_page/events/CreateEvent.jsx";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { useNotification } from "../../Util/Notification";
 
 const ManageEvents = ({ events, setEvents }) => {
   const [addingEvent, setAddingEvent] = useState(false);
   const [compEvents, setCompEvents] = useState(events);
   const { uuid } = useParams();
+  const { showNotification } = useNotification();
 
   const toggleAddEvent = () => {
     setAddingEvent((addingEvent) => !addingEvent);
   };
 
-  const handleEventAdd = async (eventName, type) => {
+  const handleEventAdd = async (eventName, type, stages) => {
     try {
-      const data = await fetchCreateEvent(eventName, type, uuid);
+      const created = await createEvent({
+        brolympics: uuid,
+        event_type_name: eventName,
+        format: type,
+        stages: stages || defaultStagesFor(type),
+      });
       setCompEvents((prevEvents) => [
         ...prevEvents,
-        { name: eventName, type: type },
+        { ...created, type: created.format || type },
       ]);
       setAddingEvent(false);
-      location.reload();
+      if (created.warnings?.length) {
+        showNotification(created.warnings.join(" "), "border-yellow-500");
+      }
     } catch (error) {
-      console.log(error.message);
+      const detail = error.response?.data;
+      showNotification(
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "There was an error creating this event."
+      );
     }
-  };
-
-  const CompToType = {
-    h2h: <ManageEvent_h2h />,
-    ind: <ManageEvent_ind />,
-    team: <ManageEvent_team />,
   };
 
   return (
@@ -45,12 +51,9 @@ const ManageEvents = ({ events, setEvents }) => {
       <div>
         {compEvents &&
           compEvents.map((event, i) => (
-            <div key={i + "_comp_events"}>
+            <div key={event.uuid || i + "_comp_events"}>
               {i !== 0 && <div className="w-full h-[1px]" />}
-              {React.cloneElement(CompToType[event.type], {
-                key: i + "_eventCard",
-                event: event,
-              })}
+              <ManageEvent event={event} />
             </div>
           ))}
       </div>

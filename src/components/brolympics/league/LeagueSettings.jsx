@@ -6,9 +6,9 @@ import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   updateLeague,
-  updateLeagueImg,
+  updateLeagueImage,
   deleteLeague,
-} from "../../../api/league";
+} from "../../../api/client";
 import PopupContinue from "../../Util/PopupContinue";
 import { useNavigate } from "react-router-dom";
 
@@ -53,7 +53,7 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
         type: "image/jpeg",
       });
 
-      await updateLeagueImg(leagueInfo.uuid, file);
+      await updateLeagueImage(leagueInfo.uuid, file);
       setImg(croppedImage);
       setImageError(false);
       setCropping(false);
@@ -77,7 +77,7 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
 
   const handleSave = async () => {
     try {
-      await updateLeague(leagueInfo.uuid, name);
+      await updateLeague(leagueInfo.uuid, { name });
       showNotification("League updated successfully", "success");
       if (onSave) onSave({ ...leagueInfo, name });
     } catch (error) {

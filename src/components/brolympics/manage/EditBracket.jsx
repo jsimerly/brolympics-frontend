@@ -1,21 +1,18 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useEffect, useState } from "react";
-import {
-  fetchBracketData,
-  fetchUpdateBracketMatch,
-} from "../../../api/activeBro/admin";
+import { useEffect, useState, useCallback } from "react";
+import { fetchBrolympicsEvents, fetchEventBracket } from "../../../api/client";
 import { useParams } from "react-router-dom";
-import { useNotification } from "../../Util/Notification";
+import ContestEditCard from "./ContestEditCard";
 
-const ClickCard = ({ event, children }) => {
+const ClickCard = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleToggle = () => setIsOpen((isOpen) => !isOpen);
 
   return (
     <div className="w-full py-3">
       <div onClick={handleToggle} className="flex justify-between pb-3">
-        <h3 className="font-semibold text-[18px]">{event.event}</h3>
+        <h3 className="font-semibold text-[18px]">{title}</h3>
         {isOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
       </div>
 
@@ -24,100 +21,71 @@ const ClickCard = ({ event, children }) => {
   );
 };
 
-const MatchupCard = ({ uuid, team_1, team_1_score, team_2, team_2_score }) => {
-  const { showNotification } = useNotification();
-  const [compData, setCompData] = useState({
-    uuid: uuid,
-    team_1_score: team_1_score,
-    team_2_score: team_2_score,
-  });
-
-  const handleTeam1ScoreChange = (e) => {
-    setCompData({
-      ...compData,
-      team_1_score: e.target.value,
-    });
-  };
-
-  const handleTeam2ScoreChange = (e) => {
-    setCompData({
-      ...compData,
-      team_2_score: e.target.value,
-    });
-  };
-
-  const handleUpdateClicked = async () => {
-    try {
-      const data = await fetchUpdateBracketMatch(compData);
-      showNotification("This competition has been updated.", "!border-primary");
-    } catch (error) {
-      showNotification(
-        "There was an error when attemping to update this competition."
-      );
-    }
-  };
-
-  return (
-    <div className="relative flex flex-col gap-1 p-2 border rounded-md">
-      <div className="flex items-center">
-        <div>{team_1.name || "Team 1"}:</div>
-        <input
-          value={compData.team_1_score || ""}
-          onChange={handleTeam1ScoreChange}
-          className="p-2 rounded-md w-[60px] border ml-1"
-        />
-      </div>
-      <div className="flex items-center">
-        <div>{team_2.name || "Team 2"}:</div>
-        <input
-          value={compData.team_2_score || ""}
-          onChange={handleTeam2ScoreChange}
-          className="p-2 rounded-md w-[60px] border ml-1"
-        />
-      </div>
-      <button
-        className="absolute px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
-        onClick={handleUpdateClicked}
-      >
-        Update
-      </button>
-    </div>
-  );
-};
-
 const EditBracket = () => {
   const { uuid } = useParams();
   const [events, setEvents] = useState([]);
 
+  const getEvents = useCallback(async () => {
+    try {
+      const eventList = await fetchBrolympicsEvents(uuid);
+      const withKnockout = eventList.filter((e) =>
+        (e.stages || []).some((s) => s.structure === "knockout")
+      );
+      const brackets = await Promise.all(
+        withKnockout.map((e) => fetchEventBracket(e.uuid).catch(() => []))
+      );
+      setEvents(
+        withKnockout.map((event, i) => ({ ...event, brackets: brackets[i] }))
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }, [uuid]);
+
   useEffect(() => {
-    const getEvents = async () => {
-      try {
-        const data = await fetchBracketData(uuid);
-        setEvents(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
     getEvents();
-  }, []);
+  }, [getEvents]);
 
   return (
     <div>
       Brackets
       <div>
-        {events.map((event, i) => (
-          <ClickCard event={event} key={i + "_event_card"}>
+        {events.map((event) => (
+          <ClickCard title={event.name} key={event.uuid}>
             <div className="space-y-2">
-              <h2 className="font-semibold">Round 1</h2>
-              <MatchupCard {...event.match_1} />
-              <MatchupCard {...event.match_2} />
-              <h2 className="font-semibold"> Losers Finals</h2>
-              <MatchupCard {...event.loser_bracket_finals} />
-              <h2 className="font-semibold"> Championship</h2>
-              <MatchupCard {...event.championship} />
+              {event.brackets.flatMap((bracket) => {
+                const rounds = [
+                  ...new Set(bracket.nodes.map((n) => n.round)),
+                ].sort((a, b) => a - b);
+                return rounds.map((round) => (
+                  <div key={`${bracket.stage}_${round}`} className="space-y-2">
+                    <h2 className="font-semibold">
+                      {round === rounds[rounds.length - 1]
+                        ? "Finals"
+                        : `Round ${round}`}
+                    </h2>
+                    {bracket.nodes
+                      .filter((n) => n.round === round)
+                      .map((node) => (
+                        <ContestEditCard
+                          contest={node.contest}
+                          onSaved={getEvents}
+                          key={`${node.round}_${node.slot}`}
+                        />
+                      ))}
+                  </div>
+                ));
+              })}
+              {event.brackets.every((b) => b.nodes.length === 0) &&
+                "The bracket has not been generated yet."}
             </div>
           </ClickCard>
         ))}
+        {events.length === 0 && (
+          <p className="text-[12px] pt-2">
+            No events with a bracket stage in this Brolympics.
+          </p>
+        )}
       </div>
     </div>
   );
