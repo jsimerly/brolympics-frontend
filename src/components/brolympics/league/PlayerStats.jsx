@@ -20,8 +20,9 @@ const StatTile = ({ icon, value, label }) => (
   </div>
 );
 
-/** One line of game history inside a discipline dropdown. */
-const ContestRow = ({ contest, myTeamUuids, playerUuid }) => {
+/** One line of game history inside a discipline dropdown. seasonBreak marks
+ * the first row of a different Brolympics with a heavier divider. */
+const ContestRow = ({ contest, myTeamUuids, playerUuid, seasonBreak }) => {
   const entries = contest.entries || [];
   let line = null;
 
@@ -73,7 +74,13 @@ const ContestRow = ({ contest, myTeamUuids, playerUuid }) => {
   }
 
   return (
-    <div className="flex items-center gap-2 py-1 text-sm border-t first:border-t-0">
+    <div
+      className={`flex items-center gap-2 py-1 text-sm ${
+        seasonBreak
+          ? "mt-2 pt-2 border-t-2 border-gray-300"
+          : "border-t first:border-t-0"
+      }`}
+    >
       {line}
       {contest.stage_structure === "knockout" && (
         <AccountTreeOutlinedIcon
@@ -155,11 +162,14 @@ const DisciplineCard = ({ d, contests, myTeamUuids, playerUuid }) => {
           <h4 className="pb-1 text-xs font-semibold tracking-wide uppercase text-light">
             Game history
           </h4>
-          {mine.map((contest) => (
+          {mine.map((contest, i) => (
             <ContestRow
               contest={contest}
               myTeamUuids={myTeamUuids}
               playerUuid={playerUuid}
+              seasonBreak={
+                i > 0 && contest.brolympics !== mine[i - 1].brolympics
+              }
               key={contest.uuid}
             />
           ))}
