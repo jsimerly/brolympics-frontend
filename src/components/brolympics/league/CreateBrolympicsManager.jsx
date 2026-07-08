@@ -4,7 +4,11 @@ import AddPlayers from "../../create_league_page/AddPlayers";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
-import { createBrolympics as apiCreateBrolympics, createEvent } from "../../../api/client";
+import {
+  createBrolympics as apiCreateBrolympics,
+  createEvent,
+  defaultStagesFor,
+} from "../../../api/client";
 
 const CreateBrolympicsManager = () => {
   const [step, setStep] = useState(1);
@@ -12,6 +16,7 @@ const CreateBrolympicsManager = () => {
   const [h2hEvents, setH2hEvents] = useState([]);
   const [indEvents, setIndEvents] = useState([]);
   const [teamEvents, setTeamEvents] = useState([]);
+  const [ffaEvents, setFfaEvents] = useState([]);
   const [link, setLink] = useState();
   const { showNotification } = useNotification();
   const { uuid } = useParams();
@@ -28,15 +33,6 @@ const CreateBrolympicsManager = () => {
     }
   };
 
-  const defaultStages = {
-    h2h: [
-      { structure: "round_robin", config: { games_per_team: 4 } },
-      { structure: "knockout", config: { take: 4, third_place: true, byes: "seeded" } },
-    ],
-    ind: [{ structure: "open_play", config: {} }],
-    team: [{ structure: "open_play", config: {} }],
-  };
-
   const createBrolympics = async () => {
     try {
       const newBro = await apiCreateBrolympics({ ...brolympics, league: uuid });
@@ -44,14 +40,22 @@ const CreateBrolympicsManager = () => {
         ...h2hEvents.map((e) => ({ ...e, format: "h2h" })),
         ...indEvents.map((e) => ({ ...e, format: "ind" })),
         ...teamEvents.map((e) => ({ ...e, format: "team" })),
+        ...ffaEvents.map((e) => ({ ...e, format: "ffa" })),
       ];
+      const warnings = [];
       for (const event of events) {
-        await createEvent({
+        const created = await createEvent({
           brolympics: newBro.uuid,
           event_type_name: event.name,
           format: event.format,
-          stages: defaultStages[event.format],
+          stages: event.stages || defaultStagesFor(event.format),
         });
+        if (created.warnings?.length) {
+          warnings.push(`${event.name}: ${created.warnings.join(" ")}`);
+        }
+      }
+      if (warnings.length) {
+        showNotification(warnings.join(" — "), "border-yellow-500");
       }
       setLink(newBro.uuid);
       nextStep();
@@ -81,9 +85,11 @@ const CreateBrolympicsManager = () => {
           h2hEvents={h2hEvents}
           indEvents={indEvents}
           teamEvents={teamEvents}
+          ffaEvents={ffaEvents}
           setH2hEvents={setH2hEvents}
           setIndEvents={setIndEvents}
           setTeamEvents={setTeamEvents}
+          setFfaEvents={setFfaEvents}
           createAll={createBrolympics}
           setLink={setLink}
         />

@@ -32,9 +32,11 @@ const AddEvent = ({
   h2hEvents,
   indEvents,
   teamEvents,
+  ffaEvents = [],
   setH2hEvents,
   setIndEvents,
   setTeamEvents,
+  setFfaEvents,
   createAll,
   setLink,
 }) => {
@@ -45,7 +47,8 @@ const AddEvent = ({
   const [isEventAdded, setIsEventAdded] = useState(false);
 
   useEffect(() => {
-    const totalEvents = h2hEvents.length + indEvents.length + teamEvents.length;
+    const totalEvents =
+      h2hEvents.length + indEvents.length + teamEvents.length + ffaEvents.length;
     const isEventAddedLocal = totalEvents !== 0;
     const buttonTextLocal = isEventAddedLocal
       ? `Create ${totalEvents} Events`
@@ -53,7 +56,7 @@ const AddEvent = ({
 
     setButtonText(buttonTextLocal);
     setIsEventAdded(isEventAddedLocal);
-  }, [h2hEvents, indEvents, teamEvents]);
+  }, [h2hEvents, indEvents, teamEvents, ffaEvents]);
 
   return (
     <CreateWrapper
@@ -71,6 +74,7 @@ const AddEvent = ({
         setH2hEvents={setH2hEvents}
         setIndEvents={setIndEvents}
         setTeamEvents={setTeamEvents}
+        setFfaEvents={setFfaEvents}
       />
       <div>
         <h3 className="pt-6 text-[18px] font-bold">Your Events</h3>
@@ -93,6 +97,13 @@ const AddEvent = ({
             header="Team Events"
             events={teamEvents}
             setter={setTeamEvents}
+          />
+        )}
+        {ffaEvents.length > 0 && (
+          <EventComp
+            header="Free-for-All Events"
+            events={ffaEvents}
+            setter={setFfaEvents}
           />
         )}
       </div>
