@@ -3,7 +3,7 @@ import StepManager from "./StepManager";
 
 const StartLeague = () => {
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
   const nextStep = () => {
@@ -37,25 +37,18 @@ const StartLeague = () => {
     >
       <div className="fixed z-20 w-full">
         <div className="flex items-center justify-center w-full px-6 py-3 bg-gray-100">
-          <div className={`${step === 1 ? "font-bold" : ""} w-1/4 text-center`}>
-            League
-          </div>
-          |
-          <div
-            className={`${
-              step === 2 ? "font-bold" : ""
-            } w-1/4 text-center text-[14px]`}
-          >
-            Brolympics
-          </div>
-          |
-          <div className={`${step === 3 ? "font-bold" : ""} w-1/4 text-center`}>
-            Events
-          </div>
-          |
-          <div className={`${step === 4 ? "font-bold" : ""} w-1/4 text-center`}>
-            Players
-          </div>
+          {["League", "Brolympics", "Events", "Review", "Players"].map(
+            (label, i) => (
+              <div
+                key={label}
+                className={`${
+                  step === i + 1 ? "font-bold" : ""
+                } w-1/5 text-center text-[13px]`}
+              >
+                {label}
+              </div>
+            )
+          )}
         </div>
         <div className="px-6 mr-6">
           <div className="relative h-[4px] w-full bg-gray-300 mx-3 rounded-full ">

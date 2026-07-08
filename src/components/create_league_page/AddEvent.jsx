@@ -179,7 +179,11 @@ const AddEvent = ({
 
   return (
     <CreateWrapper
-      button_text={totalEvents > 0 ? `Create ${totalEvents} Events` : "Skip for now"}
+      button_text={
+        totalEvents > 0
+          ? `Next: Review (${totalEvents} event${totalEvents === 1 ? "" : "s"})`
+          : "Next: Review"
+      }
       step={step}
       totalSteps={totalSteps}
       back={back}

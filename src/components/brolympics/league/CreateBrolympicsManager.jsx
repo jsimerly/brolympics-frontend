@@ -1,5 +1,6 @@
 import CreateBrolympics from "../../create_league_page/CreateBrolympics";
 import AddEvent from "../../create_league_page/AddEvent";
+import ReviewStep from "../../create_league_page/ReviewStep";
 import AddPlayers from "../../create_league_page/AddPlayers";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,8 +36,9 @@ const CreateBrolympicsManager = () => {
     navigate(`/b/${destination}/home`);
   };
 
+  const [creating, setCreating] = useState(false);
   const nextStep = () => {
-    if (step < 3) {
+    if (step < 4) {
       setStep((step) => step + 1);
     }
   };
@@ -48,6 +50,8 @@ const CreateBrolympicsManager = () => {
   };
 
   const createBrolympics = async () => {
+    if (creating) return;
+    setCreating(true);
     try {
       const newBro = await apiCreateBrolympics({ ...brolympics, league: uuid });
       const events = [
@@ -82,9 +86,14 @@ const CreateBrolympicsManager = () => {
       nextStep();
     } catch (error) {
       console.log(error);
+      const detail = error.response?.data;
       showNotification(
-        "There was an while trying to create your Brolymipcs. Please check back shortly."
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "There was an error creating your Brolympics. Please try again."
       );
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -97,14 +106,14 @@ const CreateBrolympicsManager = () => {
       >
         <CreateBrolympics
           step={1}
-          totalSteps={3}
+          totalSteps={4}
           nextStep={nextStep}
           setBrolympics={setBrolympics}
           storageKey={K("form")}
         />
         <AddEvent
           step={2}
-          totalSteps={3}
+          totalSteps={4}
           back={prevStep}
           leagueUuid={uuid}
           h2hEvents={h2hEvents}
@@ -115,12 +124,24 @@ const CreateBrolympicsManager = () => {
           setIndEvents={setIndEvents}
           setTeamEvents={setTeamEvents}
           setFfaEvents={setFfaEvents}
-          createAll={createBrolympics}
+          createAll={nextStep}
           setLink={setLink}
         />
-        <AddPlayers
+        <ReviewStep
           step={3}
-          totalSteps={3}
+          totalSteps={4}
+          back={prevStep}
+          brolympics={brolympics}
+          h2hEvents={h2hEvents}
+          indEvents={indEvents}
+          teamEvents={teamEvents}
+          ffaEvents={ffaEvents}
+          onCreate={createBrolympics}
+          creating={creating}
+        />
+        <AddPlayers
+          step={4}
+          totalSteps={4}
           link={link}
           broName={brolympics?.name}
           leagueUuid={uuid}
