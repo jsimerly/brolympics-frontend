@@ -76,8 +76,8 @@ const CreateBrolympicsManager = () => {
       >
         <CreateBrolympics
           step={1}
+          totalSteps={3}
           nextStep={nextStep}
-          brolympicsState={brolympics}
           setBrolympics={setBrolympics}
         />
         <AddEvent

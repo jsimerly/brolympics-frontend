@@ -2,100 +2,123 @@ import { useState } from "react";
 import CreateWrapper from "./CreateWrapper";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
-import { DateInput } from "../Util/Inputs";
-import { useNotification } from "../Util/Notification";
 
-const CreateBrolympics = ({ step, nextStep, setBrolympics }) => {
-  const [brolympics, setBrolympicsData] = useState({
+const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
+  const [form, setForm] = useState({
     name: "",
     img: null,
     imgSrc: null,
-    date: "",
+    projected_start_date: "",
+    projected_end_date: "",
   });
   const [cropping, setCropping] = useState(false);
-  const { showNotification } = useNotification();
+
+  const set = (key) => (e) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const datesInvalid =
+    form.projected_start_date &&
+    form.projected_end_date &&
+    form.projected_end_date < form.projected_start_date;
+  const valid = form.name.trim().length > 0 && !datesInvalid;
 
   const handleCreateClicked = () => {
-    if (brolympics.name) {
-      nextStep();
-      setBrolympics(brolympics);
-    } else {
-      showNotification("You must enter a name.");
-    }
+    if (!valid) return;
+    setBrolympics({
+      name: form.name.trim(),
+      img: form.img,
+      projected_start_date: form.projected_start_date || null,
+      projected_end_date: form.projected_end_date || null,
+    });
+    nextStep();
   };
 
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      let imageDataUrl = await readImageFile(file);
-
-      setBrolympicsData((prevBro) => ({
-        ...prevBro,
-        img: file,
-        imgSrc: imageDataUrl,
-      }));
+      const imageDataUrl = await readImageFile(file);
+      setForm((prev) => ({ ...prev, img: file, imgSrc: imageDataUrl }));
       setCropping(true);
     }
   };
 
   const setCroppedImage = (croppedImage) => {
-    setBrolympicsData((prevBro) => ({ ...prevBro, img: croppedImage }));
+    setForm((prev) => ({ ...prev, img: croppedImage }));
     setCropping(false);
-  };
-
-  const handleNameChange = (e) => {
-    setBrolympicsData((prevBro) => ({
-      ...prevBro,
-      name: e.target.value,
-    }));
-  };
-
-  const handleDateChange = (e) => {
-    setBrolympics((prevBrolympics) => ({
-      ...prevBrolympics,
-      date: e.target.value,
-    }));
   };
 
   return (
     <CreateWrapper
-      color="primary"
-      button_text="Create Brolympics"
+      button_text="Next: Add Events"
       step={step}
+      totalSteps={totalSteps}
       submit={handleCreateClicked}
+      disabled={!valid}
       title="Create a Brolympics"
-      description="A Brolympics is a group of events and competitions that are battled out between teams of 2."
+      description="Name the games. Events and invites come next."
     >
-      <div className="flex flex-col w-full gap-6">
+      <div className="flex flex-col w-full gap-6 py-2">
         <div>
           <label htmlFor="name" className="form-label">
-            Name *
+            Name <span className="text-red">*</span>
           </label>
           <input
             id="name"
             type="text"
-            value={brolympics.name}
-            onChange={handleNameChange}
-            placeholder="Ex: Summer 2023"
+            value={form.name}
+            onChange={set("name")}
+            placeholder="Summer 2026"
+            autoComplete="off"
             className="w-full input-primary"
           />
+          <p className="mt-1 text-xs text-light">
+            Most leagues name it after the season — it becomes this year's
+            banner everywhere.
+          </p>
         </div>
+
         <div>
-          <label htmlFor="date" className="form-label">
-            Start Date <span className="text-sm text-light">(Optional)</span>
-          </label>
-          <input
-            id="date"
-            type="datetime-local"
-            value={brolympics.date}
-            onChange={handleDateChange}
-            className="w-full input-primary"
-          />
+          <span className="form-label">
+            Dates <span className="text-sm text-light">(optional)</span>
+          </span>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <label htmlFor="start" className="text-xs text-light">
+                Starts
+              </label>
+              <input
+                id="start"
+                type="date"
+                value={form.projected_start_date}
+                onChange={set("projected_start_date")}
+                className="w-full input-primary"
+              />
+            </div>
+            <span className="pt-4 text-light">–</span>
+            <div className="flex-1">
+              <label htmlFor="end" className="text-xs text-light">
+                Ends
+              </label>
+              <input
+                id="end"
+                type="date"
+                value={form.projected_end_date}
+                onChange={set("projected_end_date")}
+                className="w-full input-primary"
+              />
+            </div>
+          </div>
+          {datesInvalid && (
+            <p className="mt-1 text-xs text-red">
+              The end date is before the start date.
+            </p>
+          )}
         </div>
+
         <div>
-          <label htmlFor="file_bro" className="form-label">
-            Upload a Logo <span className="text-sm text-light">(Optional)</span>
-          </label>
+          <span className="form-label">
+            Logo <span className="text-sm text-light">(optional)</span>
+          </span>
           <input
             type="file"
             accept="image/*"
@@ -105,23 +128,23 @@ const CreateBrolympics = ({ step, nextStep, setBrolympics }) => {
           />
           <label
             htmlFor="file_bro"
-            className="w-32 h-32 transition-all duration-300 border-2 border-dashed cursor-pointer flex-center rounded-border border-primary hover:border-primary-dark"
+            className="flex flex-col items-center justify-center w-32 h-32 gap-1 transition-colors border-2 border-dashed border-gray-300 cursor-pointer rounded-xl hover:border-primary text-light"
           >
-            {brolympics.img ? (
+            {form.img ? (
               <img
-                src={brolympics.img}
-                className="object-cover w-full h-full rounded-md"
+                src={form.img}
+                className="object-cover w-full h-full rounded-xl"
                 alt="Brolympics logo"
               />
             ) : (
-              <CameraAltIcon className="text-primary" size={48} />
+              <>
+                <CameraAltIcon />
+                <span className="text-xs">Add a logo</span>
+              </>
             )}
           </label>
           {cropping && (
-            <ImageCropper
-              img={brolympics.imgSrc}
-              setCroppedImage={setCroppedImage}
-            />
+            <ImageCropper img={form.imgSrc} setCroppedImage={setCroppedImage} />
           )}
         </div>
       </div>

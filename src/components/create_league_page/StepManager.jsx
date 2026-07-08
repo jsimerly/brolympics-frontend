@@ -67,6 +67,7 @@ const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
       <CreateLeaguePage step={1} nextStep={nextStep} setLeague={setLeague} />
       <CreateBrolympics
         step={2}
+        totalSteps={4}
         nextStep={nextStep}
         setBrolympics={setBrolympics}
       />
