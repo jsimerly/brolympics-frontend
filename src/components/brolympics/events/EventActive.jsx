@@ -29,14 +29,17 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
       <span className="w-10 font-bold shrink-0">
         {contest.is_complete && total != null ? total : "–"}
       </span>
-      <span className="flex-grow min-w-0 text-light">
-        {playerEntries.length > 0
-          ? playerEntries
-              .map((e) => `${e.player_name} ${e.score ?? "—"}`)
-              .join(" · ")
-          : contest.is_complete
-          ? "team score"
-          : "not played yet"}
+      <span className="flex flex-col flex-grow min-w-0 text-light">
+        {playerEntries.length > 0 ? (
+          playerEntries.map((e) => (
+            <span className="flex justify-between gap-2" key={e.player}>
+              <span className="truncate">{e.player_name}</span>
+              <span className="shrink-0">{e.score ?? "—"}</span>
+            </span>
+          ))
+        ) : (
+          <span>{contest.is_complete ? "team score" : "not played yet"}</span>
+        )}
       </span>
       {contest.is_active && (
         <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark shrink-0">
