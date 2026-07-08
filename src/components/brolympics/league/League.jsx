@@ -113,22 +113,36 @@ const UpcomingCard = ({
   );
 };
 
+const formatWhen = (bro) => {
+  const iso =
+    bro.end_time || bro.start_time || bro.projected_end_date ||
+    bro.projected_start_date;
+  if (!iso) return null;
+  try {
+    return format(parseISO(iso), "MMM yyyy");
+  } catch {
+    return null;
+  }
+};
+
 /** One completed year: the champions front and center, silver + bronze below. */
 const ChampionCard = ({ bro }) => {
   const navigate = useNavigate();
   const champions = (bro.podium || []).filter((row) => row.rank === 1);
   const runnersUp = (bro.podium || []).filter((row) => row.rank > 1);
   const medalFor = { 2: Silver, 3: Bronze };
+  const when = formatWhen(bro);
 
   return (
     <div
       className="overflow-hidden card-clickable"
       onClick={() => navigate(`/b/${bro.uuid}/home`)}
     >
-      <div className="px-4 pt-3 pb-1">
+      <div className="flex items-center justify-between px-4 pt-3 pb-1">
         <h3 className="text-sm font-semibold tracking-wide uppercase text-light">
           {bro.name}
         </h3>
+        {when && <span className="text-xs text-light">{when}</span>}
       </div>
       {champions.map((row) => (
         <div
@@ -220,7 +234,7 @@ const League = ({ leagueInfo }) => {
     leagueInfo;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] container-padding flex flex-col justify-between">
+    <div className="min-h-[calc(100vh-80px)] container-padding flex flex-col justify-between w-full max-w-5xl mx-auto">
       <div className="py-6 space-y-8">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -256,7 +270,7 @@ const League = ({ leagueInfo }) => {
         {upcoming_brolympics.length > 0 && (
           <section>
             <h2 className="mb-4 header-3">Upcoming</h2>
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               {upcoming_brolympics.map((bro) => (
                 <UpcomingCard {...bro} key={bro.uuid} />
               ))}
@@ -267,7 +281,7 @@ const League = ({ leagueInfo }) => {
         {completed_brolympics.length > 0 && (
           <section>
             <h2 className="mb-4 header-3">Past Champions</h2>
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               {completed_brolympics.map((bro) => (
                 <ChampionCard bro={bro} key={bro.uuid} />
               ))}
@@ -275,9 +289,13 @@ const League = ({ leagueInfo }) => {
           </section>
         )}
 
-        <Leaderboard leaderboard={allTime?.leaderboard} />
-        <EventsThroughYears eventTypes={eventTypes} />
-        <Lineages lineages={allTime?.team_lineages} />
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+          <Leaderboard leaderboard={allTime?.leaderboard} />
+          <div className="space-y-8">
+            <EventsThroughYears eventTypes={eventTypes} />
+            <Lineages lineages={allTime?.team_lineages} />
+          </div>
+        </div>
       </div>
 
       {isAdmin && (

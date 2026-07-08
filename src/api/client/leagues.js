@@ -22,7 +22,11 @@ export const fetchLeagueDetail = async (uuid) => {
         return { ...bro, podium: standings.filter((row) => row.rank <= 3) };
       })
   );
-  completed.reverse();
+  // newest first; ISO strings compare lexicographically
+  const dateOf = (b) =>
+    b.end_time || b.start_time || b.projected_end_date ||
+    b.projected_start_date || "";
+  completed.sort((a, b) => dateOf(b).localeCompare(dateOf(a)));
   return {
     ...league,
     current_brolympics: bros.filter((b) => b.is_active),
