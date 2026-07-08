@@ -81,8 +81,8 @@ const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
           <span className="form-label">
             Dates <span className="text-sm text-light">(optional)</span>
           </span>
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
               <label htmlFor="start" className="text-xs text-light">
                 Starts
               </label>
@@ -91,11 +91,10 @@ const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
                 type="date"
                 value={form.projected_start_date}
                 onChange={set("projected_start_date")}
-                className="w-full input-primary"
+                className="w-full min-w-0 input-primary"
               />
             </div>
-            <span className="pt-4 text-light">–</span>
-            <div className="flex-1">
+            <div className="min-w-0">
               <label htmlFor="end" className="text-xs text-light">
                 Ends
               </label>
@@ -104,7 +103,7 @@ const CreateBrolympics = ({ step, totalSteps, nextStep, setBrolympics }) => {
                 type="date"
                 value={form.projected_end_date}
                 onChange={set("projected_end_date")}
-                className="w-full input-primary"
+                className="w-full min-w-0 input-primary"
               />
             </div>
           </div>
