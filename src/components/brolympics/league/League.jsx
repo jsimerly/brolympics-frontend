@@ -62,54 +62,77 @@ const LiveCard = ({ uuid, name, img }) => {
   );
 };
 
+const daysUntil = (iso) => {
+  if (!iso) return null;
+  try {
+    return Math.ceil((parseISO(iso) - new Date()) / (1000 * 60 * 60 * 24));
+  } catch {
+    return null;
+  }
+};
+
+/** One quiet line: a bold count, then names until the line runs out. */
+const SummaryLine = ({ count, noun, names = [] }) => (
+  <div className="flex items-baseline gap-2 text-sm">
+    <span className="font-semibold shrink-0">
+      {count} {noun}
+      {count === 1 ? "" : "s"}
+    </span>
+    <span className="min-w-0 truncate text-light">{names.join(" · ")}</span>
+  </div>
+);
+
 const UpcomingCard = ({
   img,
   name,
-  event_names,
-  team_names,
+  event_names = [],
+  team_names = [],
   projected_start_date,
   projected_end_date,
   uuid,
 }) => {
   const navigate = useNavigate();
   const dates = formatDateRange(projected_start_date, projected_end_date);
+  const days = daysUntil(projected_start_date);
 
   return (
-    <div className="p-4 card-clickable" onClick={() => navigate(`/b/${uuid}/home/`)}>
-      <div className="flex items-center gap-4 mb-3">
+    <div
+      className="p-4 card-clickable"
+      onClick={() => navigate(`/b/${uuid}/home/`)}
+    >
+      <div className="flex items-center gap-4">
         <Img
           src={img}
           alt={name}
           kind="brolympics"
-          className="object-cover w-16 h-16 bg-white rounded-lg"
+          className="object-cover w-16 h-16 bg-white rounded-lg shrink-0"
         />
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center min-w-0 flex-grow">
           <h3 className="header-4 text-near-black">{name}</h3>
           {dates && <div className="text-sm text-light">{dates}</div>}
         </div>
+        {days !== null && days >= 0 && (
+          <span className="self-start px-2.5 py-1 text-xs font-semibold rounded-full shrink-0 bg-primary/10 text-primary">
+            {days === 0 ? "Today" : `${days} day${days === 1 ? "" : "s"} out`}
+          </span>
+        )}
       </div>
-      {event_names?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          {event_names.map((eventName, i) => (
-            <div
-              className="px-2 py-1 text-sm border rounded-md border-primary"
-              key={i + "bro_card_event"}
-            >
-              {eventName}
-            </div>
-          ))}
-        </div>
-      )}
-      {team_names?.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {team_names.map((teamName, i) => (
-            <div
-              className="px-2 py-1 text-sm border rounded-md border-tertiary"
-              key={i + "bro_card_team"}
-            >
-              {teamName}
-            </div>
-          ))}
+      {(event_names.length > 0 || team_names.length > 0) && (
+        <div className="pt-3 mt-3 space-y-1 border-t border-gray-100">
+          {event_names.length > 0 && (
+            <SummaryLine
+              count={event_names.length}
+              noun="event"
+              names={event_names}
+            />
+          )}
+          {team_names.length > 0 && (
+            <SummaryLine
+              count={team_names.length}
+              noun="team"
+              names={team_names}
+            />
+          )}
         </div>
       )}
     </div>
