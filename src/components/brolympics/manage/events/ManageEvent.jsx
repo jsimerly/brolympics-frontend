@@ -136,7 +136,13 @@ const ManageEvent = ({ event }) => {
         ...(event.config || {}),
         projected_start_date: toLocalInput(event.projected_start_date),
         projected_end_date: toLocalInput(event.projected_end_date),
-        group_play: swiss ? "swiss" : rr ? "round_robin" : "none",
+        group_play: swiss
+          ? "swiss"
+          : rr
+          ? rr.config?.full
+            ? "full"
+            : "semi"
+          : "none",
         n_matches:
           rr?.config?.games_per_team ?? swiss?.config?.rounds ?? "",
         has_playoffs: !!ko,
@@ -180,11 +186,13 @@ const ManageEvent = ({ event }) => {
     }
     const stages = [];
     const n = Number(formValues.n_matches);
-    if (formValues.group_play === "round_robin") {
+    if (formValues.group_play === "semi") {
       stages.push({
         structure: "round_robin",
         config: { games_per_team: n || 4 },
       });
+    } else if (formValues.group_play === "full") {
+      stages.push({ structure: "round_robin", config: { full: true } });
     } else if (formValues.group_play === "swiss") {
       stages.push({ structure: "swiss", config: { rounds: n || 4 } });
     }
@@ -366,22 +374,50 @@ const ManageEvent = ({ event }) => {
               <>
                 {lockedNote}
                 <SettingRow
-                  label={
-                    formValues.group_play === "swiss"
-                      ? "Swiss rounds"
-                      : "Matches per team"
+                  label="Group type"
+                  hint={
+                    formValues.group_play === "full"
+                      ? "Everyone plays everyone once."
+                      : formValues.group_play === "swiss"
+                      ? "Each round pairs teams with similar records."
+                      : formValues.group_play === "none"
+                      ? "Straight to the bracket."
+                      : "Everyone plays a set number of games."
                   }
-                  hint="Group-play games before the bracket."
                 >
-                  <input
-                    value={formValues.n_matches || ""}
-                    name="n_matches"
+                  <select
+                    value={formValues.group_play}
                     onChange={handleInputChange}
+                    name="group_play"
                     disabled={structureLocked}
-                    className={rowInputClass}
-                    type="number"
-                  />
+                    className="shrink-0 input-box"
+                  >
+                    <option value="none">None</option>
+                    <option value="semi">Semi round robin</option>
+                    <option value="full">Full round robin</option>
+                    <option value="swiss">Swiss (Premium)</option>
+                  </select>
                 </SettingRow>
+                {(formValues.group_play === "semi" ||
+                  formValues.group_play === "swiss") && (
+                  <SettingRow
+                    label={
+                      formValues.group_play === "swiss"
+                        ? "Swiss rounds"
+                        : "Matches per team"
+                    }
+                    hint="Group-play games before the bracket."
+                  >
+                    <input
+                      value={formValues.n_matches || ""}
+                      name="n_matches"
+                      onChange={handleInputChange}
+                      disabled={structureLocked}
+                      className={rowInputClass}
+                      type="number"
+                    />
+                  </SettingRow>
+                )}
                 {formValues.has_playoffs && (
                   <SettingRow
                     label="Bracket size"
@@ -510,21 +546,6 @@ const ManageEvent = ({ event }) => {
             ) : (
               <div className="flex flex-col divide-y divide-gray-50">
                 {lockedNote}
-                <SettingRow
-                  label="Group play"
-                  hint="Round robin schedules everything up front; swiss pairs each round by record."
-                >
-                  <Segmented
-                    value={formValues.group_play}
-                    options={[
-                      ["round_robin", "RR"],
-                      ["swiss", "Swiss"],
-                      ["none", "None"],
-                    ]}
-                    onChange={(v) => set("group_play", v)}
-                    disabled={structureLocked}
-                  />
-                </SettingRow>
                 <SettingRow
                   label="Playoffs"
                   hint="A seeded bracket after group play."

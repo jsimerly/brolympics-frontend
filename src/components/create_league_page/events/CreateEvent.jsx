@@ -46,7 +46,7 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [selectedType, setSelectedType] = useState("h2h");
   const [eventName, setEventName] = useState("");
   const [highWins, setHighWins] = useState(true);
-  const [groupPlay, setGroupPlay] = useState("round_robin");
+  const [groupPlay, setGroupPlay] = useState("semi");
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
   const [placements, setPlacements] = useState("third");
@@ -66,8 +66,10 @@ const CreateEvent = ({ handleEventAdded }) => {
 
     const stages = [];
     const n = Number(groupGames) || 4;
-    if (groupPlay === "round_robin") {
+    if (groupPlay === "semi") {
       stages.push({ structure: "round_robin", config: { games_per_team: n } });
+    } else if (groupPlay === "full") {
+      stages.push({ structure: "round_robin", config: { full: true } });
     } else if (groupPlay === "swiss") {
       stages.push({ structure: "swiss", config: { rounds: n } });
     }
@@ -201,12 +203,13 @@ const CreateEvent = ({ handleEventAdded }) => {
               onChange={(e) => setGroupPlay(e.target.value)}
               className="shrink-0 input-box"
             >
-              <option value="round_robin">Round Robin</option>
-              <option value="swiss">Swiss</option>
               <option value="none">None (bracket only)</option>
+              <option value="semi">Semi round robin</option>
+              <option value="full">Full round robin</option>
+              <option value="swiss">Swiss (Premium)</option>
             </select>
           </SelectRow>
-          {groupPlay !== "none" && (
+          {(groupPlay === "semi" || groupPlay === "swiss") && (
             <SelectRow
               label={groupPlay === "swiss" ? "Rounds" : "Games per team"}
               hint={

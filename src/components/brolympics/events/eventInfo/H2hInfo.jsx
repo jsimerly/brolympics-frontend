@@ -30,6 +30,8 @@ const HeadToHead = ({ event }) => {
       <p className="leading-relaxed text-light">
         {swiss
           ? `Group play runs ${games || "several"} swiss rounds — each round pairs teams with similar records.`
+          : rr?.config?.full
+          ? "Group play is a full round robin: everyone plays everyone once, all scheduled up front."
           : rr
           ? `Group play is a round robin: every team plays ${
               games || "the same number of"
