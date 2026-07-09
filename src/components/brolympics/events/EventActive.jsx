@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
@@ -95,9 +96,109 @@ const TeamOutings = ({ contests, standings }) => {
   );
 };
 
+const RESULT_STYLE = { w: "text-tertiary", l: "text-red", t: "text-light" };
+
+/** h2h games grouped one block per team, standings order. Every game shows
+ * under both teams -- that's the point: find your flag, read your season. */
+const TeamGames = ({ contests, standings, teamFilter }) => {
+  const rows = (standings || []).filter(
+    (row) => !teamFilter || String(row.team.uuid) === teamFilter.uuid
+  );
+  const scoreOf = (entry) =>
+    entry?.score ?? ({ w: "W", l: "L", t: "T" }[entry?.outcome] || "–");
+
+  return (
+    <div className="overflow-hidden card divide-y">
+      {rows.map((row) => {
+        const uuid = String(row.team.uuid);
+        // log order is newest-first; a team's season reads oldest-first
+        const games = contests
+          .filter((c) => (c.entries || []).some((e) => String(e.team) === uuid))
+          .slice()
+          .reverse();
+        const stats = row.stats || {};
+        return (
+          <div className="px-4 py-3" key={uuid}>
+            <h3 className="flex items-center gap-2 pb-1.5 font-semibold">
+              <Img
+                src={row.team.img}
+                alt={row.team.name}
+                className="object-cover rounded-md w-7 h-7"
+              />
+              <span className="truncate">{row.team.name}</span>
+              {stats.wins != null && (
+                <span className="text-xs font-normal text-light">
+                  {stats.wins}-{stats.losses}
+                  {stats.ties ? `-${stats.ties}` : ""}
+                </span>
+              )}
+            </h3>
+            {games.map((contest) => {
+              const mine = (contest.entries || []).find(
+                (e) => String(e.team) === uuid
+              );
+              const opp = (contest.entries || []).find(
+                (e) => e.team && String(e.team) !== uuid
+              );
+              return (
+                <div
+                  className="flex items-center gap-2 py-1 ml-9 text-sm border-t first:border-t-0"
+                  key={contest.uuid}
+                >
+                  <span
+                    className={`w-5 font-bold shrink-0 ${
+                      RESULT_STYLE[mine?.outcome] || "text-light"
+                    }`}
+                  >
+                    {contest.is_complete
+                      ? (mine?.outcome || "—").toUpperCase()
+                      : ""}
+                  </span>
+                  <span className="flex-grow min-w-0 truncate">
+                    vs {opp?.team_name || "TBD"}
+                    {contest.stage_structure === "knockout" && (
+                      <AccountTreeOutlinedIcon
+                        sx={{ fontSize: 13 }}
+                        className="ml-1 text-light"
+                      />
+                    )}
+                  </span>
+                  <span className="shrink-0 text-light">
+                    {contest.is_complete
+                      ? `${scoreOf(mine)} : ${scoreOf(opp)}`
+                      : !contest.is_active
+                      ? "not played"
+                      : ""}
+                  </span>
+                  {contest.is_active && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark shrink-0">
+                      live
+                    </span>
+                  )}
+                  {contest.needs_confirmation && (
+                    <span
+                      className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"
+                      title={`unconfirmed — recorded by ${contest.recorded_by_name}`}
+                    />
+                  )}
+                </div>
+              );
+            })}
+            {games.length === 0 && (
+              <p className="ml-9 text-sm text-light">No games yet.</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const EventActive = ({ eventInfo, is_admin }) => {
   // h2h: tap a standings row to see just that team's games
   const [teamFilter, setTeamFilter] = useState(null);
+  // "teams" = one section per team (like bowling); "log" = flat game list
+  const [gamesView, setGamesView] = useState("teams");
 
   const getFontSize = (name) => {
     if (name) {
@@ -229,28 +330,58 @@ const EventActive = ({ eventInfo, is_admin }) => {
         eventInfo.contests &&
         eventInfo.contests.length > 0 && (
           <div className="px-4 pb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between gap-2 mb-4">
               <h2 className="header-3">Games</h2>
-              {teamFilter && (
-                <button
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary"
-                  onClick={() => setTeamFilter(null)}
-                >
-                  {teamFilter.name} <CloseIcon sx={{ fontSize: 14 }} />
-                </button>
-              )}
-            </div>
-            {eventInfo.type === "h2h" ? (
-              <div className="overflow-hidden card divide-y">
-                {shownContests.map((contest) => (
-                  <Comp_h2h {...contest} key={contest.uuid} />
-                ))}
-                {shownContests.length === 0 && (
-                  <p className="p-4 text-sm text-light">
-                    No games yet for {teamFilter?.name}.
-                  </p>
+              <div className="flex items-center gap-2">
+                {teamFilter && (
+                  <button
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary"
+                    onClick={() => setTeamFilter(null)}
+                  >
+                    {teamFilter.name} <CloseIcon sx={{ fontSize: 14 }} />
+                  </button>
+                )}
+                {eventInfo.type === "h2h" && (
+                  <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+                    {[
+                      ["teams", "By team"],
+                      ["log", "Game log"],
+                    ].map(([key, label]) => (
+                      <button
+                        key={key}
+                        className={`px-3 py-1.5 ${
+                          gamesView === key
+                            ? "bg-primary text-white"
+                            : "bg-white text-light"
+                        }`}
+                        onClick={() => setGamesView(key)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
+            </div>
+            {eventInfo.type === "h2h" ? (
+              gamesView === "teams" ? (
+                <TeamGames
+                  contests={eventInfo.contests}
+                  standings={eventInfo.standings}
+                  teamFilter={teamFilter}
+                />
+              ) : (
+                <div className="overflow-hidden card divide-y">
+                  {shownContests.map((contest) => (
+                    <Comp_h2h {...contest} key={contest.uuid} />
+                  ))}
+                  {shownContests.length === 0 && (
+                    <p className="p-4 text-sm text-light">
+                      No games yet for {teamFilter?.name}.
+                    </p>
+                  )}
+                </div>
+              )
             ) : (
               <TeamOutings
                 contests={eventInfo.contests}
