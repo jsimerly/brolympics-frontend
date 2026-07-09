@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { afterAuthPath } from "../afterAuthPath";
 import {
   formatIncompletePhoneNumber,
   isValidPhoneNumber,
@@ -24,16 +26,16 @@ const EnterPhone = ({ onSendCode, phone, setPhone }) => {
           placeholder="(555) 555-5555"
           value={phone}
           onChange={(e) => handlePhoneChange(e.target.value)}
-          className="w-full input-tertiary"
+          className="w-full input-primary"
           required
         />
       </div>
       <button
         id="send-code-button"
         type="submit"
-        className="w-full tertiary-btn"
+        className="w-full py-2.5 font-semibold text-white rounded-full bg-tertiary"
       >
-        Login with Phone
+        Text Me a Code
       </button>
       <div id="recaptcha-container"></div>
     </form>
@@ -53,13 +55,13 @@ const EnterCode = ({ onVerifyCode, verificationCode, setVerificationCode }) => {
           placeholder="Enter verification code"
           value={verificationCode}
           onChange={(e) => setVerificationCode(e.target.value)}
-          className="w-1/2 input-tertiary"
+          className="w-1/2 text-center input-primary"
           required
         />
         <button
           id="verify-code-button"
           type="submit"
-          className="w-1/2 tertiary-btn"
+          className="w-1/2 py-2.5 font-semibold text-white rounded-full bg-tertiary"
         >
           Verify Code
         </button>
@@ -74,6 +76,8 @@ const LoginWithPhone = ({ setError }) => {
   const [verificationCode, setVerificationCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const { login, clearRecaptcha } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const formatToE164 = (phoneNumber) => {
     try {
@@ -131,6 +135,7 @@ const LoginWithPhone = ({ setError }) => {
       if (!result) {
         throw new Error("Failed to verify code");
       }
+      navigate(afterAuthPath(location));
     } catch (error) {
       console.error("Error in handleVerifyCode:", error);
       setError(error.message);

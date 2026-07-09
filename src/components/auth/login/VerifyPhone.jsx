@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { afterAuthPath } from "../afterAuthPath";
 import { useAuth } from "../../../context/AuthContext";
 
 const VerifyPhone = () => {
@@ -50,7 +51,7 @@ const VerifyPhone = () => {
       setError("");
       const code = verCode.join("");
       await login("phone", { verificationId, verificationCode: code });
-      navigate("/");
+      navigate(afterAuthPath(location));
     } catch (error) {
       setError(
         error.message || "An unexpected error occurred. Please try again later."

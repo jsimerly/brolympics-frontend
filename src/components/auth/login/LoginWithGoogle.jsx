@@ -1,16 +1,17 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { afterAuthPath } from "../afterAuthPath";
 
 const LoginWithGoogle = ({ setError }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleGoogleLogin = async () => {
     setError(""); // Clear any previous errors
     try {
       await login("google");
-      navigate("/");
+      navigate(afterAuthPath(location));
     } catch (error) {
       setError(error.message);
     }
@@ -19,7 +20,7 @@ const LoginWithGoogle = ({ setError }) => {
   return (
     <button
       onClick={handleGoogleLogin}
-      className="flex items-center justify-center w-full px-4 py-2 font-medium text-gray-700 bg-white border border-gray-300 rounded-md gsi-material-button hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+      className="flex items-center justify-center w-full px-4 py-2.5 font-medium text-gray-700 bg-white border border-gray-300 rounded-full gsi-material-button hover:bg-gray-50"
     >
       <div className="gsi-material-button-state"></div>
       <div className="flex items-center gsi-material-button-content-wrapper">
