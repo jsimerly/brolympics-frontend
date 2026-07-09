@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { confirmContest } from "../../../../api/client";
+import Img from "../../../Util/Img";
 
+/** One h2h game as a scoreboard row: flag + name each side, score in the
+ * middle, winner emphasized. Unconfirmed self-reports carry their badge and
+ * (for the other side) a confirm button. */
 const Comp_h2h = ({
   entries = [],
   is_complete,
+  is_active,
   uuid,
   needs_confirmation,
   can_confirm,
@@ -28,57 +33,64 @@ const Comp_h2h = ({
     }
   };
 
-  const getFontSize = (name) => {
-    if (name) {
-      if (name.length <= 10) {
-        return "16px";
-      } else if (name.length <= 16) {
-        return "14px";
-      } else if (name.length <= 20) {
-        return "12px";
-      } else {
-        return "10px";
-      }
-    }
-  };
-
-  const winStyle = (entry) =>
-    entry?.outcome === "w" ? "font-bold text-primaryLight" : "";
-
   // winner-known-but-score-unknown games show W/L letters, ties show T
   const scoreOf = (entry) =>
-    entry?.score ??
-    ({ w: "W", l: "L", t: "T" }[entry?.outcome] || "—");
+    entry?.score ?? ({ w: "W", l: "L", t: "T" }[entry?.outcome] || "–");
+  const nameClass = (entry) =>
+    `text-sm truncate ${
+      entry?.outcome === "w"
+        ? "font-semibold"
+        : is_complete
+        ? "text-light"
+        : ""
+    }`;
+  const scoreClass = (entry) =>
+    entry?.outcome === "w" ? "" : "text-light";
 
   return (
-    <div className={`flex flex-col items-center justify-center py-3 px-4`}>
-      <div className="flex items-center justify-center w-full">
-        <div
-          className={`w-2/5 ${winStyle(entry_1)}`}
-          style={{ fontSize: getFontSize(entry_1?.team_name) }}
-        >
-          {entry_1?.team_name || "TBD"}
+    <div className="px-4 py-2.5">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center flex-1 min-w-0 gap-2">
+          <Img
+            src={entry_1?.team_img}
+            alt={entry_1?.team_name}
+            className="object-cover w-6 h-6 rounded shrink-0"
+          />
+          <span className={nameClass(entry_1)}>
+            {entry_1?.team_name || "TBD"}
+          </span>
         </div>
-        <div className="w-1/5 text-center">
+
+        <div className="px-1 text-sm font-semibold text-center shrink-0 tabular-nums">
           {is_complete ? (
             <>
-              <span className={winStyle(entry_1)}>{scoreOf(entry_1)}</span>
-              <span className="px-1">:</span>
-              <span className={winStyle(entry_2)}>{scoreOf(entry_2)}</span>
+              <span className={scoreClass(entry_1)}>{scoreOf(entry_1)}</span>
+              <span className="px-1 font-normal text-light">:</span>
+              <span className={scoreClass(entry_2)}>{scoreOf(entry_2)}</span>
             </>
+          ) : is_active ? (
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark">
+              live
+            </span>
           ) : (
-            "vs"
+            <span className="text-xs font-normal text-light">vs</span>
           )}
         </div>
-        <div
-          className={`w-2/5 ${winStyle(entry_2)} text-end`}
-          style={{ fontSize: getFontSize(entry_2?.team_name) }}
-        >
-          {entry_2?.team_name || "TBD"}
+
+        <div className="flex items-center justify-end flex-1 min-w-0 gap-2">
+          <span className={`${nameClass(entry_2)} text-right`}>
+            {entry_2?.team_name || "TBD"}
+          </span>
+          <Img
+            src={entry_2?.team_img}
+            alt={entry_2?.team_name}
+            className="object-cover w-6 h-6 rounded shrink-0"
+          />
         </div>
       </div>
+
       {needs_confirmation && (
-        <div className="flex items-center gap-2 pt-1 text-[10px] text-light">
+        <div className="flex items-center justify-center gap-2 pt-1 text-[10px] text-light">
           <span>unconfirmed — recorded by {recorded_by_name}</span>
           {can_confirm && (
             <button

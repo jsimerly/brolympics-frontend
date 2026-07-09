@@ -98,6 +98,42 @@ const TeamOutings = ({ contests, standings }) => {
 
 const RESULT_STYLE = { w: "text-tertiary", l: "text-red", t: "text-light" };
 
+/** Chunk the (stage-desc, round-desc ordered) log into labeled sections:
+ * playoff rounds first, then group-play rounds. */
+const groupLog = (contests) => {
+  const groups = [];
+  let key = null;
+  for (const contest of contests) {
+    const k = `${contest.stage_structure}|${contest.round}`;
+    if (k !== key) {
+      key = k;
+      groups.push({
+        structure: contest.stage_structure,
+        round: contest.round,
+        games: [],
+      });
+    }
+    groups[groups.length - 1].games.push(contest);
+  }
+  const finalsRound = Math.max(
+    0,
+    ...contests
+      .filter((c) => c.stage_structure === "knockout")
+      .map((c) => c.round ?? 0)
+  );
+  return groups.map((g) => ({
+    ...g,
+    label:
+      g.structure === "knockout"
+        ? g.round === finalsRound
+          ? "Playoffs · Finals"
+          : `Playoffs · Round ${g.round}`
+        : g.round != null
+        ? `Round ${g.round}`
+        : "Games",
+  }));
+};
+
 /** h2h games grouped one block per team, standings order. Every game shows
  * under both teams -- that's the point: find your flag, read your season. */
 const TeamGames = ({ contests, standings, teamFilter }) => {
@@ -371,12 +407,21 @@ const EventActive = ({ eventInfo, is_admin }) => {
                   teamFilter={teamFilter}
                 />
               ) : (
-                <div className="overflow-hidden card divide-y">
-                  {shownContests.map((contest) => (
-                    <Comp_h2h {...contest} key={contest.uuid} />
+                <div className="flex flex-col gap-3">
+                  {groupLog(shownContests).map((group, i) => (
+                    <div key={i}>
+                      <h3 className="pb-1 text-xs font-semibold tracking-wide uppercase text-light">
+                        {group.label}
+                      </h3>
+                      <div className="overflow-hidden card divide-y">
+                        {group.games.map((contest) => (
+                          <Comp_h2h {...contest} key={contest.uuid} />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                   {shownContests.length === 0 && (
-                    <p className="p-4 text-sm text-light">
+                    <p className="p-4 text-sm bg-white rounded-lg text-light">
                       No games yet for {teamFilter?.name}.
                     </p>
                   )}
