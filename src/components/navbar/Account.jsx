@@ -1,42 +1,39 @@
-import React, { useState, useEffect } from "react";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import LogoutIcon from "@mui/icons-material/Logout";
+import { useState, useEffect } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../../context/AuthContext";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
+import Img from "../Util/Img";
 import { updateUserImg, updateUserInfo } from "../../api/auth";
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 
+/** The account page inside the drawer: profile card, security, sign out. */
 const Account = ({ setView }) => {
   const { user, logout, auth } = useAuth();
   const [userInfo, setUserInfo] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [cropping, setCropping] = useState(false);
   const [imageSrc, setImageSrc] = useState(null);
-  const [imageError, setImageError] = useState(false);
   const [resetPasswordStatus, setResetPasswordStatus] = useState("");
 
   useEffect(() => {
     setUserInfo(user);
     setImageSrc(user.img || null);
-    setImageError(false);
+    if (!user.account_complete) {
+      setIsEditing(true);
+    }
   }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setUserInfo((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePhotoChange = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      let imageDataUrl = await readImageFile(file);
-      setImageSrc(imageDataUrl);
+      setImageSrc(await readImageFile(e.target.files[0]));
       setCropping(true);
     }
   };
@@ -48,26 +45,17 @@ const Account = ({ setView }) => {
       const file = new File([blob], "profile_image.jpg", {
         type: "image/jpeg",
       });
-
       await updateUserImg(file);
       setImageSrc(croppedImage);
-      setImageError(false);
       setCropping(false);
     } catch (error) {
       console.error("Error updating user image:", error);
     }
   };
 
-  const handleCloseCropper = () => {
-    setCropping(false);
-    setImageSrc(user.img || null);
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
   const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       await updateUserInfo(userInfo);
       setIsEditing(false);
@@ -76,21 +64,18 @@ const Account = ({ setView }) => {
       }
     } catch (error) {
       console.error("Error updating user info:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleResetPassword = async () => {
-
     try {
       await sendPasswordResetEmail(auth, user.email);
-      setResetPasswordStatus(
-        "Password reset email sent. Please check your inbox."
-      );
+      setResetPasswordStatus("Reset email sent — check your inbox.");
     } catch (error) {
       console.error("Error sending password reset email:", error);
-      setResetPasswordStatus(
-        "Failed to send password reset email. Please try again."
-      );
+      setResetPasswordStatus("Couldn't send the reset email. Try again.");
     }
   };
 
@@ -99,130 +84,147 @@ const Account = ({ setView }) => {
     location.reload();
   };
 
-  const goBack = () => {
-    setView("leagues");
-  };
-
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] opacity-[99%] px-6 py-3 gap-3 bg-gray-100">
-      {!user.account_complete && (
-        <h2>
-          Please complete your account by filling out your first name, last
-          name, and your display name.
-        </h2>
-      )}
-      {user.account_complete && (
-        <div onClick={goBack} className="cursor-pointer">
-          <ArrowBackIcon /> Back
+    <div className="flex flex-col gap-4 p-4">
+      {user.account_complete ? (
+        <button
+          className="flex items-center self-start gap-1 text-sm text-light"
+          onClick={() => setView("leagues")}
+        >
+          <ArrowBackIcon sx={{ fontSize: 18 }} /> Back
+        </button>
+      ) : (
+        <div className="p-3 text-sm border rounded-lg border-secondary/50 bg-secondary/5">
+          <span className="font-semibold">Almost in.</span> Add your name so
+          your crew knows who's posting scores.
         </div>
       )}
-      <div className="flex flex-col items-center justify-center w-full p-4 border card">
-        <div className="relative w-32 h-32 mb-4 overflow-hidden border rounded-md">
-          {imageSrc && !imageError ? (
-            <img
-              src={imageSrc}
-              alt="Profile"
-              className="object-cover w-full h-full"
-              onError={handleImageError}
-            />
-          ) : (
-            <div className="flex items-center justify-center w-full h-full">
-              <CameraAltIcon className="text-neutral" sx={{ fontSize: 60 }} />
-            </div>
-          )}
-          <label
-            htmlFor="photo-upload"
-            className="absolute inset-0 flex items-center justify-center transition-opacity bg-opacity-50 opacity-0 cursor-pointer hover:opacity-100"
-          >
-            <CameraAltIcon className="" />
-          </label>
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            className="hidden"
+
+      <div className="flex flex-col items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg">
+        <input
+          type="file"
+          accept="image/*"
+          id="photo-upload"
+          onChange={handlePhotoChange}
+          hidden
+        />
+        <label htmlFor="photo-upload" className="relative cursor-pointer">
+          <Img
+            src={imageSrc}
+            alt="Profile"
+            kind="player"
+            className="object-cover w-24 h-24 rounded-full"
           />
-        </div>
+          <span className="absolute bottom-0 right-0 p-1 bg-white border border-gray-200 rounded-full">
+            <CameraAltIcon sx={{ fontSize: 16 }} className="text-light" />
+          </span>
+        </label>
+
         {isEditing ? (
-          <div className="flex flex-col items-center w-full gap-3">
-            <input
-              className="w-full input-primary"
-              name="first_name"
-              value={userInfo.first_name || ""}
-              placeholder="First Name"
-              onChange={handleInputChange}
-            />
-            <input
-              className="w-full input-primary"
-              name="last_name"
-              value={userInfo.last_name || ""}
-              placeholder="Last Name"
-              onChange={handleInputChange}
-            />
-            <input
-              className="w-full input-primary"
-              name="display_name"
-              value={userInfo.display_name || ""}
-              placeholder="Display Name"
-              onChange={handleInputChange}
-            />
+          <div className="flex flex-col w-full gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="min-w-0">
+                <label className="text-xs text-light">First name</label>
+                <input
+                  className="w-full min-w-0 input-primary"
+                  name="first_name"
+                  value={userInfo.first_name || ""}
+                  onChange={handleInputChange}
+                  autoComplete="given-name"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="text-xs text-light">Last name</label>
+                <input
+                  className="w-full min-w-0 input-primary"
+                  name="last_name"
+                  value={userInfo.last_name || ""}
+                  onChange={handleInputChange}
+                  autoComplete="family-name"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-light">Display name</label>
+              <input
+                className="w-full input-primary"
+                name="display_name"
+                value={userInfo.display_name || ""}
+                onChange={handleInputChange}
+                placeholder="What the leaderboard calls you"
+                autoComplete="off"
+              />
+            </div>
             <button
               onClick={handleSave}
-              className="flex items-center justify-center w-full mt-2 rounded-md primary-btn"
+              disabled={saving}
+              className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
             >
-              <SaveIcon className="mr-2" /> Save Changes
+              {saving ? "Saving..." : "Save"}
             </button>
           </div>
         ) : (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">
+          <div className="flex flex-col items-center">
+            <h2 className="text-xl font-bold leading-tight">
               {userInfo.display_name ||
-                `${userInfo.first_name} ${userInfo.last_name}`}
+                `${userInfo.first_name || ""} ${userInfo.last_name || ""}`}
             </h2>
+            <span className="text-xs text-light">{user.email}</span>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center justify-center w-full mt-2 primary-btn"
+              className="pt-2 text-sm font-semibold text-primary"
             >
-              <EditIcon className="mr-2" /> Edit Profile
+              Edit profile
             </button>
           </div>
         )}
       </div>
+
       {user.provider === "password" && (
-        <div className="flex flex-col items-center w-full gap-3 p-4 mt-4 border card">
-          <h3 className="text-xl font-bold">Reset Password</h3>
-          <p>Click the button below to receive a password reset email.</p>
+        <div className="p-3 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h4 className="text-sm font-semibold">Password</h4>
+              <p className="text-[11px] text-light">
+                We'll email you a reset link.
+              </p>
+            </div>
+            <button
+              className="text-sm font-semibold shrink-0 text-primary"
+              onClick={handleResetPassword}
+            >
+              Send reset email
+            </button>
+          </div>
           {resetPasswordStatus && (
             <p
-              className={
-                resetPasswordStatus.includes("Failed")
-                  ? "text-red-500"
-                  : "text-green-500"
-              }
+              className={`pt-1 text-xs ${
+                resetPasswordStatus.includes("Couldn't")
+                  ? "text-red"
+                  : "text-tertiary"
+              }`}
             >
               {resetPasswordStatus}
             </p>
           )}
-          <button
-            onClick={handleResetPassword}
-            className="flex items-center justify-center w-full mt-2 rounded-md primary-btn"
-          >
-            Send Password Reset Email
-          </button>
         </div>
       )}
+
       <button
-        className="flex items-center justify-center w-full p-2 mt-2 font-bold rounded-md red-btn"
+        className="flex items-center justify-center w-full gap-2 py-2.5 font-semibold border rounded-full text-red border-red"
         onClick={handleLogout}
       >
-        <LogoutIcon className="mr-2" /> Logout
+        <LogoutIcon sx={{ fontSize: 18 }} /> Sign out
       </button>
+
       {cropping && (
         <ImageCropper
           img={imageSrc}
           setCroppedImage={setCroppedImage}
-          handleCloseCropper={handleCloseCropper}
+          handleCloseCropper={() => {
+            setCropping(false);
+            setImageSrc(user.img || null);
+          }}
         />
       )}
     </div>
