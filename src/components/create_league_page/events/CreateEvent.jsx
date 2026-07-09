@@ -50,7 +50,8 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [groupPlay, setGroupPlay] = useState("semi");
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
-  const [placements, setPlacements] = useState("third");
+  const [thirdPlace, setThirdPlace] = useState(true);
+  const [classificationMode, setClassificationMode] = useState("none");
   const [heatSize, setHeatSize] = useState("");
 
   const buildStages = () => {
@@ -76,19 +77,19 @@ const CreateEvent = ({ handleEventAdded }) => {
     }
     if (playoffTake !== "none" || stages.length === 0) {
       const config = { byes: "seeded" };
-      if (placements === "third") config.third_place = true;
-      if (placements === "full" || placements === "full-skip-last") {
+      const take =
+        playoffTake !== "all" && playoffTake !== "none"
+          ? Number(playoffTake)
+          : null;
+      if (take) config.take = take;
+      if (classificationMode !== "none") {
+        // classification pools include the 3rd place game
         config.classification = true;
-      }
-      if (placements === "full-skip-last") {
-        const take =
-          playoffTake !== "all" && playoffTake !== "none"
-            ? Number(playoffTake)
-            : null;
-        if (take && take >= 4) config.unplayed_places = [take - 1];
-      }
-      if (playoffTake !== "all" && playoffTake !== "none") {
-        config.take = Number(playoffTake);
+        if (classificationMode === "split" && take && take >= 4) {
+          config.unplayed_places = [take - 1];
+        }
+      } else if (thirdPlace) {
+        config.third_place = true;
       }
       stages.push({ structure: "knockout", config });
     }
@@ -266,21 +267,60 @@ const CreateEvent = ({ handleEventAdded }) => {
               <option value="all">All teams</option>
             </select>
           </SelectRow>
+          {playoffTake !== "none" && classificationMode === "none" && (
+            <SelectRow
+              label="Third place game"
+              hint="The semifinal losers play for bronze."
+            >
+              <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+                {[
+                  [true, "On"],
+                  [false, "Off"],
+                ].map(([value, label]) => (
+                  <button
+                    key={label}
+                    className={`px-3 py-1.5 ${
+                      thirdPlace === value
+                        ? "bg-primary text-white"
+                        : "bg-white text-light"
+                    }`}
+                    onClick={() => setThirdPlace(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </SelectRow>
+          )}
           {playoffTake !== "none" && (
             <SelectRow
-              label="Placement Games"
-              hint="Full placement runs 5th/6th, 7th/8th run-offs."
+              label={
+                <span className="flex items-center gap-1">
+                  Full placement
+                  <DiamondOutlinedIcon sx={{ fontSize: 13 }} />
+                </span>
+              }
+              hint="Run-offs play out every place (3rd place game included). Split last skips the final run-off and splits its points."
             >
-              <select
-                value={placements}
-                onChange={(e) => setPlacements(e.target.value)}
-                className="shrink-0 input-box"
-              >
-                <option value="third">3rd place game</option>
-                <option value="full">Full placement</option>
-                <option value="full-skip-last">Full, split last</option>
-                <option value="none">Winners only</option>
-              </select>
+              <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+                {[
+                  ["none", "Off"],
+                  ["full", "All"],
+                  ["split", "Split"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    className={`px-3 py-1.5 ${
+                      classificationMode === value
+                        ? "bg-primary text-white"
+                        : "bg-white text-light"
+                    }`}
+                    onClick={() => setClassificationMode(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </SelectRow>
           )}
         </div>

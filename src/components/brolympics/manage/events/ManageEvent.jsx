@@ -14,12 +14,14 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-// Flips per-league when Pro gating lands; the locked UI below already works.
+// Flips per-league when Pro gating lands. Premium is a property of individual
+// gem-marked settings, not a section: locked items swap to LockedNote in place.
 const PREMIUM_LOCKED = false;
 
 // mirrors H2HScoring.DEFAULT_TIEBREAKERS on the backend. The record always
@@ -35,13 +37,32 @@ const TIEBREAKER_LABELS = {
 // datetime-local inputs need "YYYY-MM-DDTHH:mm"; the API returns full ISO
 const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : "");
 
-const SettingRow = ({ label, hint, children }) => (
+const Gem = () => (
+  <DiamondOutlinedIcon sx={{ fontSize: 13 }} className="text-light" />
+);
+
+const SettingRow = ({ label, gem, hint, children }) => (
   <div className="flex items-center justify-between gap-3 py-2">
     <div className="min-w-0">
-      <h4 className="text-sm font-semibold">{label}</h4>
+      <h4 className="flex items-center gap-1 text-sm font-semibold">
+        {label}
+        {gem && <Gem />}
+      </h4>
       {hint && <p className="text-[10px] text-light">{hint}</p>}
     </div>
     {children}
+  </div>
+);
+
+/** A full-width setting: label + hint on top, the control underneath. */
+const SettingBlock = ({ label, gem, hint, children }) => (
+  <div className="py-2">
+    <h4 className="flex items-center gap-1 text-sm font-semibold">
+      {label}
+      {gem && <Gem />}
+    </h4>
+    {hint && <p className="text-[10px] text-light">{hint}</p>}
+    <div className="mt-1.5">{children}</div>
   </div>
 );
 
@@ -49,7 +70,7 @@ const rowInputClass = "w-16 shrink-0 input-box";
 
 const Segmented = ({ value, options, onChange, disabled }) => (
   <div
-    className={`flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0 ${
+    className={`flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0 w-fit ${
       disabled ? "opacity-50 pointer-events-none" : ""
     }`}
   >
@@ -68,7 +89,7 @@ const Segmented = ({ value, options, onChange, disabled }) => (
 );
 
 /** A collapsed sub-section inside the event card: icon, title, chevron. */
-const Fold = ({ Icon, title, badge, open, onToggle, children }) => (
+const Fold = ({ Icon, title, open, onToggle, children }) => (
   <div className="border-t border-gray-100">
     <button
       className="flex items-center justify-between w-full gap-2 py-2.5"
@@ -77,7 +98,6 @@ const Fold = ({ Icon, title, badge, open, onToggle, children }) => (
       <span className="flex items-center gap-2 text-sm font-semibold">
         <Icon sx={{ fontSize: 18 }} className="text-light" />
         {title}
-        {badge}
       </span>
       {open ? (
         <ExpandLessIcon sx={{ fontSize: 18 }} className="text-light" />
@@ -90,11 +110,14 @@ const Fold = ({ Icon, title, badge, open, onToggle, children }) => (
 );
 
 const LockedNote = () => (
-  <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-gray-50 text-light">
+  <div className="flex items-center gap-2 p-3 my-2 text-xs rounded-lg bg-gray-50 text-light">
     <LockOutlinedIcon sx={{ fontSize: 16 }} />
-    These settings are part of Brolympics Pro.
+    This setting is part of Brolympics Pro.
   </div>
 );
+
+/** Gem-marked settings render in place; the Pro gate swaps them for the note. */
+const Premium = ({ children }) => (PREMIUM_LOCKED ? <LockedNote /> : children);
 
 const QUILL_MODULES = {
   toolbar: [
@@ -105,17 +128,17 @@ const QUILL_MODULES = {
 };
 const QUILL_FORMATS = ["bold", "italic", "underline", "list", "bullet", "link"];
 
-/** Settings editor for any event: basics (name, place, time) up front; rules,
- * everyday advanced knobs, and premium structure choices behind folds.
- * Structure edits lock once the event starts. */
+/** Settings editor for any event: basics (name, place, time) up front; Rules,
+ * Structure, and Scoring behind topical folds. Premium settings sit where
+ * they belong, wearing the gem. Structure edits lock once the event starts. */
 const ManageEvent = ({ event }) => {
   const [formValues, setFormValues] = useState({});
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showPremium, setShowPremium] = useState(false);
+  const [showStructure, setShowStructure] = useState(false);
+  const [showScoring, setShowScoring] = useState(false);
   const { showNotification } = useNotification();
 
   const format = event.format || event.type;
@@ -142,16 +165,14 @@ const ManageEvent = ({ event }) => {
             ? "full"
             : "semi"
           : "none",
-        n_matches:
-          rr?.config?.games_per_team ?? swiss?.config?.rounds ?? "",
+        n_matches: rr?.config?.games_per_team ?? swiss?.config?.rounds ?? "",
         has_playoffs: !!ko,
         bracket_take: ko?.config?.take ?? "",
-        placements: ko?.config?.classification
+        third_place: !!ko?.config?.third_place,
+        classification_mode: ko?.config?.classification
           ? ko?.config?.unplayed_places?.length
-            ? "full-skip-last"
+            ? "split"
             : "full"
-          : ko?.config?.third_place
-          ? "third"
           : "none",
         heat_size: heats?.config?.heat_size ?? "",
         tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
@@ -202,15 +223,15 @@ const ManageEvent = ({ event }) => {
       const config = { byes: "seeded" };
       const take = Number(formValues.bracket_take);
       if (take >= 2) config.take = take;
-      if (formValues.placements === "third") config.third_place = true;
-      if (
-        formValues.placements === "full" ||
-        formValues.placements === "full-skip-last"
-      ) {
+      const mode = formValues.classification_mode;
+      if (mode === "full" || mode === "split") {
+        // classification pools include the 3rd place game
         config.classification = true;
-      }
-      if (formValues.placements === "full-skip-last" && take >= 4) {
-        config.unplayed_places = [take - 1];
+        if (mode === "split" && take >= 4) {
+          config.unplayed_places = [take - 1];
+        }
+      } else if (formValues.third_place) {
+        config.third_place = true;
       }
       stages.push({ structure: "knockout", config });
     }
@@ -369,28 +390,43 @@ const ManageEvent = ({ event }) => {
           />
         </Fold>
 
-        <Fold
-          Icon={TuneOutlinedIcon}
-          title="Advanced"
-          open={showAdvanced}
-          onToggle={() => setShowAdvanced((v) => !v)}
-        >
-          <div className="flex flex-col divide-y divide-gray-50">
-            {isH2h && (
-              <>
-                {lockedNote}
-                <div className="py-2">
-                  <h4 className="text-sm font-semibold">Group type</h4>
-                  <p className="text-[10px] text-light">
-                    {formValues.group_play === "full"
-                      ? "Everyone plays everyone once."
-                      : formValues.group_play === "swiss"
-                      ? "Each round pairs teams with similar records."
-                      : formValues.group_play === "none"
-                      ? "Straight to the bracket."
-                      : "Everyone plays a set number of games."}
-                  </p>
-                  <div className="mt-1.5">
+        {(isH2h || isFfa) && (
+          <Fold
+            Icon={AccountTreeOutlinedIcon}
+            title="Structure"
+            open={showStructure}
+            onToggle={() => setShowStructure((v) => !v)}
+          >
+            <div className="flex flex-col divide-y divide-gray-50">
+              {lockedNote}
+              {isFfa ? (
+                <SettingRow
+                  label="Heat size"
+                  hint="Pre-builds balanced heats at start; blank = make heats at the party."
+                >
+                  <input
+                    value={formValues.heat_size || ""}
+                    name="heat_size"
+                    onChange={handleInputChange}
+                    disabled={structureLocked}
+                    className={rowInputClass}
+                    type="number"
+                  />
+                </SettingRow>
+              ) : (
+                <>
+                  <SettingBlock
+                    label="Group type"
+                    hint={
+                      formValues.group_play === "full"
+                        ? "Everyone plays everyone once."
+                        : formValues.group_play === "swiss"
+                        ? "Each round pairs teams with similar records."
+                        : formValues.group_play === "none"
+                        ? "Straight to the bracket."
+                        : "Everyone plays a set number of games."
+                    }
+                  >
                     <Segmented
                       value={formValues.group_play}
                       options={[
@@ -411,92 +447,105 @@ const ManageEvent = ({ event }) => {
                       onChange={(v) => set("group_play", v)}
                       disabled={structureLocked}
                     />
-                  </div>
-                </div>
-                {(formValues.group_play === "semi" ||
-                  formValues.group_play === "swiss") && (
+                  </SettingBlock>
+                  {(formValues.group_play === "semi" ||
+                    formValues.group_play === "swiss") && (
+                    <SettingRow
+                      label={
+                        formValues.group_play === "swiss"
+                          ? "Swiss rounds"
+                          : "Matches per team"
+                      }
+                      hint="Group-play games before the bracket."
+                    >
+                      <input
+                        value={formValues.n_matches || ""}
+                        name="n_matches"
+                        onChange={handleInputChange}
+                        disabled={structureLocked}
+                        className={rowInputClass}
+                        type="number"
+                      />
+                    </SettingRow>
+                  )}
                   <SettingRow
-                    label={
-                      formValues.group_play === "swiss"
-                        ? "Swiss rounds"
-                        : "Matches per team"
-                    }
-                    hint="Group-play games before the bracket."
+                    label="Playoffs"
+                    hint="A seeded bracket after group play."
                   >
-                    <input
-                      value={formValues.n_matches || ""}
-                      name="n_matches"
-                      onChange={handleInputChange}
+                    <Segmented
+                      value={!!formValues.has_playoffs}
+                      options={[
+                        [true, "On"],
+                        [false, "Off"],
+                      ]}
+                      onChange={(v) => set("has_playoffs", v)}
                       disabled={structureLocked}
-                      className={rowInputClass}
-                      type="number"
                     />
                   </SettingRow>
-                )}
-                <SettingRow
-                  label="Playoffs"
-                  hint="A seeded bracket after group play."
-                >
-                  <Segmented
-                    value={!!formValues.has_playoffs}
-                    options={[
-                      [true, "On"],
-                      [false, "Off"],
-                    ]}
-                    onChange={(v) => set("has_playoffs", v)}
-                    disabled={structureLocked}
-                  />
-                </SettingRow>
-                {formValues.has_playoffs && (
-                  <SettingRow
-                    label="Bracket size"
-                    hint="How many teams make the playoffs. Blank = everyone."
-                  >
-                    <input
-                      value={formValues.bracket_take || ""}
-                      name="bracket_take"
-                      onChange={handleInputChange}
-                      disabled={structureLocked}
-                      className={rowInputClass}
-                      type="number"
-                    />
-                  </SettingRow>
-                )}
-              </>
-            )}
-            {isFfa && (
-              <>
-                {lockedNote}
-                <SettingRow
-                  label="Heat size"
-                  hint="Pre-builds balanced heats at start; blank = make heats at the party."
-                >
-                  <input
-                    value={formValues.heat_size || ""}
-                    name="heat_size"
-                    onChange={handleInputChange}
-                    disabled={structureLocked}
-                    className={rowInputClass}
-                    type="number"
-                  />
-                </SettingRow>
-              </>
-            )}
-            {!isH2h && !isFfa && (
-              <SettingRow
-                label="Score display"
-                hint="Show each team's average or combined total."
-              >
-                <Segmented
-                  value={!!formValues.display_avg_scores}
-                  options={[
-                    [false, "Total"],
-                    [true, "Average"],
-                  ]}
-                  onChange={(v) => set("display_avg_scores", v)}
-                />
-              </SettingRow>
-            )}
+                  {formValues.has_playoffs && (
+                    <>
+                      <SettingRow
+                        label="Bracket size"
+                        hint="How many teams make the playoffs. Blank = everyone."
+                      >
+                        <input
+                          value={formValues.bracket_take || ""}
+                          name="bracket_take"
+                          onChange={handleInputChange}
+                          disabled={structureLocked}
+                          className={rowInputClass}
+                          type="number"
+                        />
+                      </SettingRow>
+                      {formValues.classification_mode === "none" && (
+                        <SettingRow
+                          label="Third place game"
+                          hint="The semifinal losers play for bronze."
+                        >
+                          <Segmented
+                            value={!!formValues.third_place}
+                            options={[
+                              [true, "On"],
+                              [false, "Off"],
+                            ]}
+                            onChange={(v) => set("third_place", v)}
+                            disabled={structureLocked}
+                          />
+                        </SettingRow>
+                      )}
+                      <Premium>
+                        <SettingBlock
+                          label="Full placement"
+                          gem
+                          hint="Run-off brackets play out every place — 5th/6th, 7th/8th and beyond (3rd place game included). Split last skips the very last run-off and splits its points."
+                        >
+                          <Segmented
+                            value={formValues.classification_mode}
+                            options={[
+                              ["none", "Off"],
+                              ["full", "Every place"],
+                              ["split", "Split last"],
+                            ]}
+                            onChange={(v) => set("classification_mode", v)}
+                            disabled={structureLocked}
+                          />
+                        </SettingBlock>
+                      </Premium>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </Fold>
+        )}
+
+        <Fold
+          Icon={TuneOutlinedIcon}
+          title="Scoring"
+          open={showScoring}
+          onToggle={() => setShowScoring((v) => !v)}
+        >
+          <div className="flex flex-col divide-y divide-gray-50">
             <SettingRow
               label="Winner"
               hint="Who takes it — the high or the low score."
@@ -552,133 +601,113 @@ const ManageEvent = ({ event }) => {
                 />
               </div>
             </SettingRow>
+            {!isH2h && !isFfa && (
+              <SettingRow
+                label="Score display"
+                hint="Show each team's average or combined total."
+              >
+                <Segmented
+                  value={!!formValues.display_avg_scores}
+                  options={[
+                    [false, "Total"],
+                    [true, "Average"],
+                  ]}
+                  onChange={(v) => set("display_avg_scores", v)}
+                />
+              </SettingRow>
+            )}
+            {isH2h && (
+              <>
+                <Premium>
+                  <SettingRow
+                    label="Tiebreakers rank standings"
+                    gem
+                    hint="Off: equal records share the rank and split points; the chain only seeds the bracket. On: the chain breaks ties everywhere — separate ranks, no splitting."
+                  >
+                    <Segmented
+                      value={!!formValues.tiebreakers_rank_standings}
+                      options={[
+                        [false, "Off"],
+                        [true, "On"],
+                      ]}
+                      onChange={(v) => set("tiebreakers_rank_standings", v)}
+                    />
+                  </SettingRow>
+                </Premium>
+                <Premium>
+                  <SettingBlock
+                    label="Tiebreaker order"
+                    gem
+                    hint="Only decides bracket spots and seeding — teams with equal records always share the rank and split the points. The record leads, random closes, and the middle is yours."
+                  >
+                    <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                        <span className="w-4 text-xs font-semibold text-light">
+                          —
+                        </span>
+                        <span className="flex-grow text-sm text-light">
+                          Record (wins, then ties)
+                        </span>
+                        <span className="text-[10px] text-light">
+                          always first
+                        </span>
+                      </div>
+                      {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
+                        (key, i, arr) => (
+                          <div
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white"
+                            key={key}
+                          >
+                            <span className="w-4 text-xs font-semibold text-light">
+                              {i + 1}
+                            </span>
+                            <span className="flex-grow min-w-0 text-sm truncate">
+                              {TIEBREAKER_LABELS[key] || key}
+                            </span>
+                            <button
+                              disabled={i === 0}
+                              onClick={() => moveTiebreaker(i, -1)}
+                              className="text-light disabled:opacity-30"
+                            >
+                              <ArrowUpwardIcon sx={{ fontSize: 16 }} />
+                            </button>
+                            <button
+                              disabled={i === arr.length - 1}
+                              onClick={() => moveTiebreaker(i, 1)}
+                              className="text-light disabled:opacity-30"
+                            >
+                              <ArrowDownwardIcon sx={{ fontSize: 16 }} />
+                            </button>
+                          </div>
+                        )
+                      )}
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                        <span className="w-4 text-xs font-semibold text-light">
+                          —
+                        </span>
+                        <span className="flex-grow text-sm text-light">
+                          Random
+                        </span>
+                        <span className="text-[10px] text-light">
+                          final straw — the bracket has to pick someone
+                        </span>
+                      </div>
+                    </div>
+                    {JSON.stringify(formValues.tiebreakers) !==
+                      JSON.stringify(DEFAULT_TIEBREAKERS) && (
+                      <button
+                        className="pt-1.5 text-xs font-semibold text-primary"
+                        onClick={() => set("tiebreakers", DEFAULT_TIEBREAKERS)}
+                      >
+                        Reset to default
+                      </button>
+                    )}
+                  </SettingBlock>
+                </Premium>
+              </>
+            )}
           </div>
         </Fold>
-
-        {isH2h && (
-          <Fold
-            Icon={DiamondOutlinedIcon}
-            title="Premium"
-            badge={
-              PREMIUM_LOCKED && (
-                <LockOutlinedIcon
-                  sx={{ fontSize: 14 }}
-                  className="text-light"
-                />
-              )
-            }
-            open={showPremium}
-            onToggle={() => setShowPremium((v) => !v)}
-          >
-            {PREMIUM_LOCKED ? (
-              <LockedNote />
-            ) : (
-              <div className="flex flex-col divide-y divide-gray-50">
-                {lockedNote}
-                {formValues.has_playoffs && (
-                  <SettingRow
-                    label="Placement games"
-                    hint="Full placement runs the 5th/6th, 7th/8th run-offs."
-                  >
-                    <select
-                      value={formValues.placements}
-                      onChange={handleInputChange}
-                      name="placements"
-                      disabled={structureLocked}
-                      className="shrink-0 input-box"
-                    >
-                      <option value="third">3rd place game</option>
-                      <option value="full">Full placement</option>
-                      <option value="full-skip-last">Full, split last</option>
-                      <option value="none">Winners only</option>
-                    </select>
-                  </SettingRow>
-                )}
-                <SettingRow
-                  label="Tiebreakers rank standings"
-                  hint="Off: equal records share the rank and split points; the chain only seeds the bracket. On: the chain breaks ties everywhere — separate ranks, no splitting."
-                >
-                  <Segmented
-                    value={!!formValues.tiebreakers_rank_standings}
-                    options={[
-                      [false, "Off"],
-                      [true, "On"],
-                    ]}
-                    onChange={(v) => set("tiebreakers_rank_standings", v)}
-                  />
-                </SettingRow>
-                <div className="py-2">
-                  <h4 className="text-sm font-semibold">Tiebreaker order</h4>
-                  <p className="text-[10px] text-light">
-                    Only decides bracket spots and seeding — teams with equal
-                    records always share the rank and split the points. The
-                    record leads, random closes, and the middle is yours.
-                  </p>
-                  <div className="mt-1.5 overflow-hidden border border-gray-200 rounded-lg divide-y">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
-                      <span className="w-4 text-xs font-semibold text-light">
-                        —
-                      </span>
-                      <span className="flex-grow text-sm text-light">
-                        Record (wins, then ties)
-                      </span>
-                      <span className="text-[10px] text-light">always first</span>
-                    </div>
-                    {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
-                      (key, i, arr) => (
-                        <div
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white"
-                          key={key}
-                        >
-                          <span className="w-4 text-xs font-semibold text-light">
-                            {i + 1}
-                          </span>
-                          <span className="flex-grow min-w-0 text-sm truncate">
-                            {TIEBREAKER_LABELS[key] || key}
-                          </span>
-                          <button
-                            disabled={i === 0}
-                            onClick={() => moveTiebreaker(i, -1)}
-                            className="text-light disabled:opacity-30"
-                          >
-                            <ArrowUpwardIcon sx={{ fontSize: 16 }} />
-                          </button>
-                          <button
-                            disabled={i === arr.length - 1}
-                            onClick={() => moveTiebreaker(i, 1)}
-                            className="text-light disabled:opacity-30"
-                          >
-                            <ArrowDownwardIcon sx={{ fontSize: 16 }} />
-                          </button>
-                        </div>
-                      )
-                    )}
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
-                      <span className="w-4 text-xs font-semibold text-light">
-                        —
-                      </span>
-                      <span className="flex-grow text-sm text-light">
-                        Random
-                      </span>
-                      <span className="text-[10px] text-light">
-                        final straw — the bracket has to pick someone
-                      </span>
-                    </div>
-                  </div>
-                  {JSON.stringify(formValues.tiebreakers) !==
-                    JSON.stringify(DEFAULT_TIEBREAKERS) && (
-                    <button
-                      className="pt-1.5 text-xs font-semibold text-primary"
-                      onClick={() => set("tiebreakers", DEFAULT_TIEBREAKERS)}
-                    >
-                      Reset to default
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </Fold>
-        )}
 
         <button
           className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
