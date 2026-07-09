@@ -35,7 +35,7 @@ const UpcomingCompetitions = ({ upcoming_competitions, setOpen }) => {
     <>
       {upcoming_competitions.length !== 0 && (
         <DataList
-          title="Upcoming Competitions"
+          title="Upcoming Games"
           data={upcoming_competitions}
           card={Card}
           setOpen={setOpen}

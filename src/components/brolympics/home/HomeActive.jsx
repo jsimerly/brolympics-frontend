@@ -158,7 +158,7 @@ const HomeActive = ({ is_admin }) => {
           {homeData.active_events.length > 0 && (
             <>
               <EventBlock
-                title="Available Competition"
+                title="Available Game"
                 items={homeData.available_competitions}
                 component_func={(type, props) =>
                   getComponent(type, props, true)
@@ -170,7 +170,7 @@ const HomeActive = ({ is_admin }) => {
                 component_func={null}
               />
               <EventBlock
-                title="Active Competition"
+                title="Active Game"
                 items={homeData.active_competitions}
                 component_func={(type, props) =>
                   getComponent(type, props, false)

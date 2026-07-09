@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
@@ -95,6 +96,8 @@ const TeamOutings = ({ contests, standings }) => {
 };
 
 const EventActive = ({ eventInfo, is_admin }) => {
+  // h2h: tap a standings row to see just that team's games
+  const [teamFilter, setTeamFilter] = useState(null);
 
   const getFontSize = (name) => {
     if (name) {
@@ -121,6 +124,19 @@ const EventActive = ({ eventInfo, is_admin }) => {
   };
 
   if (!eventInfo) return <div>Loading...</div>;
+
+  const isH2h = eventInfo.type === "h2h";
+  const toggleTeamFilter = (team) =>
+    setTeamFilter((current) =>
+      current?.uuid === String(team.uuid)
+        ? null
+        : { uuid: String(team.uuid), name: team.name }
+    );
+  const shownContests = teamFilter
+    ? (eventInfo.contests || []).filter((c) =>
+        (c.entries || []).some((e) => String(e.team) === teamFilter.uuid)
+      )
+    : eventInfo.contests;
 
   return (
     <div className="max-w-4xl">
@@ -153,7 +169,16 @@ const EventActive = ({ eventInfo, is_admin }) => {
                 eventInfo.standings.map((row, i) => (
                   <tr
                     key={i + "_row"}
-                    className={i % 2 === 0 ? "bg-gray-50" : ""}
+                    className={`${
+                      teamFilter?.uuid === String(row.team.uuid)
+                        ? "!bg-primary/10"
+                        : i % 2 === 0
+                        ? "bg-gray-50"
+                        : ""
+                    } ${isH2h ? "cursor-pointer" : ""}`}
+                    onClick={
+                      isH2h ? () => toggleTeamFilter(row.team) : undefined
+                    }
                   >
                     <td className="p-3 font-semibold text-center border-t">
                       {row.rank}
@@ -187,6 +212,11 @@ const EventActive = ({ eventInfo, is_admin }) => {
             </tbody>
           </table>
         </div>
+        {isH2h && (eventInfo.contests || []).length > 0 && (
+          <p className="pt-1 text-[10px] text-light">
+            Tap a team to see just their games.
+          </p>
+        )}
       </div>
       <div className="py-3">
         {(eventInfo.brackets || []).map((bracket) => (
@@ -199,12 +229,27 @@ const EventActive = ({ eventInfo, is_admin }) => {
         eventInfo.contests &&
         eventInfo.contests.length > 0 && (
           <div className="px-4 pb-6">
-            <h2 className="mb-4 header-3">Competitions</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="header-3">Games</h2>
+              {teamFilter && (
+                <button
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary"
+                  onClick={() => setTeamFilter(null)}
+                >
+                  {teamFilter.name} <CloseIcon sx={{ fontSize: 14 }} />
+                </button>
+              )}
+            </div>
             {eventInfo.type === "h2h" ? (
               <div className="overflow-hidden card divide-y">
-                {eventInfo.contests.map((contest) => (
+                {shownContests.map((contest) => (
                   <Comp_h2h {...contest} key={contest.uuid} />
                 ))}
+                {shownContests.length === 0 && (
+                  <p className="p-4 text-sm text-light">
+                    No games yet for {teamFilter?.name}.
+                  </p>
+                )}
               </div>
             ) : (
               <TeamOutings

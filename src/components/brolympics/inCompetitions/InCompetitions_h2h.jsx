@@ -29,7 +29,7 @@ const InCompetitions_h2h = ({ contest }) => {
           [entry_2.team]: Number(team2Score),
         },
       });
-      showNotification("Competition updated successfully", "border-primary");
+      showNotification("Game recorded successfully", "border-primary");
       window.location.reload();
     } catch (error) {
       const detail = error.response?.data;
