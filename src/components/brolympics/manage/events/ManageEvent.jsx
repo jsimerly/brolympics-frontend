@@ -401,7 +401,7 @@ const ManageEvent = ({ event }) => {
                     <option value="none">None</option>
                     <option value="semi">Semi round robin</option>
                     <option value="full">Full round robin</option>
-                    <option value="swiss">Swiss (Premium)</option>
+                    <option value="swiss">Swiss 💎</option>
                   </select>
                 </SettingRow>
                 {(formValues.group_play === "semi" ||

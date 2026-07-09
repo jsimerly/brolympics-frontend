@@ -206,7 +206,7 @@ const CreateEvent = ({ handleEventAdded }) => {
               <option value="none">None (bracket only)</option>
               <option value="semi">Semi round robin</option>
               <option value="full">Full round robin</option>
-              <option value="swiss">Swiss (Premium)</option>
+              <option value="swiss">Swiss 💎</option>
             </select>
           </SelectRow>
           {(groupPlay === "semi" || groupPlay === "swiss") && (
