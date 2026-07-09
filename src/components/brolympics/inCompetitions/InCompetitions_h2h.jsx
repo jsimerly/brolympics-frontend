@@ -1,18 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { recordContest, abandonContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
 
+/** The h2h scorecard: both teams, two big score boxes, one loud submit. */
 const InCompetitions_h2h = ({ contest }) => {
   const [team1Score, setTeam1Score] = useState("");
   const [team2Score, setTeam2Score] = useState("");
+  const [saving, setSaving] = useState(false);
   const { showNotification } = useNotification();
 
   const [entry_1, entry_2] = contest.entries;
 
+  // decimals welcome -- lap times and golf scores are scores too
   const handleScoreChange = (setter) => (e) => {
     const value = e.target.value;
-    if (value === "" || /^\d+$/.test(value)) {
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setter(value);
     }
   };
@@ -22,6 +25,8 @@ const InCompetitions_h2h = ({ contest }) => {
       showNotification("Enter a score for both teams", "border-red-500");
       return;
     }
+    if (saving) return;
+    setSaving(true);
     try {
       await recordContest(contest.uuid, {
         scores: {
@@ -36,8 +41,9 @@ const InCompetitions_h2h = ({ contest }) => {
       if (error.response?.status === 400 && detail) {
         showNotification(String(detail[0] ?? detail), "border-yellow-500");
       } else {
-        showNotification("Error updating competition", "border-red-500");
+        showNotification("Error recording the game", "border-red-500");
       }
+      setSaving(false);
     }
   };
 
@@ -46,53 +52,73 @@ const InCompetitions_h2h = ({ contest }) => {
       await abandonContest(contest.uuid);
       window.location.reload();
     } catch (error) {
-      showNotification("Error cancelling competition", "border-red-500");
+      showNotification("Error backing out of the game", "border-red-500");
     }
   };
 
+  const rows = [
+    [entry_1, team1Score, setTeam1Score],
+    [entry_2, team2Score, setTeam2Score],
+  ];
+
   return (
-    <div className="min-h-[calc(100vh-240px)] p-6 flex flex-col justify-between bg-white rounded-lg shadow-md">
+    <div className="min-h-[calc(100vh-240px)] flex flex-col justify-between max-w-md mx-auto p-2">
       <div>
-        <h2 className="mb-6 text-2xl font-bold text-center">
+        <h2 className="pb-3 text-lg font-bold text-center">
           {contest.event_name}
         </h2>
-        {[entry_1, entry_2].map((entry, index) => (
-          <div key={entry.team} className="p-4 mb-6 rounded-lg">
-            <div className="flex items-center gap-4">
-              <Img
-                src={entry.team_img}
-                alt={`${entry.team_name} logo`}
-                className="object-cover w-20 h-20 rounded-md"
-              />
-              <div className="flex-grow">
-                <h4 className="text-xl font-semibold">{entry.team_name}</h4>
+        <div className="overflow-hidden bg-white border border-gray-200 rounded-lg">
+          {rows.map(([entry, score, setter], i) => (
+            <div key={entry.team}>
+              {i === 1 && (
+                <div className="flex items-center gap-3 px-4">
+                  <div className="flex-grow h-px bg-gray-100" />
+                  <span className="text-xs font-semibold text-light">vs</span>
+                  <div className="flex-grow h-px bg-gray-100" />
+                </div>
+              )}
+              <div className="flex items-center gap-3 p-4">
+                <Img
+                  src={entry.team_img}
+                  alt={entry.team_name}
+                  className="object-cover rounded-lg w-14 h-14 shrink-0"
+                />
+                <div className="flex flex-col flex-grow min-w-0">
+                  <span className="font-semibold leading-tight truncate">
+                    {entry.team_name}
+                  </span>
+                  {entry.seed != null && (
+                    <span className="text-[11px] text-light">
+                      #{entry.seed} seed
+                    </span>
+                  )}
+                </div>
+                <input
+                  value={score}
+                  onChange={handleScoreChange(setter)}
+                  className="w-20 h-16 text-2xl font-bold shrink-0 input-box"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0"
+                />
               </div>
-              <input
-                value={index === 0 ? team1Score : team2Score}
-                onChange={handleScoreChange(
-                  index === 0 ? setTeam1Score : setTeam2Score
-                )}
-                className="w-20 h-16 p-2 text-2xl font-bold text-center border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                type="text"
-                inputMode="numeric"
-                pattern="\d*"
-              />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <div className="flex gap-4 mt-6">
+      <div className="flex gap-2 mt-4">
         <button
-          className="flex-1 p-3 font-semibold transition-colors duration-300 border-2 rounded-md text-primary border-primary hover:bg-primary hover:text-white"
+          className="w-1/3 py-3 font-semibold border rounded-full text-light border-gray-300"
           onClick={handleCancelClicked}
         >
-          Cancel
+          Back out
         </button>
         <button
-          className="flex-1 p-3 font-semibold "
+          className="w-2/3 py-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
           onClick={handleSubmitClicked}
+          disabled={saving}
         >
-          Submit Score
+          {saving ? "Saving..." : "Submit Score"}
         </button>
       </div>
     </div>

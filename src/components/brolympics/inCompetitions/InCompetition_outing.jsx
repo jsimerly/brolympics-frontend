@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
 
-/** Score entry for outing contests: one input per roster player for ind
- * events, a single team input for team events. */
+/** Score entry for outing contests: one input per active roster player for
+ * ind events (dormant players sit out), a single team input for team events.
+ * Decimals welcome -- lap times are scores too. */
 const InCompetition_outing = ({ contest }) => {
   const isInd = contest.format === "ind";
   const [scores, setScores] = useState({});
   const [teamScore, setTeamScore] = useState("");
   const [team, setTeam] = useState(null);
+  const [saving, setSaving] = useState(false);
   const { showNotification } = useNotification();
 
   const teamEntry =
@@ -22,15 +24,17 @@ const InCompetition_outing = ({ contest }) => {
         setTeam(await fetchTeam(teamEntry.team));
       } catch (error) {
         console.error("Error fetching team:", error);
-        showNotification("Error loading competition data", "border-red-500");
+        showNotification("Error loading the game", "border-red-500");
       }
     };
     getTeam();
   }, [teamEntry.team, isInd]);
 
+  const roster = (team?.players || []).filter((p) => p.is_active !== false);
+
   const numericChange = (setter) => (e) => {
     const value = e.target.value;
-    if (value === "" || /^\d+$/.test(value)) {
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setter(value);
     }
   };
@@ -41,32 +45,42 @@ const InCompetition_outing = ({ contest }) => {
     );
 
   const handleSubmitClicked = async () => {
+    if (saving) return;
     try {
       if (isInd) {
-        if (team.players.some((p) => !scores[p.uuid]?.length)) {
+        if (roster.some((p) => !scores[p.uuid]?.length)) {
           showNotification(
-            "Please enter a score for every player.",
+            "Enter a score for every player.",
             "border-yellow-500"
           );
           return;
         }
+        setSaving(true);
         await recordContest(contest.uuid, {
           player_scores: Object.fromEntries(
-            team.players.map((p) => [p.uuid, Number(scores[p.uuid])])
+            roster.map((p) => [p.uuid, Number(scores[p.uuid])])
           ),
         });
       } else {
         if (teamScore === "") {
-          showNotification("Please enter a score.", "border-yellow-500");
+          showNotification("Enter a score.", "border-yellow-500");
           return;
         }
+        setSaving(true);
         await recordContest(contest.uuid, { team_score: Number(teamScore) });
       }
       showNotification("Scores submitted successfully", "border-primary");
       window.location.reload();
     } catch (error) {
       console.error("Error submitting scores:", error);
-      showNotification("Error submitting scores", "border-red-500");
+      const detail = error.response?.data;
+      showNotification(
+        detail
+          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
+          : "Error submitting scores",
+        "border-red-500"
+      );
+      setSaving(false);
     }
   };
 
@@ -76,58 +90,62 @@ const InCompetition_outing = ({ contest }) => {
       window.location.reload();
     } catch (error) {
       console.error("Error cancelling competition:", error);
-      showNotification("Error cancelling competition", "border-red-500");
+      showNotification("Error backing out of the game", "border-red-500");
     }
   };
 
-  if (isInd && !team) return <div className="p-6 text-center">Loading...</div>;
+  if (isInd && !team) {
+    return <div className="p-6 text-center text-light">Loading...</div>;
+  }
 
   return (
-    <div className="min-h-[calc(100vh-160px)] flex flex-col justify-between p-2">
-      <div className="overflow-hidden bg-white rounded-lg shadow-md">
-        <div className="p-4 text-white bg-primary">
-          <h2 className="text-xl font-bold text-center">
-            {contest.event_name}
-          </h2>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-[calc(100vh-240px)] flex flex-col justify-between max-w-md mx-auto p-2">
+      <div>
+        <h2 className="pb-3 text-lg font-bold text-center">
+          {contest.event_name}
+        </h2>
+        <div className="p-4 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
             <Img
               src={isInd ? team.img : teamEntry?.team_img}
               alt="team logo"
-              className="object-cover w-20 h-20 rounded-md"
+              className="object-cover rounded-lg w-14 h-14 shrink-0"
             />
-            <h3 className="text-3xl font-semibold">
+            <h3 className="text-xl font-semibold truncate">
               {isInd ? team.name : teamEntry?.team_name}
             </h3>
           </div>
           {isInd ? (
-            team.players.map((player) => (
-              <div
-                key={player.uuid}
-                className="flex items-center justify-between mb-4 last:mb-0"
-              >
-                <span className="text-lg">{player.name}</span>
-                <input
-                  value={scores[player.uuid] || ""}
-                  onChange={handleScoreChange(player.uuid)}
-                  className="w-20 h-12 text-lg font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d*"
-                />
-              </div>
-            ))
+            <div className="divide-y divide-gray-50">
+              {roster.map((player) => (
+                <div
+                  key={player.uuid}
+                  className="flex items-center justify-between gap-3 py-2.5"
+                >
+                  <span className="min-w-0 text-sm font-medium truncate">
+                    {player.name}
+                  </span>
+                  <input
+                    value={scores[player.uuid] || ""}
+                    onChange={handleScoreChange(player.uuid)}
+                    className="w-20 h-12 text-lg font-semibold shrink-0 input-box"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Team Score</span>
+            <div className="flex items-center justify-between gap-3 pt-3">
+              <span className="text-sm font-medium">Team score</span>
               <input
                 value={teamScore}
                 onChange={numericChange(setTeamScore)}
-                className="w-24 h-14 text-xl font-semibold text-center border-2 border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary-light"
+                className="w-24 text-xl font-semibold h-14 shrink-0 input-box"
                 type="text"
-                inputMode="numeric"
-                pattern="\d*"
+                inputMode="decimal"
+                placeholder="0"
               />
             </div>
           )}
@@ -135,16 +153,17 @@ const InCompetition_outing = ({ contest }) => {
       </div>
       <div className="flex gap-2 mt-4">
         <button
-          className="w-1/3 p-3 font-semibold transition-colors duration-300 border-2 rounded-md text-primary border-primary hover:bg-primary hover:text-white"
+          className="w-1/3 py-3 font-semibold border rounded-full text-light border-gray-300"
           onClick={handleCancelClicked}
         >
-          Cancel
+          Back out
         </button>
         <button
-          className="w-2/3 p-3 font-semibold text-white transition-colors duration-300 rounded-md bg-primary hover:bg-primary-dark"
+          className="w-2/3 py-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
           onClick={handleSubmitClicked}
+          disabled={saving}
         >
-          Submit Score
+          {saving ? "Saving..." : "Submit Score"}
         </button>
       </div>
     </div>
