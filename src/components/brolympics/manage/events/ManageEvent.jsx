@@ -402,6 +402,180 @@ const ManageEvent = ({ event }) => {
           />
         </Fold>
 
+        <Fold
+          Icon={TuneOutlinedIcon}
+          title="Scoring"
+          open={showScoring}
+          onToggle={() => setShowScoring((v) => !v)}
+        >
+          <div className="flex flex-col divide-y divide-gray-50">
+            <SettingRow
+              label="Winner"
+              hint="Who takes it — the high or the low score."
+            >
+              <Segmented
+                value={!!formValues.is_high_score_wins}
+                options={[
+                  [true, "High"],
+                  [false, "Low"],
+                ]}
+                onChange={(v) => set("is_high_score_wins", v)}
+              />
+            </SettingRow>
+            <SettingRow
+              label="Score precision"
+              hint="Whole numbers, decimals, or just win/loss."
+            >
+              <select
+                name="decimal_places"
+                value={formValues.decimal_places || ""}
+                onChange={handleInputChange}
+                className="shrink-0 input-box"
+              >
+                <option value="B">Win/Loss</option>
+                <option value="0">Whole</option>
+                <option value="1">0.0</option>
+                <option value="2">0.00</option>
+                <option value="3">0.000</option>
+                <option value="16">Max</option>
+              </select>
+            </SettingRow>
+            <SettingRow
+              label="Score limits"
+              hint="Optional min and max per score."
+            >
+              <div className="flex items-center gap-1.5 shrink-0">
+                <input
+                  name="min_score"
+                  value={formValues.min_score || ""}
+                  onChange={handleInputChange}
+                  className={rowInputClass}
+                  type="number"
+                  placeholder="min"
+                />
+                <span className="text-light">–</span>
+                <input
+                  name="max_score"
+                  value={formValues.max_score || ""}
+                  onChange={handleInputChange}
+                  className={rowInputClass}
+                  type="number"
+                  placeholder="max"
+                />
+              </div>
+            </SettingRow>
+            {!isH2h && !isFfa && (
+              <SettingRow
+                label="Score display"
+                hint="Show each team's average or combined total."
+              >
+                <Segmented
+                  value={!!formValues.display_avg_scores}
+                  options={[
+                    [false, "Total"],
+                    [true, "Average"],
+                  ]}
+                  onChange={(v) => set("display_avg_scores", v)}
+                />
+              </SettingRow>
+            )}
+            {isH2h && (
+              <>
+                <Premium>
+                  <SettingRow
+                    label="Tiebreakers rank standings"
+                    gem
+                    hint="Off: equal records share the rank and split points; the chain only seeds the bracket. On: the chain breaks ties everywhere — separate ranks, no splitting."
+                  >
+                    <Segmented
+                      value={!!formValues.tiebreakers_rank_standings}
+                      options={[
+                        [false, "Off"],
+                        [true, "On"],
+                      ]}
+                      onChange={(v) => set("tiebreakers_rank_standings", v)}
+                    />
+                  </SettingRow>
+                </Premium>
+                <Premium>
+                  <SettingBlock
+                    label="Tiebreaker order"
+                    gem
+                    hint={
+                      formValues.tiebreakers_rank_standings
+                        ? "Decides bracket spots, seeding, AND the standings — ties break in this order for rank and points. The record leads, random closes, and the middle is yours."
+                        : "Only decides bracket spots and seeding — teams with equal records always share the rank and split the points. The record leads, random closes, and the middle is yours."
+                    }
+                  >
+                    <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                        <span className="w-4 text-xs font-semibold text-light">
+                          —
+                        </span>
+                        <span className="flex-grow text-sm text-light">
+                          Record (wins, then ties)
+                        </span>
+                        <span className="text-[10px] text-light">
+                          always first
+                        </span>
+                      </div>
+                      {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
+                        (key, i, arr) => (
+                          <div
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white"
+                            key={key}
+                          >
+                            <span className="w-4 text-xs font-semibold text-light">
+                              {i + 1}
+                            </span>
+                            <span className="flex-grow min-w-0 text-sm truncate">
+                              {TIEBREAKER_LABELS[key] || key}
+                            </span>
+                            <button
+                              disabled={i === 0}
+                              onClick={() => moveTiebreaker(i, -1)}
+                              className="text-light disabled:opacity-30"
+                            >
+                              <ArrowUpwardIcon sx={{ fontSize: 16 }} />
+                            </button>
+                            <button
+                              disabled={i === arr.length - 1}
+                              onClick={() => moveTiebreaker(i, 1)}
+                              className="text-light disabled:opacity-30"
+                            >
+                              <ArrowDownwardIcon sx={{ fontSize: 16 }} />
+                            </button>
+                          </div>
+                        )
+                      )}
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                        <span className="w-4 text-xs font-semibold text-light">
+                          —
+                        </span>
+                        <span className="flex-grow text-sm text-light">
+                          Random
+                        </span>
+                        <span className="text-[10px] text-light">
+                          final straw — the bracket has to pick someone
+                        </span>
+                      </div>
+                    </div>
+                    {JSON.stringify(formValues.tiebreakers) !==
+                      JSON.stringify(DEFAULT_TIEBREAKERS) && (
+                      <button
+                        className="pt-1.5 text-xs font-semibold text-primary"
+                        onClick={() => set("tiebreakers", DEFAULT_TIEBREAKERS)}
+                      >
+                        Reset to default
+                      </button>
+                    )}
+                  </SettingBlock>
+                </Premium>
+              </>
+            )}
+          </div>
+        </Fold>
+
         {(isH2h || isFfa) && (
           <Fold
             Icon={AccountTreeOutlinedIcon}
@@ -597,180 +771,6 @@ const ManageEvent = ({ event }) => {
             </div>
           </Fold>
         )}
-
-        <Fold
-          Icon={TuneOutlinedIcon}
-          title="Scoring"
-          open={showScoring}
-          onToggle={() => setShowScoring((v) => !v)}
-        >
-          <div className="flex flex-col divide-y divide-gray-50">
-            <SettingRow
-              label="Winner"
-              hint="Who takes it — the high or the low score."
-            >
-              <Segmented
-                value={!!formValues.is_high_score_wins}
-                options={[
-                  [true, "High"],
-                  [false, "Low"],
-                ]}
-                onChange={(v) => set("is_high_score_wins", v)}
-              />
-            </SettingRow>
-            <SettingRow
-              label="Score precision"
-              hint="Whole numbers, decimals, or just win/loss."
-            >
-              <select
-                name="decimal_places"
-                value={formValues.decimal_places || ""}
-                onChange={handleInputChange}
-                className="shrink-0 input-box"
-              >
-                <option value="B">Win/Loss</option>
-                <option value="0">Whole</option>
-                <option value="1">0.0</option>
-                <option value="2">0.00</option>
-                <option value="3">0.000</option>
-                <option value="16">Max</option>
-              </select>
-            </SettingRow>
-            <SettingRow
-              label="Score limits"
-              hint="Optional min and max per score."
-            >
-              <div className="flex items-center gap-1.5 shrink-0">
-                <input
-                  name="min_score"
-                  value={formValues.min_score || ""}
-                  onChange={handleInputChange}
-                  className={rowInputClass}
-                  type="number"
-                  placeholder="min"
-                />
-                <span className="text-light">–</span>
-                <input
-                  name="max_score"
-                  value={formValues.max_score || ""}
-                  onChange={handleInputChange}
-                  className={rowInputClass}
-                  type="number"
-                  placeholder="max"
-                />
-              </div>
-            </SettingRow>
-            {!isH2h && !isFfa && (
-              <SettingRow
-                label="Score display"
-                hint="Show each team's average or combined total."
-              >
-                <Segmented
-                  value={!!formValues.display_avg_scores}
-                  options={[
-                    [false, "Total"],
-                    [true, "Average"],
-                  ]}
-                  onChange={(v) => set("display_avg_scores", v)}
-                />
-              </SettingRow>
-            )}
-            {isH2h && (
-              <>
-                <Premium>
-                  <SettingRow
-                    label="Tiebreakers rank standings"
-                    gem
-                    hint="Off: equal records share the rank and split points; the chain only seeds the bracket. On: the chain breaks ties everywhere — separate ranks, no splitting."
-                  >
-                    <Segmented
-                      value={!!formValues.tiebreakers_rank_standings}
-                      options={[
-                        [false, "Off"],
-                        [true, "On"],
-                      ]}
-                      onChange={(v) => set("tiebreakers_rank_standings", v)}
-                    />
-                  </SettingRow>
-                </Premium>
-                <Premium>
-                  <SettingBlock
-                    label="Tiebreaker order"
-                    gem
-                    hint={
-                      formValues.tiebreakers_rank_standings
-                        ? "Decides bracket spots, seeding, AND the standings — ties break in this order for rank and points. The record leads, random closes, and the middle is yours."
-                        : "Only decides bracket spots and seeding — teams with equal records always share the rank and split the points. The record leads, random closes, and the middle is yours."
-                    }
-                  >
-                    <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
-                        <span className="w-4 text-xs font-semibold text-light">
-                          —
-                        </span>
-                        <span className="flex-grow text-sm text-light">
-                          Record (wins, then ties)
-                        </span>
-                        <span className="text-[10px] text-light">
-                          always first
-                        </span>
-                      </div>
-                      {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
-                        (key, i, arr) => (
-                          <div
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white"
-                            key={key}
-                          >
-                            <span className="w-4 text-xs font-semibold text-light">
-                              {i + 1}
-                            </span>
-                            <span className="flex-grow min-w-0 text-sm truncate">
-                              {TIEBREAKER_LABELS[key] || key}
-                            </span>
-                            <button
-                              disabled={i === 0}
-                              onClick={() => moveTiebreaker(i, -1)}
-                              className="text-light disabled:opacity-30"
-                            >
-                              <ArrowUpwardIcon sx={{ fontSize: 16 }} />
-                            </button>
-                            <button
-                              disabled={i === arr.length - 1}
-                              onClick={() => moveTiebreaker(i, 1)}
-                              className="text-light disabled:opacity-30"
-                            >
-                              <ArrowDownwardIcon sx={{ fontSize: 16 }} />
-                            </button>
-                          </div>
-                        )
-                      )}
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
-                        <span className="w-4 text-xs font-semibold text-light">
-                          —
-                        </span>
-                        <span className="flex-grow text-sm text-light">
-                          Random
-                        </span>
-                        <span className="text-[10px] text-light">
-                          final straw — the bracket has to pick someone
-                        </span>
-                      </div>
-                    </div>
-                    {JSON.stringify(formValues.tiebreakers) !==
-                      JSON.stringify(DEFAULT_TIEBREAKERS) && (
-                      <button
-                        className="pt-1.5 text-xs font-semibold text-primary"
-                        onClick={() => set("tiebreakers", DEFAULT_TIEBREAKERS)}
-                      >
-                        Reset to default
-                      </button>
-                    )}
-                  </SettingBlock>
-                </Premium>
-              </>
-            )}
-          </div>
-        </Fold>
 
         <button
           className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
