@@ -638,7 +638,11 @@ const ManageEvent = ({ event }) => {
                   <SettingBlock
                     label="Tiebreaker order"
                     gem
-                    hint="Only decides bracket spots and seeding — teams with equal records always share the rank and split the points. The record leads, random closes, and the middle is yours."
+                    hint={
+                      formValues.tiebreakers_rank_standings
+                        ? "Decides bracket spots, seeding, AND the standings — ties break in this order for rank and points. The record leads, random closes, and the middle is yours."
+                        : "Only decides bracket spots and seeding — teams with equal records always share the rank and split the points. The record leads, random closes, and the middle is yours."
+                    }
                   >
                     <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
