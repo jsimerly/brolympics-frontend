@@ -5,11 +5,14 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 const STATE_CHIP = {
   live: ["Live", "bg-tertiary/10 text-tertiary"],
   done: ["Done", "bg-gray-100 text-light"],
+  cancelled: ["Cancelled", "bg-red/10 text-red"],
 };
 
 const ManageEventWrapper = ({ name, event, children }) => {
   const [open, setOpen] = useState(false);
-  const chip = event?.is_complete
+  const chip = event?.is_cancelled
+    ? STATE_CHIP.cancelled
+    : event?.is_complete
     ? STATE_CHIP.done
     : event?.is_active
     ? STATE_CHIP.live
