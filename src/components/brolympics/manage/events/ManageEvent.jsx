@@ -154,6 +154,7 @@ const ManageEvent = ({ event, teams = [] }) => {
       const swiss = stages.find((s) => s.structure === "swiss");
       const ko = stages.find((s) => s.structure === "knockout");
       const heats = stages.find((s) => s.structure === "heats");
+      const openPlay = stages.find((s) => s.structure === "open_play");
       setFormValues({
         ...event,
         ...(event.config || {}),
@@ -181,6 +182,7 @@ const ManageEvent = ({ event, teams = [] }) => {
             ? ko.config.take - 2 * ko.config.unplayed_places.length
             : "",
         heat_size: heats?.config?.heat_size ?? "",
+        outing_games: openPlay?.config?.games_per_team ?? 1,
         tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
           (key) => key in TIEBREAKER_LABELS
         ),
@@ -215,6 +217,15 @@ const ManageEvent = ({ event, teams = [] }) => {
       const size = Number(formValues.heat_size);
       return [
         { structure: "heats", config: size >= 2 ? { heat_size: size } : {} },
+      ];
+    }
+    if (!isH2h) {
+      const games = Number(formValues.outing_games);
+      return [
+        {
+          structure: "open_play",
+          config: games >= 1 ? { games_per_team: games } : {},
+        },
       ];
     }
     const stages = [];
@@ -254,7 +265,7 @@ const ManageEvent = ({ event, teams = [] }) => {
     return stages;
   };
 
-  const canEditStructure = !structureLocked && (isH2h || isFfa);
+  const canEditStructure = !structureLocked;
 
   const handleUpdateClicked = async () => {
     if (saving) return;
@@ -707,8 +718,7 @@ const ManageEvent = ({ event, teams = [] }) => {
           </div>
         </Fold>
 
-        {(isH2h || isFfa) && (
-          <Fold
+        <Fold
             Icon={AccountTreeOutlinedIcon}
             title="Structure"
             open={showStructure}
@@ -724,6 +734,20 @@ const ManageEvent = ({ event, teams = [] }) => {
                   <input
                     value={formValues.heat_size || ""}
                     name="heat_size"
+                    onChange={handleInputChange}
+                    disabled={structureLocked}
+                    className={rowInputClass}
+                    type="number"
+                  />
+                </SettingRow>
+              ) : !isH2h ? (
+                <SettingRow
+                  label="Games per team"
+                  hint="How many rounds each team plays — bowling classically runs 2."
+                >
+                  <input
+                    value={formValues.outing_games ?? 1}
+                    name="outing_games"
                     onChange={handleInputChange}
                     disabled={structureLocked}
                     className={rowInputClass}
@@ -901,7 +925,6 @@ const ManageEvent = ({ event, teams = [] }) => {
               )}
             </div>
           </Fold>
-        )}
 
         <button
           className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"

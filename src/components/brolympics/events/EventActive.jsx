@@ -11,6 +11,10 @@ import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import { EventInfo } from "./EventInfo.jsx";
 
+/** 25.05 + 25.208 should read 50.258, not 50.257999999999996. */
+const trimFloat = (value) =>
+  typeof value === "number" ? parseFloat(value.toPrecision(10)) : value;
+
 /** One outing line inside a team's group: total up front, players after. */
 const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
   const entries = contest.entries || [];
@@ -30,7 +34,7 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
         </span>
       )}
       <span className="w-10 font-bold shrink-0">
-        {contest.is_complete && total != null ? total : "–"}
+        {contest.is_complete && total != null ? trimFloat(total) : "–"}
       </span>
       <span className="flex flex-col flex-grow min-w-0 text-light">
         {playerEntries.length > 0 ? (
@@ -253,7 +257,7 @@ const EventActive = ({ eventInfo, is_admin }) => {
         stats.ties ? `-${stats.ties}` : ""
       }`;
     }
-    return stats.total ?? stats.placement_points ?? "";
+    return trimFloat(stats.total ?? stats.placement_points ?? "");
   };
 
   const displayPoints = (points) => {

@@ -53,6 +53,7 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [runoffs, setRunoffs] = useState("third");
   const [placeThrough, setPlaceThrough] = useState("");
   const [heatSize, setHeatSize] = useState("");
+  const [outingGames, setOutingGames] = useState("1");
 
   const buildStages = () => {
     if (selectedType === "ffa") {
@@ -64,7 +65,15 @@ const CreateEvent = ({ handleEventAdded }) => {
         },
       ];
     }
-    if (selectedType !== "h2h") return [{ structure: "open_play", config: {} }];
+    if (selectedType !== "h2h") {
+      const games = Number(outingGames);
+      return [
+        {
+          structure: "open_play",
+          config: games >= 1 ? { games_per_team: games } : {},
+        },
+      ];
+    }
 
     const stages = [];
     const n = Number(groupGames) || 4;
@@ -177,6 +186,23 @@ const CreateEvent = ({ handleEventAdded }) => {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {(selectedType === "ind" || selectedType === "team") && (
+        <div className="flex flex-col gap-3">
+          <span className="form-label">Structure</span>
+          <SelectRow
+            label="Games per team"
+            hint="How many rounds each team plays — bowling classically runs 2."
+          >
+            <input
+              type="number"
+              value={outingGames}
+              onChange={(e) => setOutingGames(e.target.value)}
+              className="w-16 shrink-0 input-box"
+            />
+          </SelectRow>
         </div>
       )}
 
