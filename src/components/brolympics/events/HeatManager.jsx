@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   addHeat,
   closeEventStage,
@@ -9,11 +10,18 @@ import {
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
+const PLACE_STYLE = {
+  1: "bg-secondary/20 text-secondary-dark",
+  2: "bg-gray-200 text-gray-600",
+  3: "bg-orange-100 text-orange-700",
+};
+
 /** One heat: read-only results once recorded, placement inputs until then.
  * Participants and admins may record; the backend enforces. */
 const HeatCard = ({ contest, index }) => {
   const { showNotification } = useNotification();
   const [placements, setPlacements] = useState({});
+  const [saving, setSaving] = useState(false);
   const players = contest.entries.filter((e) => e.player);
 
   const setPlacement = (playerUuid) => (e) => {
@@ -32,6 +40,8 @@ const HeatCard = ({ contest, index }) => {
       );
       return;
     }
+    if (saving) return;
+    setSaving(true);
     try {
       await recordContest(contest.uuid, {
         placements: Object.fromEntries(
@@ -46,6 +56,7 @@ const HeatCard = ({ contest, index }) => {
           ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
           : "Error recording this heat."
       );
+      setSaving(false);
     }
   };
 
@@ -54,36 +65,59 @@ const HeatCard = ({ contest, index }) => {
       (a, b) => (a.placement ?? 99) - (b.placement ?? 99)
     );
     return (
-      <div className="p-3 card">
-        <h4 className="pb-1 font-semibold">Heat {index + 1}</h4>
-        {ranked.map((entry) => (
-          <div className="flex gap-2 text-sm" key={entry.player}>
-            <span className="w-6 font-bold">{entry.placement}.</span>
-            <span>{entry.player_name}</span>
-          </div>
-        ))}
+      <div className="p-4 bg-white border border-gray-200 rounded-lg">
+        <h4 className="pb-2 text-xs font-semibold tracking-wide uppercase text-light">
+          Heat {index + 1}
+        </h4>
+        <div className="divide-y divide-gray-50">
+          {ranked.map((entry) => (
+            <div
+              className="flex items-center gap-2.5 py-1.5 text-sm"
+              key={entry.player}
+            >
+              <span
+                className={`flex items-center justify-center w-6 h-6 text-xs font-bold rounded-full shrink-0 ${
+                  PLACE_STYLE[entry.placement] || "bg-gray-50 text-light"
+                }`}
+              >
+                {entry.placement}
+              </span>
+              <span
+                className={entry.placement === 1 ? "font-semibold" : ""}
+              >
+                {entry.player_name}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 card">
-      <h4 className="pb-2 font-semibold">
-        Heat {index + 1}
-        <span className="ml-2 text-[10px] text-secondary">in progress</span>
-      </h4>
-      <div className="space-y-2">
+    <div className="p-4 bg-white border rounded-lg border-tertiary/40">
+      <div className="flex items-center justify-between pb-2">
+        <h4 className="text-xs font-semibold tracking-wide uppercase text-light">
+          Heat {index + 1}
+        </h4>
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark">
+          live
+        </span>
+      </div>
+      <div className="divide-y divide-gray-50">
         {players.map((entry) => (
           <div
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-3 py-1.5"
             key={entry.player}
           >
-            <span>{entry.player_name}</span>
+            <span className="min-w-0 text-sm truncate">
+              {entry.player_name}
+            </span>
             <input
               value={placements[entry.player] ?? ""}
               onChange={setPlacement(entry.player)}
               placeholder="#"
-              className="w-14 h-10 text-center border-2 border-gray-300 rounded-md"
+              className="w-14 h-10 shrink-0 input-box"
               type="text"
               inputMode="numeric"
               pattern="\d*"
@@ -92,10 +126,11 @@ const HeatCard = ({ contest, index }) => {
         ))}
       </div>
       <button
-        className="w-full p-2 mt-3 font-semibold text-white rounded-md bg-primary"
+        className="w-full py-2.5 mt-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
         onClick={handleRecordClicked}
+        disabled={saving}
       >
-        Record Placements
+        {saving ? "Saving..." : "Record Placements"}
       </button>
     </div>
   );
@@ -106,13 +141,17 @@ const AddHeatForm = ({ eventUuid }) => {
   const { showNotification } = useNotification();
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState(new Set());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchBrolympicsTeams(broUuid)
       .then((teams) =>
         setPlayers(
           teams.flatMap((team) =>
-            team.players.map((p) => ({ ...p, team_name: team.name }))
+            (team.players || [])
+              // dormant players sit out scheduling
+              .filter((p) => p.is_active !== false)
+              .map((p) => ({ ...p, team_name: team.name }))
           )
         )
       )
@@ -132,6 +171,8 @@ const AddHeatForm = ({ eventUuid }) => {
       showNotification("A heat needs at least 2 racers.", "border-yellow-500");
       return;
     }
+    if (saving) return;
+    setSaving(true);
     try {
       await addHeat(eventUuid, [...selected]);
       window.location.reload();
@@ -142,29 +183,40 @@ const AddHeatForm = ({ eventUuid }) => {
           ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
           : "Error creating the heat."
       );
+      setSaving(false);
     }
   };
 
   return (
-    <div className="p-3 card">
-      <h4 className="pb-2 font-semibold">New Heat — pick the racers</h4>
-      <div className="grid grid-cols-2 gap-1">
+    <div className="p-4 bg-white border border-gray-200 rounded-lg">
+      <h4 className="pb-2 text-xs font-semibold tracking-wide uppercase text-light">
+        New Heat — pick the racers
+      </h4>
+      <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
         {players.map((player) => (
-          <label className="flex items-center gap-2 text-sm" key={player.uuid}>
+          <label
+            className="flex items-center gap-3 px-3 py-2 cursor-pointer"
+            key={player.uuid}
+          >
             <input
               type="checkbox"
               checked={selected.has(player.uuid)}
               onChange={() => toggle(player.uuid)}
+              className="w-4 h-4 accent-primary"
             />
-            {player.name}
+            <span className="flex-grow min-w-0 text-sm truncate">
+              {player.name}
+              <span className="text-[10px] text-light"> · {player.team_name}</span>
+            </span>
           </label>
         ))}
       </div>
       <button
-        className="w-full p-2 mt-3 font-semibold text-white rounded-md bg-primary"
+        className="w-full py-2.5 mt-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
         onClick={handleAddClicked}
+        disabled={saving}
       >
-        Start Heat ({selected.size})
+        {saving ? "Starting..." : `Start Heat (${selected.size})`}
       </button>
     </div>
   );
@@ -193,7 +245,7 @@ const HeatManager = ({ event, is_admin }) => {
 
   return (
     <div className="px-4 pb-6 space-y-3">
-      <h2 className="font-bold text-[20px]">Heats</h2>
+      <h2 className="header-3">Heats</h2>
       {heats.map((heat, i) => (
         <HeatCard contest={heat} index={i} key={heat.uuid} />
       ))}
@@ -203,15 +255,25 @@ const HeatManager = ({ event, is_admin }) => {
       {is_admin && event.is_active && (
         <>
           <button
-            className="flex items-center gap-2 font-semibold"
+            className={`flex items-center justify-center gap-2 w-full py-2.5 font-semibold rounded-full ${
+              adding ? "text-light bg-gray-100" : "text-white bg-primary"
+            }`}
             onClick={() => setAdding((a) => !a)}
           >
-            <AddCircleOutlineIcon /> Add Heat
+            {adding ? (
+              <>
+                <CloseIcon sx={{ fontSize: 18 }} /> Close
+              </>
+            ) : (
+              <>
+                <AddCircleOutlineIcon sx={{ fontSize: 18 }} /> Add Heat
+              </>
+            )}
           </button>
           {adding && <AddHeatForm eventUuid={event.uuid} />}
           {heats.length > 0 && heats.every((h) => h.is_complete) && (
             <button
-              className="w-full p-2 font-semibold border-2 rounded-md text-primary border-primary"
+              className="w-full py-2.5 font-semibold border rounded-full text-primary border-primary"
               onClick={handleFinishClicked}
             >
               Finish Event (final standings)
