@@ -191,6 +191,8 @@ const ManageEvent = ({ event, teams = [] }) => {
         players_counted: event.config?.players_counted ?? "",
         blind: !!event.config?.blind,
         handicaps: { ...(event.config?.handicaps || {}) },
+        handicaps_enabled:
+          Object.keys(event.config?.handicaps || {}).length > 0,
       });
     }
   }, [event]);
@@ -310,6 +312,7 @@ const ManageEvent = ({ event, teams = [] }) => {
                   : {}),
                 blind: !!formValues.blind,
                 handicaps: (() => {
+                  if (!formValues.handicaps_enabled) return null;
                   const cleaned = {};
                   for (const [uuid, value] of Object.entries(
                     formValues.handicaps || {}
@@ -578,47 +581,88 @@ const ManageEvent = ({ event, teams = [] }) => {
                   </SettingRow>
                 </Premium>
                 <Premium>
-                  <SettingBlock
+                  <SettingRow
                     label="Handicaps"
                     gem
-                    hint="Added to each team's final total. Golf: negatives take strokes off. Blank = none."
+                    hint={
+                      format === "ind"
+                        ? "Adjust each player's score every game. Golf: negatives take strokes off."
+                        : "Adjust each team's final total. Golf: negatives take strokes off."
+                    }
                   >
-                    {teams.length === 0 ? (
-                      <p className="text-[10px] text-light">
-                        Teams appear here once they've joined.
-                      </p>
-                    ) : (
-                      <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
-                        {teams.map((team) => (
-                          <div
-                            className="flex items-center justify-between gap-3 px-3 py-1.5 bg-white"
-                            key={team.uuid}
-                          >
-                            <span className="min-w-0 text-sm truncate">
-                              {team.name}
-                            </span>
-                            <input
-                              type="number"
-                              step="any"
-                              placeholder="0"
-                              value={formValues.handicaps?.[team.uuid] ?? ""}
-                              onChange={(e) =>
-                                setFormValues((prev) => ({
-                                  ...prev,
-                                  handicaps: {
-                                    ...prev.handicaps,
-                                    [team.uuid]: e.target.value,
-                                  },
-                                }))
-                              }
-                              className="w-20 shrink-0 input-box"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </SettingBlock>
+                    <Segmented
+                      value={!!formValues.handicaps_enabled}
+                      options={[
+                        [false, "Off"],
+                        [true, "On"],
+                      ]}
+                      onChange={(v) => set("handicaps_enabled", v)}
+                    />
+                  </SettingRow>
                 </Premium>
+                {!PREMIUM_LOCKED &&
+                  formValues.handicaps_enabled &&
+                  (() => {
+                    const rows =
+                      format === "ind"
+                        ? teams.flatMap((team) =>
+                            (team.players || []).map((player) => ({
+                              key: player.uuid,
+                              label: player.name,
+                              detail: team.name,
+                            }))
+                          )
+                        : teams.map((team) => ({
+                            key: team.uuid,
+                            label: team.name,
+                          }));
+                    if (rows.length === 0) {
+                      return (
+                        <p className="py-2 text-[10px] text-light">
+                          {format === "ind" ? "Players" : "Teams"} appear here
+                          once they've joined.
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="py-2">
+                        <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
+                          {rows.map((row) => (
+                            <div
+                              className="flex items-center justify-between gap-3 px-3 py-1.5 bg-white"
+                              key={row.key}
+                            >
+                              <span className="min-w-0 text-sm truncate">
+                                {row.label}
+                                {row.detail && (
+                                  <span className="text-[10px] text-light">
+                                    {" "}
+                                    · {row.detail}
+                                  </span>
+                                )}
+                              </span>
+                              <input
+                                type="number"
+                                step="any"
+                                placeholder="0"
+                                value={formValues.handicaps?.[row.key] ?? ""}
+                                onChange={(e) =>
+                                  setFormValues((prev) => ({
+                                    ...prev,
+                                    handicaps: {
+                                      ...prev.handicaps,
+                                      [row.key]: e.target.value,
+                                    },
+                                  }))
+                                }
+                                className="w-20 shrink-0 input-box"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
               </>
             )}
             {isH2h && (
