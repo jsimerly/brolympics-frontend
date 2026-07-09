@@ -428,12 +428,12 @@ const ManageEvent = ({ event }) => {
             >
               <select
                 name="decimal_places"
-                value={formValues.decimal_places || ""}
+                value={formValues.decimal_places ?? "0"}
                 onChange={handleInputChange}
                 className="shrink-0 input-box"
               >
-                <option value="B">Win/Loss</option>
                 <option value="0">Whole</option>
+                <option value="B">Win/Loss</option>
                 <option value="1">0.0</option>
                 <option value="2">0.00</option>
                 <option value="3">0.000</option>
