@@ -157,6 +157,7 @@ const ManageEvent = ({ event }) => {
         tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
           (key) => key in TIEBREAKER_LABELS
         ),
+        tiebreakers_rank_standings: !!event.config?.tiebreakers_rank_standings,
       });
     }
   }, [event]);
@@ -234,7 +235,11 @@ const ManageEvent = ({ event }) => {
           max_score: formValues.max_score ?? null,
           decimal_places: formValues.decimal_places ?? null,
           ...(isH2h
-            ? { tiebreakers: formValues.tiebreakers || DEFAULT_TIEBREAKERS }
+            ? {
+                tiebreakers: formValues.tiebreakers || DEFAULT_TIEBREAKERS,
+                tiebreakers_rank_standings:
+                  !!formValues.tiebreakers_rank_standings,
+              }
             : { display_avg_scores: !!formValues.display_avg_scores }),
         },
         ...(formValues.name && formValues.name !== event.name
@@ -580,6 +585,19 @@ const ManageEvent = ({ event }) => {
                     </select>
                   </SettingRow>
                 )}
+                <SettingRow
+                  label="Tiebreakers rank standings"
+                  hint="Off: equal records share the rank and split points; the chain only seeds the bracket. On: the chain breaks ties everywhere — separate ranks, no splitting."
+                >
+                  <Segmented
+                    value={!!formValues.tiebreakers_rank_standings}
+                    options={[
+                      [false, "Off"],
+                      [true, "On"],
+                    ]}
+                    onChange={(v) => set("tiebreakers_rank_standings", v)}
+                  />
+                </SettingRow>
                 <div className="py-2">
                   <h4 className="text-sm font-semibold">Tiebreaker order</h4>
                   <p className="text-[10px] text-light">

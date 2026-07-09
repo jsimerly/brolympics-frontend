@@ -45,10 +45,9 @@ const HeadToHead = ({ event }) => {
 
       <h3 className="pt-4 pb-1 font-semibold">Ranking</h3>
       <p className="pb-2 text-light">
-        Your record is your rank: teams with equal records share the rank and
-        split the points. Tiebreakers exist for one reason — the bracket has
-        to pick someone. They decide seeding and the last playoff spots, in
-        this order:
+        {event?.config?.tiebreakers_rank_standings
+          ? "Tiebreakers apply to the full standings in this event: ties are broken for rank and points — no splitting. The chain runs in this order:"
+          : "Your record is your rank: teams with equal records share the rank and split the points. Tiebreakers exist for one reason — the bracket has to pick someone. They decide seeding and the last playoff spots, in this order:"}
       </p>
       <ol className="overflow-hidden bg-white border border-gray-200 rounded-lg divide-y">
         <li className="flex items-center gap-2.5 px-3 py-2 bg-gray-50">
@@ -82,8 +81,9 @@ const HeadToHead = ({ event }) => {
           <div className="min-w-0">
             <span className="font-medium">Random</span>
             <p className="text-[11px] text-light">
-              The final straw when nothing separates the teams — the order is
-              drawn, but the points still split.
+              {event?.config?.tiebreakers_rank_standings
+                ? "The final straw when nothing separates the teams — teams still tied after everything share the rank and split points."
+                : "The final straw when nothing separates the teams — the order is drawn, but the points still split."}
             </p>
           </div>
         </li>
