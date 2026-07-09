@@ -1,69 +1,74 @@
-import ScaleIcon from "@mui/icons-material/Scale";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import TagIcon from "@mui/icons-material/Tag";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import FlagIcon from "@mui/icons-material/Flag";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import HandshakeOutlinedIcon from "@mui/icons-material/HandshakeOutlined";
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
+import MilitaryTechOutlinedIcon from "@mui/icons-material/MilitaryTechOutlined";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import ScaleIcon from "@mui/icons-material/Scale";
 
-const HeadToHead = () => (
-  <div className="max-w-4xl mx-auto bg-white rounded-lg">
-    <h2 className="mb-4 text-2xl font-bold text-gray-800">
-      Head to Head Format
-    </h2>
+export const TIEBREAKER_META = {
+  wins: ["Wins", EmojiEventsIcon, "Most games won."],
+  ties: ["Ties", HandshakeOutlinedIcon, "More ties ranks higher among equal wins."],
+  h2h: ["Head-to-head", SportsKabaddiIcon, "Wins in the games between the tied teams."],
+  sov: ["Strength of victory", MilitaryTechOutlinedIcon, "Your beaten opponents' win totals."],
+  sos: ["Strength of schedule", BarChartIcon, "All your opponents' win totals."],
+  diff: ["Point margin", ScaleIcon, "Total score difference (capped per game when the event sets a cap)."],
+};
 
-    <div className="mb-6">
-      <p className="leading-relaxed text-gray-600">
-        In a head to head matchup, you will initially play a partial round
-        robin. The number of matches you'll play is determined by the event
-        setting "Number of Matches". After the partial round robin has been
-        completed, you will move to a bracket stage where the top 4 players will
-        compete for the podium.
+const DEFAULT_ORDER = ["wins", "ties", "h2h", "sov", "sos", "diff"];
+
+const HeadToHead = ({ event }) => {
+  const stages = event?.stages || [];
+  const rr = stages.find((s) => s.structure === "round_robin");
+  const swiss = stages.find((s) => s.structure === "swiss");
+  const ko = stages.find((s) => s.structure === "knockout");
+  const games = rr?.config?.games_per_team ?? swiss?.config?.rounds;
+  const take = ko?.config?.take;
+  const order = event?.config?.tiebreakers ?? DEFAULT_ORDER;
+
+  return (
+    <div className="text-sm">
+      <p className="leading-relaxed text-light">
+        {swiss
+          ? `Group play runs ${games || "several"} swiss rounds — each round pairs teams with similar records.`
+          : rr
+          ? `Group play is a round robin: every team plays ${
+              games || "the same number of"
+            } games, all scheduled up front.`
+          : "This event goes straight to the bracket."}{" "}
+        {ko &&
+          (take
+            ? `The top ${take} seed into the playoff bracket.`
+            : "Everyone seeds into the playoff bracket.")}
+      </p>
+
+      <h3 className="pt-4 pb-1 font-semibold">Ranking & tiebreakers</h3>
+      <p className="pb-2 text-light">
+        Group standings apply these in order — each one only sorts teams the
+        previous ones left tied. Still tied after all of them? The teams share
+        the rank and split the points.
+      </p>
+      <ol className="overflow-hidden bg-white border border-gray-200 rounded-lg divide-y">
+        {order.map((key, i) => {
+          const [label, Icon, desc] = TIEBREAKER_META[key] || [key, ScaleIcon, ""];
+          return (
+            <li className="flex items-center gap-2.5 px-3 py-2" key={key}>
+              <span className="w-4 text-xs font-semibold text-light">
+                {i + 1}
+              </span>
+              <Icon sx={{ fontSize: 18 }} className="text-primary shrink-0" />
+              <div className="min-w-0">
+                <span className="font-medium">{label}</span>
+                <p className="text-[11px] text-light">{desc}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="pt-2 text-[11px] text-light">
+        Commissioners can customize this order per event in Manage → Events.
       </p>
     </div>
-
-    <h3 className="mb-3 text-xl font-semibold text-gray-800">
-      Ranking and Tie Breaking
-    </h3>
-    <p className="mb-4 text-gray-600">
-      To rank teams and move them to the playoffs, win rate takes priority (ties
-      count as half wins). In the event of a tie to make the playoffs, the
-      following rules are followed to determine which team(s) advance. If you
-      are not tied for the playoffs and have the same win rate, your team will
-      split points with other teams of the same win rate.
-    </p>
-
-    <div className="p-4 bg-gray-100 rounded-lg">
-      <h4 className="mb-3 text-lg font-semibold text-gray-800">
-        Tie Breakers:
-      </h4>
-      <ul className="space-y-2">
-        <li className="flex items-center">
-          <FlagIcon className="mr-2 text-blue-500" />
-          <span>Head to Head Wins</span>
-        </li>
-        <li className="flex items-center">
-          <EmojiEventsIcon className="mr-2 text-blue-500" />
-          <span>Total Games Won</span>
-        </li>
-        <li className="flex items-center">
-          <ScaleIcon className="mr-2 text-blue-500" />
-          <span>Victory Margin</span>
-        </li>
-        <li className="flex items-center">
-          <BarChartIcon className="mr-2 text-blue-500" />
-          <span>Strength of Schedule</span>
-        </li>
-        <li className="flex items-center">
-          <TagIcon className="mr-2 text-blue-500" />
-          <span>Strength of Schedule Wins</span>
-        </li>
-        <li className="flex items-center">
-          <HelpOutlineIcon className="mr-2 text-blue-500" />
-          <span>Random</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-);
+  );
+};
 
 export default HeadToHead;

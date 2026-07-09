@@ -51,11 +51,11 @@ export const EventInfo = ({ event }) => {
   const renderEventTypeDetails = () => {
     switch (event.type) {
       case "h2h":
-        return <HeadToHead />;
+        return <HeadToHead event={event} />;
       case "ind":
-        return <Individual />;
+        return <Individual event={event} />;
       case "team":
-        return <TeamEvent />;
+        return <TeamEvent event={event} />;
       default:
         return null;
     }

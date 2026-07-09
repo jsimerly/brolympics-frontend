@@ -10,6 +10,8 @@ import PopupContinue from "../../../Util/PopupContinue";
 import { useNotification } from "../../../Util/Notification";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
@@ -19,6 +21,17 @@ import "react-quill/dist/quill.snow.css";
 
 // Flips per-league when Pro gating lands; the locked UI below already works.
 const PREMIUM_LOCKED = false;
+
+// mirrors H2HScoring.DEFAULT_TIEBREAKERS / KNOWN_TIEBREAKERS on the backend
+const DEFAULT_TIEBREAKERS = ["wins", "ties", "h2h", "sov", "sos", "diff"];
+const TIEBREAKER_LABELS = {
+  wins: "Wins",
+  ties: "Ties",
+  h2h: "Head-to-head",
+  sov: "Strength of victory",
+  sos: "Strength of schedule",
+  diff: "Point margin",
+};
 
 // datetime-local inputs need "YYYY-MM-DDTHH:mm"; the API returns full ISO
 const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : "");
@@ -136,6 +149,7 @@ const ManageEvent = ({ event }) => {
           ? "third"
           : "none",
         heat_size: heats?.config?.heat_size ?? "",
+        tiebreakers: event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS,
       });
     }
   }, [event]);
@@ -146,6 +160,15 @@ const ManageEvent = ({ event }) => {
   };
   const set = (key, value) =>
     setFormValues((prev) => ({ ...prev, [key]: value }));
+
+  const moveTiebreaker = (i, delta) =>
+    setFormValues((prev) => {
+      const list = [...(prev.tiebreakers || DEFAULT_TIEBREAKERS)];
+      const j = i + delta;
+      if (j < 0 || j >= list.length) return prev;
+      [list[i], list[j]] = [list[j], list[i]];
+      return { ...prev, tiebreakers: list };
+    });
 
   // rebuild the stage list from the structure choices (CreateEvent semantics)
   const buildStages = () => {
@@ -202,7 +225,7 @@ const ManageEvent = ({ event }) => {
           max_score: formValues.max_score ?? null,
           decimal_places: formValues.decimal_places ?? null,
           ...(isH2h
-            ? {}
+            ? { tiebreakers: formValues.tiebreakers || DEFAULT_TIEBREAKERS }
             : { display_avg_scores: !!formValues.display_avg_scores }),
         },
         ...(formValues.name && formValues.name !== event.name
@@ -535,6 +558,53 @@ const ManageEvent = ({ event }) => {
                     </select>
                   </SettingRow>
                 )}
+                <div className="py-2">
+                  <h4 className="text-sm font-semibold">Tiebreaker order</h4>
+                  <p className="text-[10px] text-light">
+                    Applied top to bottom in group standings — teams still tied
+                    after all of them share the rank and split points.
+                  </p>
+                  <div className="mt-1.5 overflow-hidden border border-gray-200 rounded-lg divide-y">
+                    {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
+                      (key, i, arr) => (
+                        <div
+                          className="flex items-center gap-2 px-3 py-1.5 bg-white"
+                          key={key}
+                        >
+                          <span className="w-4 text-xs font-semibold text-light">
+                            {i + 1}
+                          </span>
+                          <span className="flex-grow min-w-0 text-sm truncate">
+                            {TIEBREAKER_LABELS[key] || key}
+                          </span>
+                          <button
+                            disabled={i === 0}
+                            onClick={() => moveTiebreaker(i, -1)}
+                            className="text-light disabled:opacity-30"
+                          >
+                            <ArrowUpwardIcon sx={{ fontSize: 16 }} />
+                          </button>
+                          <button
+                            disabled={i === arr.length - 1}
+                            onClick={() => moveTiebreaker(i, 1)}
+                            className="text-light disabled:opacity-30"
+                          >
+                            <ArrowDownwardIcon sx={{ fontSize: 16 }} />
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
+                  {JSON.stringify(formValues.tiebreakers) !==
+                    JSON.stringify(DEFAULT_TIEBREAKERS) && (
+                    <button
+                      className="pt-1.5 text-xs font-semibold text-primary"
+                      onClick={() => set("tiebreakers", DEFAULT_TIEBREAKERS)}
+                    >
+                      Reset to default
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </Fold>
