@@ -55,7 +55,7 @@ const Segmented = ({ value, options, onChange, disabled }) => (
   >
     {options.map(([key, label]) => (
       <button
-        key={label}
+        key={String(key)}
         className={`px-3 py-1.5 ${
           value === key ? "bg-primary text-white" : "bg-white text-light"
         }`}
@@ -379,31 +379,40 @@ const ManageEvent = ({ event }) => {
             {isH2h && (
               <>
                 {lockedNote}
-                <SettingRow
-                  label="Group type"
-                  hint={
-                    formValues.group_play === "full"
+                <div className="py-2">
+                  <h4 className="text-sm font-semibold">Group type</h4>
+                  <p className="text-[10px] text-light">
+                    {formValues.group_play === "full"
                       ? "Everyone plays everyone once."
                       : formValues.group_play === "swiss"
                       ? "Each round pairs teams with similar records."
                       : formValues.group_play === "none"
                       ? "Straight to the bracket."
-                      : "Everyone plays a set number of games."
-                  }
-                >
-                  <select
-                    value={formValues.group_play}
-                    onChange={handleInputChange}
-                    name="group_play"
-                    disabled={structureLocked}
-                    className="shrink-0 input-box"
-                  >
-                    <option value="none">None</option>
-                    <option value="semi">Semi round robin</option>
-                    <option value="full">Full round robin</option>
-                    <option value="swiss">Swiss 💎</option>
-                  </select>
-                </SettingRow>
+                      : "Everyone plays a set number of games."}
+                  </p>
+                  <div className="mt-1.5">
+                    <Segmented
+                      value={formValues.group_play}
+                      options={[
+                        ["none", "None"],
+                        ["semi", "Semi-RR"],
+                        ["full", "Full-RR"],
+                        [
+                          "swiss",
+                          <span
+                            className="flex items-center gap-0.5"
+                            key="swiss-label"
+                          >
+                            Swiss
+                            <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                          </span>,
+                        ],
+                      ]}
+                      onChange={(v) => set("group_play", v)}
+                      disabled={structureLocked}
+                    />
+                  </div>
+                </div>
                 {(formValues.group_play === "semi" ||
                   formValues.group_play === "swiss") && (
                   <SettingRow

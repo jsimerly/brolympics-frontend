@@ -3,6 +3,7 @@ import { useState } from "react";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PersonIcon from "@mui/icons-material/Person";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
+import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import SportsMotorsportsIcon from "@mui/icons-material/SportsMotorsports";
 
 const FORMATS = [
@@ -194,21 +195,43 @@ const CreateEvent = ({ handleEventAdded }) => {
       {selectedType === "h2h" && (
         <div className="flex flex-col gap-3">
           <span className="form-label">Structure</span>
-          <SelectRow
-            label="Group Play"
-            hint="Round robin schedules every matchup up front — ideal for events played out over weeks. Swiss pairs each round as the last one finishes."
-          >
-            <select
-              value={groupPlay}
-              onChange={(e) => setGroupPlay(e.target.value)}
-              className="shrink-0 input-box"
-            >
-              <option value="none">None (bracket only)</option>
-              <option value="semi">Semi round robin</option>
-              <option value="full">Full round robin</option>
-              <option value="swiss">Swiss 💎</option>
-            </select>
-          </SelectRow>
+          <div>
+            <h4 className="text-sm font-semibold">Group Play</h4>
+            <p className="text-[10px] text-light">
+              Round robin schedules every matchup up front — ideal for events
+              played out over weeks. Swiss pairs each round as the last one
+              finishes.
+            </p>
+            <div className="flex overflow-hidden mt-1.5 text-xs font-semibold border border-gray-300 rounded-full w-fit">
+              {[
+                ["none", "None"],
+                ["semi", "Semi-RR"],
+                ["full", "Full-RR"],
+                [
+                  "swiss",
+                  <span
+                    className="flex items-center gap-0.5"
+                    key="swiss-label"
+                  >
+                    Swiss
+                    <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                  </span>,
+                ],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`px-3 py-1.5 ${
+                    groupPlay === key
+                      ? "bg-primary text-white"
+                      : "bg-white text-light"
+                  }`}
+                  onClick={() => setGroupPlay(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           {(groupPlay === "semi" || groupPlay === "swiss") && (
             <SelectRow
               label={groupPlay === "swiss" ? "Rounds" : "Games per team"}
