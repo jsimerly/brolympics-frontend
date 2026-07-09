@@ -22,11 +22,10 @@ import "react-quill/dist/quill.snow.css";
 // Flips per-league when Pro gating lands; the locked UI below already works.
 const PREMIUM_LOCKED = false;
 
-// mirrors H2HScoring.DEFAULT_TIEBREAKERS / KNOWN_TIEBREAKERS on the backend
-const DEFAULT_TIEBREAKERS = ["wins", "ties", "h2h", "sov", "sos", "diff"];
+// mirrors H2HScoring.DEFAULT_TIEBREAKERS on the backend. The record always
+// applies first and random is always the final straw -- only these move.
+const DEFAULT_TIEBREAKERS = ["h2h", "sov", "sos", "diff"];
 const TIEBREAKER_LABELS = {
-  wins: "Wins",
-  ties: "Ties",
   h2h: "Head-to-head",
   sov: "Strength of victory",
   sos: "Strength of schedule",
@@ -155,7 +154,9 @@ const ManageEvent = ({ event }) => {
           ? "third"
           : "none",
         heat_size: heats?.config?.heat_size ?? "",
-        tiebreakers: event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS,
+        tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
+          (key) => key in TIEBREAKER_LABELS
+        ),
       });
     }
   }, [event]);
@@ -582,10 +583,20 @@ const ManageEvent = ({ event }) => {
                 <div className="py-2">
                   <h4 className="text-sm font-semibold">Tiebreaker order</h4>
                   <p className="text-[10px] text-light">
-                    Applied top to bottom in group standings — teams still tied
-                    after all of them share the rank and split points.
+                    Only decides bracket spots and seeding — teams with equal
+                    records always share the rank and split the points. The
+                    record leads, random closes, and the middle is yours.
                   </p>
                   <div className="mt-1.5 overflow-hidden border border-gray-200 rounded-lg divide-y">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                      <span className="w-4 text-xs font-semibold text-light">
+                        —
+                      </span>
+                      <span className="flex-grow text-sm text-light">
+                        Record (wins, then ties)
+                      </span>
+                      <span className="text-[10px] text-light">always first</span>
+                    </div>
                     {(formValues.tiebreakers || DEFAULT_TIEBREAKERS).map(
                       (key, i, arr) => (
                         <div
@@ -615,6 +626,17 @@ const ManageEvent = ({ event }) => {
                         </div>
                       )
                     )}
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50">
+                      <span className="w-4 text-xs font-semibold text-light">
+                        —
+                      </span>
+                      <span className="flex-grow text-sm text-light">
+                        Random
+                      </span>
+                      <span className="text-[10px] text-light">
+                        final straw — the bracket has to pick someone
+                      </span>
+                    </div>
                   </div>
                   {JSON.stringify(formValues.tiebreakers) !==
                     JSON.stringify(DEFAULT_TIEBREAKERS) && (
