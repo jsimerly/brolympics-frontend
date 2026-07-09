@@ -132,7 +132,7 @@ const QUILL_FORMATS = ["bold", "italic", "underline", "list", "bullet", "link"];
 /** Settings editor for any event: basics (name, place, time) up front; Rules,
  * Structure, and Scoring behind topical folds. Premium settings sit where
  * they belong, wearing the gem. Structure edits lock once the event starts. */
-const ManageEvent = ({ event }) => {
+const ManageEvent = ({ event, teams = [] }) => {
   const [formValues, setFormValues] = useState({});
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -185,6 +185,10 @@ const ManageEvent = ({ event }) => {
           (key) => key in TIEBREAKER_LABELS
         ),
         tiebreakers_rank_standings: !!event.config?.tiebreakers_rank_standings,
+        games_counted: event.config?.games_counted ?? "",
+        players_counted: event.config?.players_counted ?? "",
+        blind: !!event.config?.blind,
+        handicaps: { ...(event.config?.handicaps || {}) },
       });
     }
   }, [event]);
@@ -273,7 +277,40 @@ const ManageEvent = ({ event }) => {
                 tiebreakers_rank_standings:
                   !!formValues.tiebreakers_rank_standings,
               }
-            : { display_avg_scores: !!formValues.display_avg_scores }),
+            : {
+                display_avg_scores: !!formValues.display_avg_scores,
+                games_counted: Number.isInteger(
+                  Number(formValues.games_counted)
+                )
+                  ? Number(formValues.games_counted) >= 1
+                    ? Number(formValues.games_counted)
+                    : null
+                  : null,
+                ...(format === "ind"
+                  ? {
+                      players_counted: Number.isInteger(
+                        Number(formValues.players_counted)
+                      )
+                        ? Number(formValues.players_counted) >= 1
+                          ? Number(formValues.players_counted)
+                          : null
+                        : null,
+                    }
+                  : {}),
+                blind: !!formValues.blind,
+                handicaps: (() => {
+                  const cleaned = {};
+                  for (const [uuid, value] of Object.entries(
+                    formValues.handicaps || {}
+                  )) {
+                    const n = Number(value);
+                    if (value !== "" && !Number.isNaN(n) && n !== 0) {
+                      cleaned[uuid] = n;
+                    }
+                  }
+                  return Object.keys(cleaned).length ? cleaned : null;
+                })(),
+              }),
         },
         ...(formValues.name && formValues.name !== event.name
           ? { name_override: formValues.name }
@@ -465,19 +502,113 @@ const ManageEvent = ({ event }) => {
               </div>
             </SettingRow>
             {!isH2h && !isFfa && (
-              <SettingRow
-                label="Score display"
-                hint="Show each team's average or combined total."
-              >
-                <Segmented
-                  value={!!formValues.display_avg_scores}
-                  options={[
-                    [false, "Total"],
-                    [true, "Average"],
-                  ]}
-                  onChange={(v) => set("display_avg_scores", v)}
-                />
-              </SettingRow>
+              <>
+                <SettingRow
+                  label="Score display"
+                  hint="Show each team's average or combined total."
+                >
+                  <Segmented
+                    value={!!formValues.display_avg_scores}
+                    options={[
+                      [false, "Total"],
+                      [true, "Average"],
+                    ]}
+                    onChange={(v) => set("display_avg_scores", v)}
+                  />
+                </SettingRow>
+                <Premium>
+                  <SettingRow
+                    label="Games counted"
+                    gem
+                    hint="Play any number of games — only the team's best N count. Blank counts them all."
+                  >
+                    <input
+                      name="games_counted"
+                      value={formValues.games_counted ?? ""}
+                      onChange={handleInputChange}
+                      className={rowInputClass}
+                      type="number"
+                      placeholder="all"
+                    />
+                  </SettingRow>
+                </Premium>
+                {format === "ind" && (
+                  <Premium>
+                    <SettingRow
+                      label="Scores counted"
+                      gem
+                      hint="Each game, only the team's top N player scores count. Blank counts everyone."
+                    >
+                      <input
+                        name="players_counted"
+                        value={formValues.players_counted ?? ""}
+                        onChange={handleInputChange}
+                        className={rowInputClass}
+                        type="number"
+                        placeholder="all"
+                      />
+                    </SettingRow>
+                  </Premium>
+                )}
+                <Premium>
+                  <SettingRow
+                    label="Blind scoring"
+                    gem
+                    hint="Scores stay hidden until every team has posted — then the reveal happens on its own."
+                  >
+                    <Segmented
+                      value={!!formValues.blind}
+                      options={[
+                        [false, "Off"],
+                        [true, "On"],
+                      ]}
+                      onChange={(v) => set("blind", v)}
+                    />
+                  </SettingRow>
+                </Premium>
+                <Premium>
+                  <SettingBlock
+                    label="Handicaps"
+                    gem
+                    hint="Added to each team's final total. Golf: negatives take strokes off. Blank = none."
+                  >
+                    {teams.length === 0 ? (
+                      <p className="text-[10px] text-light">
+                        Teams appear here once they've joined.
+                      </p>
+                    ) : (
+                      <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
+                        {teams.map((team) => (
+                          <div
+                            className="flex items-center justify-between gap-3 px-3 py-1.5 bg-white"
+                            key={team.uuid}
+                          >
+                            <span className="min-w-0 text-sm truncate">
+                              {team.name}
+                            </span>
+                            <input
+                              type="number"
+                              step="any"
+                              placeholder="0"
+                              value={formValues.handicaps?.[team.uuid] ?? ""}
+                              onChange={(e) =>
+                                setFormValues((prev) => ({
+                                  ...prev,
+                                  handicaps: {
+                                    ...prev.handicaps,
+                                    [team.uuid]: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="w-20 shrink-0 input-box"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </SettingBlock>
+                </Premium>
+              </>
             )}
             {isH2h && (
               <>

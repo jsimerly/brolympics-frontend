@@ -52,7 +52,12 @@ const ManageRouter = ({ brolympics }) => {
         />
         <Route
           path="manage-events"
-          element={<ManageEvents events={brolympics?.events} />}
+          element={
+            <ManageEvents
+              events={brolympics?.events}
+              teams={brolympics?.teams}
+            />
+          }
         />
       </Routes>
     </div>

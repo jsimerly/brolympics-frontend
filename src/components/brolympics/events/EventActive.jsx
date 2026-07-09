@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
@@ -277,6 +278,15 @@ const EventActive = ({ eventInfo, is_admin }) => {
 
   return (
     <div className="max-w-4xl">
+      {eventInfo.blind_active && (
+        <div className="flex items-center gap-2 p-3 mx-4 mb-3 text-sm border rounded-lg border-secondary/40 bg-secondary/5">
+          <VisibilityOffOutlinedIcon
+            sx={{ fontSize: 18 }}
+            className="shrink-0 text-secondary"
+          />
+          Blind event — scores reveal on their own once every team has posted.
+        </div>
+      )}
       <div className="px-4">
         <div className="flex items-center justify-between pb-2">
           <h2 className="flex items-center header-3">

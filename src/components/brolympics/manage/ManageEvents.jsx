@@ -7,7 +7,7 @@ import ManageEvent from "./events/ManageEvent.jsx";
 import CreateEvent from "../../create_league_page/events/CreateEvent.jsx";
 import { useNotification } from "../../Util/Notification";
 
-const ManageEvents = ({ events }) => {
+const ManageEvents = ({ events, teams }) => {
   const [addingEvent, setAddingEvent] = useState(false);
   const [compEvents, setCompEvents] = useState(events || []);
   const { uuid } = useParams();
@@ -46,7 +46,7 @@ const ManageEvents = ({ events }) => {
         <p className="text-sm text-light">No events yet — add the first one.</p>
       )}
       {compEvents.map((event) => (
-        <ManageEvent event={event} key={event.uuid} />
+        <ManageEvent event={event} teams={teams} key={event.uuid} />
       ))}
 
       <button
