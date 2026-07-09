@@ -1,9 +1,11 @@
 import BracketNode from "./BracketNode";
 
 const placeLabel = (p) =>
-  ({ 1: "Championship", 3: "Third Place", 5: "Fifth Place", 7: "Seventh Place" }[
-    p
-  ] || `${p}th Place`);
+  p == null
+    ? "Placement Game" // legacy nodes without decides_place
+    : { 1: "Championship", 3: "Third Place", 5: "Fifth Place", 7: "Seventh Place" }[
+        p
+      ] || `${p}th Place`;
 
 /** Tournament trees for one knockout stage. Nodes group by which terminal
  * game their winner_to chain reaches: the championship tree, then any
