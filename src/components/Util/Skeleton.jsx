@@ -29,3 +29,24 @@ export const SkeletonPage = ({ rows = 6 }) => (
     ))}
   </div>
 );
+
+/** A titled table placeholder: header bar + striped rows (All-Time Leaders,
+ * Events Through the Years). */
+export const SkeletonSection = ({ rows = 6 }) => (
+  <div className="space-y-3">
+    <SkeletonBlock className="w-44 h-6" />
+    <div className="overflow-hidden card">
+      <SkeletonBlock className="h-9 !rounded-none" />
+      <div className="p-3 space-y-2.5">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div className="flex items-center gap-3" key={i}>
+            <SkeletonBlock className="w-6 h-4" />
+            <SkeletonBlock className="flex-grow h-4" />
+            <SkeletonBlock className="w-10 h-4" />
+            <SkeletonBlock className="w-8 h-4" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);

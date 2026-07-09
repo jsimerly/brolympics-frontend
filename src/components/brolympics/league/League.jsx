@@ -2,7 +2,6 @@ import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AddIcon from "@mui/icons-material/Add";
@@ -11,7 +10,8 @@ import RingStrip from "../../Util/RingStrip";
 import PlayerNames from "../../Util/PlayerNames";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
-import { SkeletonPage } from "../../Util/Skeleton";
+import { SkeletonPage, SkeletonSection } from "../../Util/Skeleton";
+import useCachedFetch from "../../../hooks/useCachedFetch";
 
 const formatFounded = (iso) => {
   if (!iso) return null;
@@ -222,26 +222,19 @@ const ChampionCard = ({ bro }) => {
 const League = ({ leagueInfo }) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
-  const [allTime, setAllTime] = useState(null);
-  const [eventTypes, setEventTypes] = useState([]);
   const isAdmin = !!leagueInfo?.is_admin;
   const founded = formatFounded(leagueInfo?.founded);
 
-  useEffect(() => {
-    const getHistory = async () => {
-      try {
-        const [allTimeData, types] = await Promise.all([
-          fetchLeagueAllTime(uuid),
-          fetchEventTypes(uuid),
-        ]);
-        setAllTime(allTimeData);
-        setEventTypes(types);
-      } catch (error) {
-        console.error("Error fetching league history:", error);
-      }
-    };
-    getHistory();
-  }, [uuid]);
+  // cached: revisits paint instantly and refresh in the background
+  const { data: allTime, loading: loadingAllTime } = useCachedFetch(
+    uuid ? `league-alltime:${uuid}` : null,
+    () => fetchLeagueAllTime(uuid)
+  );
+  const { data: eventTypes, loading: loadingTypes } = useCachedFetch(
+    uuid ? `league-eventtypes:${uuid}` : null,
+    () => fetchEventTypes(uuid)
+  );
+  const historyLoading = loadingAllTime || loadingTypes;
 
   if (!leagueInfo) {
     return (
@@ -331,11 +324,20 @@ const League = ({ leagueInfo }) => {
         )}
 
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <Leaderboard leaderboard={allTime?.leaderboard} />
-          <div className="space-y-8">
-            <EventsThroughYears eventTypes={eventTypes} />
-            <Lineages lineages={allTime?.team_lineages} />
-          </div>
+          {historyLoading ? (
+            <>
+              <SkeletonSection rows={8} />
+              <SkeletonSection rows={5} />
+            </>
+          ) : (
+            <>
+              <Leaderboard leaderboard={allTime?.leaderboard} />
+              <div className="space-y-8">
+                <EventsThroughYears eventTypes={eventTypes || []} />
+                <Lineages lineages={allTime?.team_lineages} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
