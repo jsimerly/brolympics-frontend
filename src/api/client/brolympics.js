@@ -37,6 +37,10 @@ export const deleteBrolympics = (uuid) =>
 export const startBrolympics = (uuid) =>
   api.post(`/api/brolympics/${uuid}/start/`).then((r) => r.data);
 
+/** Admin: completes the bro and deactivates every event/stage/contest. */
+export const endBrolympics = (uuid) =>
+  api.post(`/api/brolympics/${uuid}/end/`).then((r) => r.data);
+
 /** Joins the brolympics AND its league (invite-link flow). */
 export const joinBrolympics = (uuid) =>
   api.post(`/api/brolympics/${uuid}/join/`).then((r) => r.data);
