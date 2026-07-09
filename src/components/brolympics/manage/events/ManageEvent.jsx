@@ -423,8 +423,8 @@ const ManageEvent = ({ event }) => {
               />
             </SettingRow>
             <SettingRow
-              label="Score precision"
-              hint="Whole numbers, decimals, or just win/loss."
+              label="Score format"
+              hint="What a score looks like when it's entered."
             >
               <select
                 name="decimal_places"
@@ -432,12 +432,12 @@ const ManageEvent = ({ event }) => {
                 onChange={handleInputChange}
                 className="shrink-0 input-box"
               >
-                <option value="0">Whole</option>
-                <option value="B">Win/Loss</option>
-                <option value="1">0.0</option>
-                <option value="2">0.00</option>
-                <option value="3">0.000</option>
-                <option value="16">Max</option>
+                <option value="0">1</option>
+                <option value="1">1.0</option>
+                <option value="2">1.00</option>
+                <option value="3">1.000</option>
+                <option value="16">Any decimal</option>
+                <option value="B">Win/Loss only</option>
               </select>
             </SettingRow>
             <SettingRow
