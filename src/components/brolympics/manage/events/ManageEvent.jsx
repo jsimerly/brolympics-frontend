@@ -68,7 +68,7 @@ const SettingBlock = ({ label, gem, hint, children }) => (
 
 const rowInputClass = "w-16 shrink-0 input-box";
 
-const Segmented = ({ value, options, onChange, disabled }) => (
+const Segmented = ({ value, options, onChange, disabled, disabledKeys = [] }) => (
   <div
     className={`flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0 w-fit ${
       disabled ? "opacity-50 pointer-events-none" : ""
@@ -77,7 +77,8 @@ const Segmented = ({ value, options, onChange, disabled }) => (
     {options.map(([key, label]) => (
       <button
         key={String(key)}
-        className={`px-3 py-1.5 ${
+        disabled={disabledKeys.includes(key)}
+        className={`px-3 py-1.5 disabled:opacity-40 ${
           value === key ? "bg-primary text-white" : "bg-white text-light"
         }`}
         onClick={() => onChange(key)}
@@ -168,12 +169,17 @@ const ManageEvent = ({ event }) => {
         n_matches: rr?.config?.games_per_team ?? swiss?.config?.rounds ?? "",
         has_playoffs: !!ko,
         bracket_take: ko?.config?.take ?? "",
-        third_place: !!ko?.config?.third_place,
-        classification_mode: ko?.config?.classification
+        runoffs: ko?.config?.classification
           ? ko?.config?.unplayed_places?.length
-            ? "split"
-            : "full"
-          : "none",
+            ? "custom"
+            : "every"
+          : ko?.config?.third_place
+          ? "third"
+          : "off",
+        place_through:
+          ko?.config?.take && ko?.config?.unplayed_places?.length
+            ? ko.config.take - 2 * ko.config.unplayed_places.length
+            : "",
         heat_size: heats?.config?.heat_size ?? "",
         tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
           (key) => key in TIEBREAKER_LABELS
@@ -223,14 +229,20 @@ const ManageEvent = ({ event }) => {
       const config = { byes: "seeded" };
       const take = Number(formValues.bracket_take);
       if (take >= 2) config.take = take;
-      const mode = formValues.classification_mode;
-      if (mode === "full" || mode === "split") {
+      const runoffs = formValues.runoffs;
+      if (runoffs === "every" || runoffs === "custom") {
         // classification pools include the 3rd place game
         config.classification = true;
-        if (mode === "split" && take >= 4) {
-          config.unplayed_places = [take - 1];
+        if (runoffs === "custom" && take >= 6) {
+          const through =
+            Number(formValues.place_through) || take - 2;
+          const unplayed = [];
+          for (let place = 3; place < take; place += 2) {
+            if (place > through) unplayed.push(place);
+          }
+          if (unplayed.length) config.unplayed_places = unplayed;
         }
-      } else if (formValues.third_place) {
+      } else if (runoffs === "third") {
         config.third_place = true;
       }
       stages.push({ structure: "knockout", config });
@@ -497,40 +509,87 @@ const ManageEvent = ({ event }) => {
                           type="number"
                         />
                       </SettingRow>
-                      {formValues.classification_mode === "none" && (
-                        <SettingRow
-                          label="Third place game"
-                          hint="The semifinal losers play for bronze."
-                        >
-                          <Segmented
-                            value={!!formValues.third_place}
-                            options={[
-                              [true, "On"],
-                              [false, "Off"],
-                            ]}
-                            onChange={(v) => set("third_place", v)}
-                            disabled={structureLocked}
-                          />
-                        </SettingRow>
-                      )}
-                      <Premium>
-                        <SettingBlock
-                          label="Full placement"
-                          gem
-                          hint="Run-off brackets play out every place — 5th/6th, 7th/8th and beyond (3rd place game included). Split last skips the very last run-off and splits its points."
-                        >
-                          <Segmented
-                            value={formValues.classification_mode}
-                            options={[
-                              ["none", "Off"],
-                              ["full", "Every place"],
-                              ["split", "Split last"],
-                            ]}
-                            onChange={(v) => set("classification_mode", v)}
-                            disabled={structureLocked}
-                          />
-                        </SettingBlock>
-                      </Premium>
+                      <SettingBlock
+                        label="Run-off games"
+                        hint={
+                          formValues.runoffs === "off"
+                            ? "Winners only — the semifinal losers tie for 3rd and split the points."
+                            : formValues.runoffs === "third"
+                            ? "The semifinal losers play for bronze."
+                            : formValues.runoffs === "every"
+                            ? "Run-off brackets settle every place — 5th/6th, 7th/8th and beyond."
+                            : "Run-offs settle places down to a depth you pick; deeper places tie in pairs and split the points."
+                        }
+                      >
+                        <Segmented
+                          value={formValues.runoffs}
+                          options={[
+                            ["off", "Off"],
+                            ["third", "3rd place"],
+                            [
+                              "every",
+                              <span
+                                className="flex items-center gap-0.5"
+                                key="every-label"
+                              >
+                                Every place
+                                <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                              </span>,
+                            ],
+                            [
+                              "custom",
+                              <span
+                                className="flex items-center gap-0.5"
+                                key="custom-label"
+                              >
+                                Custom
+                                <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                              </span>,
+                            ],
+                          ]}
+                          onChange={(v) => set("runoffs", v)}
+                          disabled={structureLocked}
+                          disabledKeys={
+                            PREMIUM_LOCKED ? ["every", "custom"] : []
+                          }
+                        />
+                      </SettingBlock>
+                      {formValues.runoffs === "custom" &&
+                        (Number(formValues.bracket_take) >= 6 ? (
+                          <SettingRow
+                            label="Play places through"
+                            hint="Run-offs go down to here; deeper places tie in pairs and split the points."
+                          >
+                            <select
+                              name="place_through"
+                              value={
+                                formValues.place_through ||
+                                Number(formValues.bracket_take) - 2
+                              }
+                              onChange={handleInputChange}
+                              disabled={structureLocked}
+                              className="shrink-0 input-box"
+                            >
+                              {Array.from(
+                                {
+                                  length: Math.floor(
+                                    (Number(formValues.bracket_take) - 2) / 2
+                                  ) - 1,
+                                },
+                                (_, i) => 4 + i * 2
+                              ).map((place) => (
+                                <option key={place} value={place}>
+                                  {place}th
+                                </option>
+                              ))}
+                            </select>
+                          </SettingRow>
+                        ) : (
+                          <p className="py-2 text-[10px] text-light">
+                            Custom depth needs a bracket size of 6 or more —
+                            set one above.
+                          </p>
+                        ))}
                     </>
                   )}
                 </>

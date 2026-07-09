@@ -50,8 +50,8 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [groupPlay, setGroupPlay] = useState("semi");
   const [groupGames, setGroupGames] = useState("4");
   const [playoffTake, setPlayoffTake] = useState("4");
-  const [thirdPlace, setThirdPlace] = useState(true);
-  const [classificationMode, setClassificationMode] = useState("none");
+  const [runoffs, setRunoffs] = useState("third");
+  const [placeThrough, setPlaceThrough] = useState("");
   const [heatSize, setHeatSize] = useState("");
 
   const buildStages = () => {
@@ -82,13 +82,18 @@ const CreateEvent = ({ handleEventAdded }) => {
           ? Number(playoffTake)
           : null;
       if (take) config.take = take;
-      if (classificationMode !== "none") {
+      if (runoffs === "every" || runoffs === "custom") {
         // classification pools include the 3rd place game
         config.classification = true;
-        if (classificationMode === "split" && take && take >= 4) {
-          config.unplayed_places = [take - 1];
+        if (runoffs === "custom" && take && take >= 6) {
+          const through = Number(placeThrough) || take - 2;
+          const unplayed = [];
+          for (let place = 3; place < take; place += 2) {
+            if (place > through) unplayed.push(place);
+          }
+          if (unplayed.length) config.unplayed_places = unplayed;
         }
-      } else if (thirdPlace) {
+      } else if (runoffs === "third") {
         config.third_place = true;
       }
       stages.push({ structure: "knockout", config });
@@ -267,61 +272,87 @@ const CreateEvent = ({ handleEventAdded }) => {
               <option value="all">All teams</option>
             </select>
           </SelectRow>
-          {playoffTake !== "none" && classificationMode === "none" && (
-            <SelectRow
-              label="Third place game"
-              hint="The semifinal losers play for bronze."
-            >
-              <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
-                {[
-                  [true, "On"],
-                  [false, "Off"],
-                ].map(([value, label]) => (
-                  <button
-                    key={label}
-                    className={`px-3 py-1.5 ${
-                      thirdPlace === value
-                        ? "bg-primary text-white"
-                        : "bg-white text-light"
-                    }`}
-                    onClick={() => setThirdPlace(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </SelectRow>
-          )}
           {playoffTake !== "none" && (
-            <SelectRow
-              label={
-                <span className="flex items-center gap-1">
-                  Full placement
-                  <DiamondOutlinedIcon sx={{ fontSize: 13 }} />
-                </span>
-              }
-              hint="Run-offs play out every place (3rd place game included). Split last skips the final run-off and splits its points."
-            >
-              <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+            <div>
+              <h4 className="text-sm font-semibold">Run-off games</h4>
+              <p className="text-[10px] text-light">
+                {runoffs === "off"
+                  ? "Winners only — the semifinal losers tie for 3rd and split the points."
+                  : runoffs === "third"
+                  ? "The semifinal losers play for bronze."
+                  : runoffs === "every"
+                  ? "Run-off brackets settle every place — 5th/6th, 7th/8th and beyond."
+                  : "Run-offs settle places down to a depth you pick; deeper places tie in pairs and split the points."}
+              </p>
+              <div className="flex overflow-hidden mt-1.5 text-xs font-semibold border border-gray-300 rounded-full w-fit">
                 {[
-                  ["none", "Off"],
-                  ["full", "All"],
-                  ["split", "Split"],
+                  ["off", "Off"],
+                  ["third", "3rd place"],
+                  [
+                    "every",
+                    <span
+                      className="flex items-center gap-0.5"
+                      key="every-label"
+                    >
+                      Every
+                      <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                    </span>,
+                  ],
+                  [
+                    "custom",
+                    <span
+                      className="flex items-center gap-0.5"
+                      key="custom-label"
+                    >
+                      Custom
+                      <DiamondOutlinedIcon sx={{ fontSize: 12 }} />
+                    </span>,
+                  ],
                 ].map(([value, label]) => (
                   <button
-                    key={value}
+                    key={String(value)}
                     className={`px-3 py-1.5 ${
-                      classificationMode === value
+                      runoffs === value
                         ? "bg-primary text-white"
                         : "bg-white text-light"
                     }`}
-                    onClick={() => setClassificationMode(value)}
+                    onClick={() => setRunoffs(value)}
                   >
                     {label}
                   </button>
                 ))}
               </div>
-            </SelectRow>
+              {runoffs === "custom" &&
+                (Number(playoffTake) >= 6 ? (
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-[11px] text-light">
+                      Play places through
+                    </span>
+                    <select
+                      value={placeThrough || Number(playoffTake) - 2}
+                      onChange={(e) => setPlaceThrough(e.target.value)}
+                      className="input-box !py-1"
+                    >
+                      {Array.from(
+                        {
+                          length:
+                            Math.floor((Number(playoffTake) - 2) / 2) - 1,
+                        },
+                        (_, i) => 4 + i * 2
+                      ).map((place) => (
+                        <option key={place} value={place}>
+                          {place}th
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-[10px] text-light">
+                    Custom depth needs a bracket of 6+ — pick Top 6 or Top 8
+                    above.
+                  </p>
+                ))}
+            </div>
           )}
         </div>
       )}
