@@ -12,18 +12,23 @@ const Outing = ({ contest }) => {
       : null);
 
   return (
-    <div className="flex items-center gap-2 py-1.5 text-sm border-t first:border-t-0">
-      <span className="w-10 font-bold">
-        {contest.is_complete && total != null ? total : "–"}
+    <div className="flex items-start gap-2 py-1.5 text-sm border-t first:border-t-0">
+      <span className="w-10 font-bold shrink-0">
+        {contest.is_complete && total != null
+          ? parseFloat(total.toPrecision(10))
+          : "–"}
       </span>
-      <span className="flex-grow text-light">
-        {playerEntries.length > 0
-          ? playerEntries
-              .map((e) => `${e.player_name} ${e.score ?? "—"}`)
-              .join(" · ")
-          : contest.is_complete
-          ? "team score"
-          : "not played yet"}
+      <span className="flex flex-col flex-grow min-w-0 text-light">
+        {playerEntries.length > 0 ? (
+          playerEntries.map((e) => (
+            <span className="flex justify-between gap-2" key={e.player}>
+              <span className="truncate">{e.player_name}</span>
+              <span className="shrink-0">{e.score ?? "—"}</span>
+            </span>
+          ))
+        ) : (
+          <span>{contest.is_complete ? "team score" : "not played yet"}</span>
+        )}
       </span>
       {contest.is_active && (
         <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-tertiary/10 text-tertiary-dark">
@@ -44,7 +49,9 @@ const Event_outing = ({
   contests = [],
 }) => {
   const display_score =
-    stats.total != null && stats.total !== 0 ? `Score: ${stats.total}` : "";
+    stats.total != null && stats.total !== 0
+      ? `Score: ${parseFloat(Number(stats.total).toPrecision(10))}`
+      : "";
 
   return (
     <EventWrapper
