@@ -137,7 +137,7 @@ const ContestEditCard = ({ contest, onSaved }) => {
             <input
               value={values[row.key] ?? ""}
               onChange={setValue(row.key)}
-              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+              className="w-16 shrink-0 input-box"
             />
           </div>
         ))}
@@ -147,7 +147,7 @@ const ContestEditCard = ({ contest, onSaved }) => {
             <input
               value={values.team_score ?? ""}
               onChange={setValue("team_score")}
-              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+              className="w-16 shrink-0 input-box"
             />
           </div>
         )}

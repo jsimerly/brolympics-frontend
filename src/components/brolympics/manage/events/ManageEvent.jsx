@@ -33,8 +33,7 @@ const SettingRow = ({ label, hint, children }) => (
   </div>
 );
 
-const rowInputClass =
-  "w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0 disabled:bg-gray-50 disabled:text-light";
+const rowInputClass = "w-16 shrink-0 input-box";
 
 const Segmented = ({ value, options, onChange, disabled }) => (
   <div
@@ -431,7 +430,7 @@ const ManageEvent = ({ event }) => {
                 name="decimal_places"
                 value={formValues.decimal_places || ""}
                 onChange={handleInputChange}
-                className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+                className="shrink-0 input-box"
               >
                 <option value="B">Win/Loss</option>
                 <option value="0">Whole</option>
@@ -527,7 +526,7 @@ const ManageEvent = ({ event }) => {
                       onChange={handleInputChange}
                       name="placements"
                       disabled={structureLocked}
-                      className="p-2 bg-white border border-gray-300 rounded-md shrink-0 disabled:bg-gray-50 disabled:text-light"
+                      className="shrink-0 input-box"
                     >
                       <option value="third">3rd place game</option>
                       <option value="full">Full placement</option>

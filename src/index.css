@@ -105,9 +105,11 @@
         @apply transition-all duration-200 ease-in-out;
     }
 
+    /* Neutral at rest, blue only when you're in it -- matches the card
+       language (gray borders, meaning colors on interaction). */
     .input-primary {
         @apply input;
-        @apply border-primary-light;
+        @apply border-gray-300 placeholder:text-gray-400;
         @apply focus:border-primary focus:ring-primary;
     }
 
@@ -134,10 +136,39 @@
         @apply focus:border-errorRed focus:ring-errorRed;
     }
 
+    /* Compact setting boxes: the little number inputs and selects that sit
+       at the right edge of setting rows. */
+    .input-box {
+        @apply p-2 text-center bg-white border border-gray-300 rounded-md;
+        @apply focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:ring-opacity-50;
+        @apply disabled:bg-gray-50 disabled:text-gray-400;
+    }
+
     /* Form Labels */
     .form-label {
         @apply block mb-1 text-sm font-medium;
     }
+}
+
+/* Number inputs: the tiny setting boxes don't have room for spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Date/time inputs: keep the calendar icon subtle and the text consistent */
+input[type="date"],
+input[type="datetime-local"] {
+    @apply text-sm;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    opacity: 0.45;
 }
 
 /* Animations */

@@ -183,7 +183,7 @@ const CreateEvent = ({ handleEventAdded }) => {
               value={heatSize}
               onChange={(e) => setHeatSize(e.target.value)}
               placeholder="—"
-              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+              className="w-16 shrink-0 input-box"
             />
           </SelectRow>
         </div>
@@ -199,7 +199,7 @@ const CreateEvent = ({ handleEventAdded }) => {
             <select
               value={groupPlay}
               onChange={(e) => setGroupPlay(e.target.value)}
-              className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+              className="shrink-0 input-box"
             >
               <option value="round_robin">Round Robin</option>
               <option value="swiss">Swiss</option>
@@ -219,7 +219,7 @@ const CreateEvent = ({ handleEventAdded }) => {
                 type="number"
                 value={groupGames}
                 onChange={(e) => setGroupGames(e.target.value)}
-                className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+                className="w-16 shrink-0 input-box"
               />
             </SelectRow>
           )}
@@ -230,7 +230,7 @@ const CreateEvent = ({ handleEventAdded }) => {
             <select
               value={playoffTake}
               onChange={(e) => setPlayoffTake(e.target.value)}
-              className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+              className="shrink-0 input-box"
             >
               <option value="none">No playoffs</option>
               <option value="2">Top 2</option>
@@ -248,7 +248,7 @@ const CreateEvent = ({ handleEventAdded }) => {
               <select
                 value={placements}
                 onChange={(e) => setPlacements(e.target.value)}
-                className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+                className="shrink-0 input-box"
               >
                 <option value="third">3rd place game</option>
                 <option value="full">Full placement</option>
