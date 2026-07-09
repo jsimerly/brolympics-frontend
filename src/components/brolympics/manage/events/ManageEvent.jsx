@@ -2,17 +2,41 @@ import ManageEventWrapper from "./ManageEventWrapper";
 import { useState, useEffect } from "react";
 import ScoringSettings from "./ScoringSettings";
 import { updateEvent, deleteEvent } from "../../../../api/client";
-import ToggleButton from "../../../Util/ToggleButton";
 import PopupContinue from "../../../Util/PopupContinue";
 import { useNotification } from "../../../Util/Notification";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+
+// datetime-local inputs need "YYYY-MM-DDTHH:mm"; the API returns full ISO
+const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : "");
+
+/** A labeled settings row: text on the left, a compact control on the right. */
+export const SettingRow = ({ label, hint, children }) => (
+  <div className="flex items-center justify-between gap-3 py-2">
+    <div className="min-w-0">
+      <h4 className="text-sm font-semibold">{label}</h4>
+      {hint && <p className="text-[10px] text-light">{hint}</p>}
+    </div>
+    {children}
+  </div>
+);
+
+export const rowInputClass =
+  "w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0";
+
+const SectionLabel = ({ children }) => (
+  <span className="block pt-3 pb-1 text-xs font-semibold tracking-wide uppercase text-light first:pt-0">
+    {children}
+  </span>
+);
 
 /** Settings editor for any event. h2h events expose their stage config
  * (matches per team, bracket size) while unstarted; ind/team events expose
  * the score-display toggle. Everything else is shared. */
 const ManageEvent = ({ event }) => {
   const [formValues, setFormValues] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { showNotification } = useNotification();
   const isH2h = (event.format || event.type) === "h2h";
   const structureLocked = event.is_active || event.is_complete;
@@ -26,6 +50,8 @@ const ManageEvent = ({ event }) => {
       setFormValues({
         ...event,
         ...(event.config || {}),
+        projected_start_date: toLocalInput(event.projected_start_date),
+        projected_end_date: toLocalInput(event.projected_end_date),
         n_matches: rr?.config?.games_per_team ?? "",
         bracket_take: ko?.config?.take ?? "",
       });
@@ -34,24 +60,7 @@ const ManageEvent = ({ event }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      [name]: value,
-    }));
-  };
-
-  const handleRulesChange = (content) => {
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      rules: content,
-    }));
-  };
-
-  const displayAvgToggle = () => {
-    setFormValues({
-      ...formValues,
-      display_avg_scores: !formValues.display_avg_scores,
-    });
+    setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const buildStages = () =>
@@ -69,6 +78,8 @@ const ManageEvent = ({ event }) => {
     }));
 
   const handleUpdateClicked = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       const patch = {
         location: formValues.location || "",
@@ -97,184 +108,165 @@ const ManageEvent = ({ event }) => {
       showNotification(
         detail
           ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an issue when attemping to update this event."
+          : "There was an issue updating this event."
       );
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
-  const handleDeleteClicked = () => {
-    setDeleteOpen(true);
   };
 
   const deleteEventFunc = async () => {
     try {
       await deleteEvent(event.uuid);
-      showNotification(`Successfully deleted ${event.name}`, "!border-primary");
+      showNotification(`Deleted ${event.name}.`, "!border-primary");
       location.reload();
     } catch (error) {
-      showNotification(
-        "There was an error when attemping to delete this event."
-      );
+      showNotification("There was an error deleting this event.");
     }
   };
 
   const modules = {
     toolbar: [
-      [
-        {
-          size: ["8px", "10px", "12px", "14px", "16px", "20px", "24px", "32px"],
-        },
-      ],
+      [{ size: ["8px", "10px", "12px", "14px", "16px", "20px", "24px", "32px"] }],
       ["bold", "italic", "underline"],
-      [
-        { list: "ordered" },
-        { list: "bullet" },
-        { indent: "-1" },
-        { indent: "+1" },
-      ],
+      [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
       ["link"],
     ],
   };
-
   const formats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "list",
-    "bullet",
-    "indent",
-    "link",
+    "header", "font", "size", "bold", "italic", "underline",
+    "list", "bullet", "indent", "link",
   ];
 
   return (
-    <ManageEventWrapper name={event.name}>
-      <PopupContinue
-        open={deleteOpen}
-        setOpen={setDeleteOpen}
-        header={`Do you want to delete ${event.name}?`}
-        desc={
-          "Delete this event will remove it from your brolympics. You will be able to recreate the event, but will lose all of your current settings."
-        }
-        continueText={"Delete"}
-        continueFunc={deleteEventFunc}
-      />
+    <ManageEventWrapper name={event.name} event={event}>
       <div className="flex flex-col">
         {isH2h ? (
           <>
-            <h2 className="py-2">Match Settings</h2>
+            <SectionLabel>Structure</SectionLabel>
             {structureLocked && (
-              <p className="text-[10px] text-errorRed">
+              <p className="text-[10px] text-red">
                 This event has started; its structure can no longer change.
               </p>
             )}
-            <div className="flex items-center justify-between min-h-[50px]">
-              <div>
-                <h3 className="font-semibold">Number of Matches</h3>
-                <p className="text-[10px]">
-                  The number of matches each team will compete in during group
-                  play.
-                </p>
-              </div>
+            <SettingRow
+              label="Matches per team"
+              hint="Group-play games before the bracket."
+            >
               <input
                 value={formValues.n_matches || ""}
                 name="n_matches"
                 onChange={handleInputChange}
                 disabled={structureLocked}
-                className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+                className={`${rowInputClass} disabled:bg-gray-50 disabled:text-light`}
                 type="number"
               />
-            </div>
-            <div className="flex items-center justify-between min-h-[50px]">
-              <div>
-                <h3 className="font-semibold">Bracket Size</h3>
-                <p className="text-[10px]">
-                  The number of teams to make the playoffs.
-                </p>
-              </div>
+            </SettingRow>
+            <SettingRow
+              label="Bracket size"
+              hint="How many teams make the playoffs."
+            >
               <input
                 value={formValues.bracket_take || ""}
                 name="bracket_take"
                 onChange={handleInputChange}
                 disabled={structureLocked}
-                className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+                className={`${rowInputClass} disabled:bg-gray-50 disabled:text-light`}
                 type="number"
               />
-            </div>
+            </SettingRow>
           </>
         ) : (
           <>
-            <h2 className="py-2">Competition Settings</h2>
-            <div className="flex items-center justify-between min-h-[50px]">
-              <div>
-                <h3 className="font-semibold">Display Average Scores</h3>
-                <p className="text-[10px]">
-                  {" "}
-                  Do you want to display average scores or combined scores?{" "}
-                  <br /> Currently set to:{" "}
-                  <span className="font-bold">
-                    {formValues.display_avg_scores
-                      ? "Average Score"
-                      : "Combined Score"}
-                  </span>
-                </p>
+            <SectionLabel>Display</SectionLabel>
+            <SettingRow
+              label="Score display"
+              hint="Show each team's average or combined total."
+            >
+              <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+                {[
+                  [false, "Total"],
+                  [true, "Average"],
+                ].map(([value, label]) => (
+                  <button
+                    key={label}
+                    className={`px-3 py-1.5 ${
+                      !!formValues.display_avg_scores === value
+                        ? "bg-primary text-white"
+                        : "bg-white text-light"
+                    }`}
+                    onClick={() =>
+                      setFormValues((prev) => ({
+                        ...prev,
+                        display_avg_scores: value,
+                      }))
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <button
-                onClick={displayAvgToggle}
-                className="text-primary w-[60px]"
-              >
-                <ToggleButton size={50} on={formValues.display_avg_scores} />
-              </button>
-            </div>
+            </SettingRow>
           </>
         )}
 
-        <div className="flex flex-col mt-4 space-y-4">
+        <SectionLabel>Details</SectionLabel>
+        <div className="flex flex-col gap-3">
           <div>
-            <h3 className="font-semibold">Location</h3>
+            <label className="text-xs text-light">Location</label>
             <input
               value={formValues.location || ""}
               name="location"
               onChange={handleInputChange}
-              className="w-full p-2 bg-white border rounded-md border-primary"
+              className="w-full input-primary"
               type="text"
-              placeholder="Enter event location"
+              placeholder="The backyard, lane 4, ..."
             />
           </div>
           <div>
-            <h3 className="font-semibold">Rules</h3>
+            <label className="text-xs text-light">Rules</label>
             <ReactQuill
               theme="snow"
               value={formValues.rules || ""}
-              onChange={handleRulesChange}
+              onChange={(content) =>
+                setFormValues((prev) => ({ ...prev, rules: content }))
+              }
               modules={modules}
               formats={formats}
               className="bg-white"
             />
           </div>
         </div>
+
         <ScoringSettings
           formValues={formValues}
           setFormValues={setFormValues}
           handleInputChange={handleInputChange}
         />
+
         <button
-          className="w-full p-2 mt-3 font-semibold  rounded-md bg-primary"
+          className="w-full py-2.5 mt-4 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
           onClick={handleUpdateClicked}
+          disabled={saving}
         >
-          Update {event.name}
+          {saving ? "Saving..." : `Save ${event.name}`}
         </button>
         <button
-          className="w-full p-2 mt-3 font-semibold  rounded-md bg-errorRed"
-          onClick={handleDeleteClicked}
+          className="self-center pt-3 text-xs font-semibold text-red"
+          onClick={() => setDeleteOpen(true)}
         >
-          Delete
+          Delete this event
         </button>
       </div>
+
+      <PopupContinue
+        open={deleteOpen}
+        setOpen={setDeleteOpen}
+        header={`Delete ${event.name}?`}
+        desc="This removes the event from your Brolympics. You can recreate it later, but these settings are gone."
+        continueText="Delete"
+        continueFunc={deleteEventFunc}
+      />
     </ManageEventWrapper>
   );
 };

@@ -1,25 +1,8 @@
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useEffect, useState, useCallback } from "react";
 import { fetchBrolympicsEvents, fetchEventBracket } from "../../../api/client";
 import { useParams } from "react-router-dom";
 import ContestEditCard from "./ContestEditCard";
-
-const ClickCard = ({ title, children }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const handleToggle = () => setIsOpen((isOpen) => !isOpen);
-
-  return (
-    <div className="w-full py-3">
-      <div onClick={handleToggle} className="flex justify-between pb-3">
-        <h3 className="font-semibold text-[18px]">{title}</h3>
-        {isOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </div>
-
-      {isOpen && children}
-    </div>
-  );
-};
+import { EventFold } from "./EditComp";
 
 const EditBracket = () => {
   const { uuid } = useParams();
@@ -47,46 +30,50 @@ const EditBracket = () => {
   }, [getEvents]);
 
   return (
-    <div>
-      Brackets
-      <div>
-        {events.map((event) => (
-          <ClickCard title={event.name} key={event.uuid}>
-            <div className="space-y-2">
-              {event.brackets.flatMap((bracket) => {
-                const rounds = [
-                  ...new Set(bracket.nodes.map((n) => n.round)),
-                ].sort((a, b) => a - b);
-                return rounds.map((round) => (
-                  <div key={`${bracket.stage}_${round}`} className="space-y-2">
-                    <h2 className="font-semibold">
-                      {round === rounds[rounds.length - 1]
-                        ? "Finals"
-                        : `Round ${round}`}
-                    </h2>
-                    {bracket.nodes
-                      .filter((n) => n.round === round)
-                      .map((node) => (
-                        <ContestEditCard
-                          contest={node.contest}
-                          onSaved={getEvents}
-                          key={`${node.round}_${node.slot}`}
-                        />
-                      ))}
-                  </div>
-                ));
-              })}
-              {event.brackets.every((b) => b.nodes.length === 0) &&
-                "The bracket has not been generated yet."}
-            </div>
-          </ClickCard>
-        ))}
-        {events.length === 0 && (
-          <p className="text-[12px] pt-2">
-            No events with a bracket stage in this Brolympics.
-          </p>
-        )}
-      </div>
+    <div className="flex flex-col gap-2">
+      <p className="text-xs text-light">
+        Playoff games round by round. Fixing an earlier round rolls the
+        advanced team back — locked once the next round has been played.
+      </p>
+      {events.map((event) => (
+        <EventFold title={event.name} key={event.uuid}>
+          <div className="space-y-2">
+            {event.brackets.flatMap((bracket) => {
+              const rounds = [
+                ...new Set(bracket.nodes.map((n) => n.round)),
+              ].sort((a, b) => a - b);
+              return rounds.map((round) => (
+                <div key={`${bracket.stage}_${round}`} className="space-y-2">
+                  <h3 className="text-xs font-semibold tracking-wide uppercase text-light">
+                    {round === rounds[rounds.length - 1]
+                      ? "Finals"
+                      : `Round ${round}`}
+                  </h3>
+                  {bracket.nodes
+                    .filter((n) => n.round === round)
+                    .map((node) => (
+                      <ContestEditCard
+                        contest={node.contest}
+                        onSaved={getEvents}
+                        key={`${node.round}_${node.slot}`}
+                      />
+                    ))}
+                </div>
+              ));
+            })}
+            {event.brackets.every((b) => b.nodes.length === 0) && (
+              <p className="text-xs text-light">
+                The bracket hasn't been generated yet.
+              </p>
+            )}
+          </div>
+        </EventFold>
+      ))}
+      {events.length === 0 && (
+        <p className="text-sm text-light">
+          No events with a bracket stage in this Brolympics.
+        </p>
+      )}
     </div>
   );
 };

@@ -1,117 +1,78 @@
 import { useState } from "react";
-import ImageCropper, { readImageFile } from "../../Util/ImageCropper";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import CopyWrapper from "../../Util/CopyWrapper";
-import { deleteBrolympics, updateBrolympics } from "../../../api/client";
-import PopupContinue from "../../Util/PopupContinue";
 import { useNavigate, useParams } from "react-router-dom";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ImageCropper, { readImageFile } from "../../Util/ImageCropper";
+import CopyWrapper from "../../Util/CopyWrapper";
+import PopupContinue from "../../Util/PopupContinue";
+import {
+  deleteBrolympics,
+  updateBrolympics,
+  inviteLinkBrolympics,
+} from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 
-const ManageBro = ({ name, startDate, endDate, img }) => {
+// datetime-local inputs need "YYYY-MM-DDTHH:mm"; the API returns full ISO
+const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : "");
+
+const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
   const [cropping, setCropping] = useState(false);
   const [imgSrc, setImgSrc] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [popupDelete, setPopupDelete] = useState(false);
   const [broData, setBroData] = useState({
-    name: name,
+    name: name || "",
     img: img,
-    projected_start_date: startDate,
-    projected_end_date: endDate,
+    projected_start_date: toLocalInput(projected_start_date),
+    projected_end_date: toLocalInput(projected_end_date),
   });
-
-  const handleStartDateUpdate = (e) => {
-    const newStartDate = e.target.value;
-    setBroData({
-      ...broData,
-      projected_start_date: newStartDate,
-    });
-  };
-
-  const handleEndDateUpdate = (e) => {
-    const newEndDate = e.target.value;
-    setBroData({
-      ...broData,
-      projected_end_date: newEndDate,
-    });
-  };
-
-  const handleNameUpdates = (e) => {
-    setBroData({ ...broData, name: e.target.value });
-  };
 
   const navigate = useNavigate();
   const { showNotification } = useNotification();
   const { uuid } = useParams();
 
+  const set = (key) => (e) =>
+    setBroData((prev) => ({ ...prev, [key]: e.target.value }));
+
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      let imageDataUrl = await readImageFile(file);
-
-      setImgSrc(imageDataUrl);
+      setImgSrc(await readImageFile(e.target.files[0]));
       setCropping(true);
     }
   };
 
-  const setCroppedImage = (croppedImage) => {
-    setBroData((prevData) => ({ ...prevData, img: croppedImage }));
-    setCropping(false);
-  };
-
-  const [popupDelete, setPopupDelete] = useState(false);
-
-  const onDeleteClicked = () => {
-    setPopupDelete(true);
-  };
-
-  const deleteTeamFunc = async () => {
+  const save = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
-      await deleteBrolympics(uuid);
-      showNotification("This brolympics has been deleted.", "!border-primary");
-      navigate("/");
+      await updateBrolympics(uuid, {
+        ...broData,
+        projected_start_date: broData.projected_start_date || null,
+        projected_end_date: broData.projected_end_date || null,
+      });
+      showNotification("Your Brolympics has been updated.", "!border-primary");
     } catch (error) {
-      showNotification(
-        "There was an error when attempting to delete this brolympics"
-      );
+      console.log(error);
+      showNotification("There was an issue saving your changes.");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleUpdateClicked = async () => {
+  const deleteBro = async () => {
     try {
-      await updateBrolympics(uuid, broData);
-      showNotification("You have updated your Brolympics.", "!border-primary");
+      await deleteBrolympics(uuid);
+      showNotification("This Brolympics has been deleted.", "!border-primary");
+      navigate("/");
     } catch (error) {
-      console.log(error);
-      showNotification(
-        "There was an issue when trying to update your Brolympics."
-      );
+      showNotification("There was an error deleting this Brolympics.");
     }
   };
 
   return (
-    <div className="flex flex-col">
-      <PopupContinue
-        open={popupDelete}
-        setOpen={setPopupDelete}
-        header={"Delete this Brolympics?"}
-        desc={
-          "Deleting this will perminately delete this Brolympics and remove all players and data from it. This will not be able to be recovered. Would you like to continue?"
-        }
-        continueText={"Delete"}
-        continueFunc={deleteTeamFunc}
-      />
-      <h2 className="font-bold text-[16px]">Manage Brolympics</h2>
-      <div>
-        <div className="w-full py-3">
-          <span className="ml-1 text-[12px]">Name</span>
-          <input
-            value={broData.name || ""}
-            onChange={handleNameUpdates}
-            className="w-full p-2 border rounded-md border-primary"
-          />
-        </div>
-        <div>
-          <h3 className="ml-1">
-            Upload a Logo <span className="text-[12px]"> (Optional)</span>
-          </h3>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 p-3 bg-white border border-gray-200 rounded-lg">
+        <div className="flex items-start gap-3">
           <input
             type="file"
             accept="image/*"
@@ -119,79 +80,127 @@ const ManageBro = ({ name, startDate, endDate, img }) => {
             onChange={handleImageUpload}
             hidden
           />
-          <label
-            htmlFor="file_bro"
-            className="inline-flex bg-white border rounded-md cursor-pointer"
-          >
+          <label htmlFor="file_bro" className="relative cursor-pointer shrink-0">
             {broData.img ? (
               <img
                 src={broData.img}
-                className="w-[100px] h-[100px] rounded-md"
+                className="object-cover w-16 h-16 rounded-lg"
+                alt="Brolympics logo"
               />
             ) : (
-              <div className="w-[100px] h-[100px] rounded-md flex items-center justify-center">
-                <CameraAltIcon
-                  className="bg-white w-[100px] text-neutral"
-                  sx={{ fontSize: 60 }}
-                />
+              <div className="flex items-center justify-center w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg text-light">
+                <CameraAltIcon sx={{ fontSize: 24 }} />
               </div>
             )}
+            <span className="absolute p-0.5 bg-white border border-gray-200 rounded-full -bottom-1 -right-1">
+              <CameraAltIcon sx={{ fontSize: 14 }} className="text-light" />
+            </span>
           </label>
-          {cropping && (
-            <ImageCropper img={imgSrc} setCroppedImage={setCroppedImage} />
-          )}
-        </div>
-        <div className="flex flex-col w-full gap-3 mt-3">
-          <div className="flex flex-col">
-            <span className="ml-1 text-[12px]">Start Date</span>
+          <div className="flex-grow min-w-0">
+            <label htmlFor="bro-name" className="form-label">
+              Name
+            </label>
             <input
-              className="flex w-full p-2 border rounded-md border-primary"
-              type="datetime-local"
-              value={broData.projected_start_date || ""}
-              onChange={handleStartDateUpdate}
-            />
-          </div>
-          <div className="flex flex-col">
-            <span className="ml-1 text-[12px]">End Date</span>
-            <input
-              className="flex w-full p-2 border rounded-md border-primary"
-              type="datetime-local"
-              value={broData.projected_end_date || ""}
-              onChange={handleEndDateUpdate}
+              id="bro-name"
+              value={broData.name}
+              onChange={set("name")}
+              className="w-full input-primary"
+              autoComplete="off"
             />
           </div>
         </div>
-        <div className="mt-3">
-          <h4 className="pb-1 font-bold">
-            Copy the Link and Share with Friends
-          </h4>
 
-          <div className="flex p-2 bg-white border rounded-md">
-            <CopyWrapper
-              copyString={`https://brolympic.com/invite/brolympics/${uuid}`}
-            >
-              <span className="text-[12px]">
-                https://brolympic.com/invite/brolympics/{uuid}
-              </span>
-            </CopyWrapper>
+        <div>
+          <span className="form-label">Dates</span>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
+              <label htmlFor="bro-start" className="text-xs text-light">
+                Starts
+              </label>
+              <input
+                id="bro-start"
+                type="datetime-local"
+                value={broData.projected_start_date}
+                onChange={set("projected_start_date")}
+                className="w-full min-w-0 input-primary"
+              />
+            </div>
+            <div className="min-w-0">
+              <label htmlFor="bro-end" className="text-xs text-light">
+                Ends
+              </label>
+              <input
+                id="bro-end"
+                type="datetime-local"
+                value={broData.projected_end_date}
+                onChange={set("projected_end_date")}
+                className="w-full min-w-0 input-primary"
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <button
-        className="w-full p-2 mt-6 font-semibold rounded-md bg-primary"
-        onClick={handleUpdateClicked}
-      >
-        Update Brolympics
-      </button>
-      <div>
-        <h4 className="pt-6 text-[16px] font-semibold">Danger Zone</h4>
+
         <button
-          className="w-full p-2 mt-6 font-semibold rounded-md bg-errorRed"
-          onClick={onDeleteClicked}
+          className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
+          onClick={save}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+
+      <div className="p-3 bg-white border border-gray-200 rounded-lg">
+        <span className="form-label">Invite link</span>
+        <div className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg">
+          <CopyWrapper copyString={inviteLinkBrolympics(uuid)}>
+            <div className="flex items-center flex-grow min-w-0 gap-2 cursor-pointer">
+              <ContentCopyIcon
+                sx={{ fontSize: 14 }}
+                className="shrink-0 text-light"
+              />
+              <span className="text-xs truncate text-light">
+                {inviteLinkBrolympics(uuid)}
+              </span>
+            </div>
+          </CopyWrapper>
+        </div>
+        <p className="pt-1 text-[11px] text-light">
+          Only people with this link can join.
+        </p>
+      </div>
+
+      <div className="p-3 border rounded-lg border-red/30">
+        <h4 className="text-sm font-semibold text-red">Danger Zone</h4>
+        <p className="text-[11px] text-light">
+          Deleting removes every team, event, and result in this Brolympics.
+          There's no undo.
+        </p>
+        <button
+          className="w-full py-2 mt-2 text-sm font-semibold border rounded-full text-red border-red"
+          onClick={() => setPopupDelete(true)}
         >
           Delete Brolympics
         </button>
       </div>
+
+      {cropping && (
+        <ImageCropper
+          img={imgSrc}
+          setCroppedImage={(cropped) => {
+            setBroData((prev) => ({ ...prev, img: cropped }));
+            setCropping(false);
+          }}
+          handleCloseCropper={() => setCropping(false)}
+        />
+      )}
+      <PopupContinue
+        open={popupDelete}
+        setOpen={setPopupDelete}
+        header="Delete this Brolympics?"
+        desc="This permanently deletes the Brolympics with all of its teams, events, and results. It cannot be recovered."
+        continueText="Delete"
+        continueFunc={deleteBro}
+      />
     </div>
   );
 };

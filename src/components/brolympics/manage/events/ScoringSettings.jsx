@@ -1,121 +1,115 @@
-import ToggleButton from "../../../Util/ToggleButton";
+import { SettingRow, rowInputClass } from "./ManageEvent";
 
-const ScoringSettings = ({ formValues, setFormValues, handleInputChange }) => {
-  const highScoreToggle = () => {
-    setFormValues({
-      ...formValues,
-      is_high_score_wins: !formValues.is_high_score_wins,
-    });
-  };
+const SectionLabel = ({ children }) => (
+  <span className="block pt-3 pb-1 text-xs font-semibold tracking-wide uppercase text-light">
+    {children}
+  </span>
+);
 
-  return (
-    <>
-      <h2 className="py-2">Scoring Settings</h2>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">Scoring Type (Decimal Places)</h3>
-          <p className="text-[10px]">
-            {" "}
-            Is this event scored by whole numbers, decimal places, or just
-            win/loss? Max decimal places: 16
-          </p>
-        </div>
-        <select
-          name="decimal_places"
-          value={formValues.decimal_places || ""}
-          onChange={handleInputChange}
-          className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-        >
-          <option value="B">Win/Loss</option>
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="16">Max</option>
-        </select>
+const ScoringSettings = ({ formValues, setFormValues, handleInputChange }) => (
+  <>
+    <SectionLabel>Scoring</SectionLabel>
+    <SettingRow
+      label="Score precision"
+      hint="Whole numbers, decimals, or just win/loss."
+    >
+      <select
+        name="decimal_places"
+        value={formValues.decimal_places || ""}
+        onChange={handleInputChange}
+        className="p-2 bg-white border border-gray-300 rounded-md shrink-0"
+      >
+        <option value="B">Win/Loss</option>
+        <option value="0">Whole</option>
+        <option value="1">0.0</option>
+        <option value="2">0.00</option>
+        <option value="3">0.000</option>
+        <option value="16">Max</option>
+      </select>
+    </SettingRow>
+    <SettingRow label="Winner" hint="Who takes it — the high or the low score.">
+      <div className="flex overflow-hidden text-xs font-semibold border border-gray-300 rounded-full shrink-0">
+        {[
+          [true, "High"],
+          [false, "Low"],
+        ].map(([value, label]) => (
+          <button
+            key={label}
+            className={`px-3 py-1.5 ${
+              !!formValues.is_high_score_wins === value
+                ? "bg-primary text-white"
+                : "bg-white text-light"
+            }`}
+            onClick={() =>
+              setFormValues((prev) => ({ ...prev, is_high_score_wins: value }))
+            }
+          >
+            {label}
+          </button>
+        ))}
       </div>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">High Score to Win</h3>
-          <p className="text-[10px]">
-            Is this event won by the higher score or the lower score. <br />{" "}
-            Currently set to:{" "}
-            <span className="font-bold">
-              {formValues.is_high_score_wins
-                ? "High Score Wins"
-                : "Low Score Wins"}
-            </span>
-          </p>
-        </div>
-        <button onClick={highScoreToggle} className="text-primary w-[60px]">
-          <ToggleButton size={50} on={formValues.is_high_score_wins} />
-        </button>
-      </div>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">Max Score</h3>
-          <p className="text-[10px]">
-            Highest possible score. Leave blank for no max.
-          </p>
-        </div>
-        <input
-          name="max_score"
-          value={formValues.max_score || ""}
-          onChange={handleInputChange}
-          className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
-          type="number"
-        />
-      </div>
-      <div className="flex items-center justify-between min-h-[50px]">
-        <div>
-          <h3 className="font-semibold">Min Score</h3>
-          <p className="text-[10px]">
-            Lowest possible score. Leave blank for no min.
-          </p>
-        </div>
+    </SettingRow>
+    <SettingRow label="Score limits" hint="Optional min and max per score.">
+      <div className="flex items-center gap-1.5 shrink-0">
         <input
           name="min_score"
           value={formValues.min_score || ""}
           onChange={handleInputChange}
-          className="p-1 border rounded-md border-primary h-[40px] w-[60px] bg-white text-center"
+          className={rowInputClass}
           type="number"
+          placeholder="min"
+        />
+        <span className="text-light">–</span>
+        <input
+          name="max_score"
+          value={formValues.max_score || ""}
+          onChange={handleInputChange}
+          className={rowInputClass}
+          type="number"
+          placeholder="max"
         />
       </div>
-      <h2 className="py-2">Misc.</h2>
-      <div className="flex flex-col w-full gap-3">
-        <div className="flex flex-col">
-          <span className="ml-1 text-[12px] font-semibold">Rename</span>
-          <input
-            value={formValues.name || ""}
-            onChange={handleInputChange}
-            name="name"
-            className="flex w-full p-2 border rounded-md border-primary"
-          />
-        </div>
-        <div className="flex flex-col font-semibold">
-          <span className="ml-1 text-[12px] ">Start Date (optional)</span>
+    </SettingRow>
+
+    <SectionLabel>Name & Schedule</SectionLabel>
+    <div className="flex flex-col gap-3">
+      <div>
+        <label className="text-xs text-light">Event name</label>
+        <input
+          value={formValues.name || ""}
+          onChange={handleInputChange}
+          name="name"
+          className="w-full input-primary"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="min-w-0">
+          <label className="text-xs text-light">Starts</label>
           <input
             value={formValues.projected_start_date || ""}
             onChange={handleInputChange}
             name="projected_start_date"
-            className="flex w-full p-2 border rounded-md border-primary"
+            className="w-full min-w-0 input-primary"
             type="datetime-local"
           />
         </div>
-        <div className="flex flex-col font-semibold">
-          <span className="ml-1 text-[12px]">End Date (options)</span>
+        <div className="min-w-0">
+          <label className="text-xs text-light">Ends</label>
           <input
             value={formValues.projected_end_date || ""}
             onChange={handleInputChange}
             name="projected_end_date"
-            className="flex w-full p-2 border rounded-md border-primary"
+            className="w-full min-w-0 input-primary"
             type="datetime-local"
           />
         </div>
       </div>
-    </>
-  );
-};
+      <p className="text-[10px] text-light -mt-1">
+        Leave dates blank for play-anytime events — they show as TBD in the
+        lineup.
+      </p>
+    </div>
+  </>
+);
 
 export default ScoringSettings;

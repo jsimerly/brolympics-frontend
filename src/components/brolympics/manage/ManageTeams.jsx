@@ -118,7 +118,7 @@ export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
   const inviteUrl = `${import.meta.env.VITE_FRONTEND_URL}/invite/team/${uuid}`;
 
   return (
-    <div className="relative flex items-center gap-3 p-2 border rounded-md border-primary">
+    <div className="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
       <div
         className={`relative ${
           editing
@@ -286,34 +286,52 @@ const ManageTeams = ({ teams, broUUID }) => {
   };
 
   return (
-    <div className="">
-      <h2 className="font-bold text-[16px]">Manage Teams</h2>
-      {teams ? (
-        <div className="my-2 space-y-3">
-          {teams.map((team, i) => (
-            <TeamCard {...team} key={i + "_teamsCard"} />
-          ))}
-        </div>
+    <div className="flex flex-col gap-2">
+      {teams && teams.length > 0 ? (
+        teams.map((team, i) => <TeamCard {...team} key={i + "_teamsCard"} />)
       ) : (
-        "There are no teams in this league yet."
+        <p className="text-sm text-light">No teams yet.</p>
       )}
 
-      <button className="flex gap-3  text-[16px]" onClick={toggleAddingTeam}>
-        Add Team
-        {addingTeam ? <RemoveIcon /> : <AddCircleOutlineIcon />}
+      <button
+        className={`flex items-center justify-center gap-2 w-full py-2.5 mt-2 font-semibold rounded-full ${
+          addingTeam ? "text-light bg-gray-100" : "text-white bg-primary"
+        }`}
+        onClick={toggleAddingTeam}
+      >
+        {addingTeam ? (
+          <>
+            <RemoveIcon sx={{ fontSize: 18 }} /> Close
+          </>
+        ) : (
+          <>
+            <AddCircleOutlineIcon sx={{ fontSize: 18 }} /> Add Team
+          </>
+        )}
       </button>
       {addingTeam && (
-        <div className="">
-          <h4 className="font-semibold"> Team Name </h4>
-          <input
-            value={teamName}
-            onChange={handleChangeTeamName}
-            placeholder="Team Name"
-            className="w-full p-2 border rounded-md outline-none border-primary"
-          />
+        <div className="flex flex-col gap-3 p-3 bg-white border border-gray-200 rounded-lg">
+          <div>
+            <label htmlFor="manage-team-name" className="form-label">
+              Team name
+            </label>
+            <input
+              id="manage-team-name"
+              value={teamName}
+              onChange={handleChangeTeamName}
+              placeholder="The Dream Team"
+              className="w-full input-primary"
+              autoComplete="off"
+            />
+          </div>
           <button
-            className="w-full p-3 mt-3 font-semibold rounded-md bg-primary"
-            onClick={handleCreateTeamClicked}
+            className={`w-full py-2.5 font-semibold rounded-full ${
+              teamName.trim()
+                ? "text-white bg-primary"
+                : "text-gray-400 bg-gray-100 cursor-not-allowed"
+            }`}
+            onClick={teamName.trim() ? handleCreateTeamClicked : undefined}
+            disabled={!teamName.trim()}
           >
             Create Team
           </button>

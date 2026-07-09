@@ -1,34 +1,29 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { createEvent, defaultStagesFor } from "../../../api/client";
-
-import ManageEvent from "./events/ManageEvent.jsx";
-
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CloseIcon from "@mui/icons-material/Close";
+import { createEvent, defaultStagesFor } from "../../../api/client";
+import ManageEvent from "./events/ManageEvent.jsx";
 import CreateEvent from "../../create_league_page/events/CreateEvent.jsx";
-import RemoveIcon from "@mui/icons-material/Remove";
 import { useNotification } from "../../Util/Notification";
 
-const ManageEvents = ({ events, setEvents }) => {
+const ManageEvents = ({ events }) => {
   const [addingEvent, setAddingEvent] = useState(false);
-  const [compEvents, setCompEvents] = useState(events);
+  const [compEvents, setCompEvents] = useState(events || []);
   const { uuid } = useParams();
   const { showNotification } = useNotification();
 
-  const toggleAddEvent = () => {
-    setAddingEvent((addingEvent) => !addingEvent);
-  };
-
-  const handleEventAdd = async (eventName, type, stages) => {
+  const handleEventAdd = async (eventName, type, stages, extras = {}) => {
     try {
       const created = await createEvent({
         brolympics: uuid,
         event_type_name: eventName,
         format: type,
         stages: stages || defaultStagesFor(type),
+        ...extras,
       });
-      setCompEvents((prevEvents) => [
-        ...prevEvents,
+      setCompEvents((prev) => [
+        ...prev,
         { ...created, type: created.format || type },
       ]);
       setAddingEvent(false);
@@ -46,23 +41,31 @@ const ManageEvents = ({ events, setEvents }) => {
   };
 
   return (
-    <div className="">
-      <h2 className="font-bold text-[16px]">Manage Events </h2>
-      <div>
-        {compEvents &&
-          compEvents.map((event, i) => (
-            <div key={event.uuid || i + "_comp_events"}>
-              {i !== 0 && <div className="w-full h-[1px]" />}
-              <ManageEvent event={event} />
-            </div>
-          ))}
-      </div>
+    <div className="flex flex-col gap-2">
+      {compEvents.length === 0 && (
+        <p className="text-sm text-light">No events yet — add the first one.</p>
+      )}
+      {compEvents.map((event) => (
+        <ManageEvent event={event} key={event.uuid} />
+      ))}
+
       <button
-        className="flex gap-3  text-[16px]"
-        onClick={toggleAddEvent}
+        className={`flex items-center justify-center gap-2 w-full py-2.5 mt-2 font-semibold rounded-full ${
+          addingEvent
+            ? "text-light bg-gray-100"
+            : "text-white bg-primary"
+        }`}
+        onClick={() => setAddingEvent((v) => !v)}
       >
-        Add Event
-        {addingEvent ? <RemoveIcon /> : <AddCircleOutlineIcon />}
+        {addingEvent ? (
+          <>
+            <CloseIcon sx={{ fontSize: 18 }} /> Close
+          </>
+        ) : (
+          <>
+            <AddCircleOutlineIcon sx={{ fontSize: 18 }} /> Add Event
+          </>
+        )}
       </button>
       {addingEvent && <CreateEvent handleEventAdded={handleEventAdd} />}
     </div>

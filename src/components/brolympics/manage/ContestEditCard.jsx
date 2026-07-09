@@ -7,6 +7,7 @@ import { useNotification } from "../../Util/Notification";
  * (bracket round, swiss pairing, closed stage) already consumed the result. */
 const ContestEditCard = ({ contest, onSaved }) => {
   const { showNotification } = useNotification();
+  const [saving, setSaving] = useState(false);
   const entries = contest.entries || [];
   const teamEntries = entries.filter((e) => e.team && !e.player);
   const playerEntries = entries.filter((e) => e.player);
@@ -65,78 +66,98 @@ const ContestEditCard = ({ contest, onSaved }) => {
   };
 
   const handleUpdateClicked = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       if (contest.is_complete) {
         await unrecordContest(contest.uuid);
       }
       await recordContest(contest.uuid, buildPayload());
-      showNotification("This competition has been updated.", "!border-primary");
+      showNotification("This game has been updated.", "!border-primary");
       onSaved?.();
     } catch (error) {
       const detail = error.response?.data;
       showNotification(
         detail
           ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error when attemping to update this competition."
+          : "There was an error updating this game."
       );
+    } finally {
+      setSaving(false);
     }
   };
 
   if (!editable) {
     return (
-      <div className="p-2 text-[12px] border rounded-md">
+      <div className="p-3 text-xs bg-white border border-gray-200 rounded-lg text-light">
         {contest.kind === "match"
           ? "Waiting on earlier results to fill this matchup."
-          : "This competition has not been recorded yet. Scores are entered from the event-day screen."}
+          : "Not recorded yet — scores are entered from the event-day screen."}
       </div>
     );
   }
 
   const rows =
     contest.kind === "match"
-      ? teamEntries.map((e) => ({
-          key: e.team,
-          label: e.team_name,
-        }))
+      ? teamEntries.map((e) => ({ key: e.team, label: e.team_name }))
       : contest.kind === "outing" && isIndOuting
       ? playerEntries.map((e) => ({ key: e.player, label: e.player_name }))
       : contest.kind === "outing"
       ? [{ key: "team_score", label: teamEntries[0]?.team_name }]
       : playerEntries.map((e) => ({
           key: e.player,
-          label: `${e.player_name} (place)`,
+          label: e.player_name,
+          suffix: "place",
         }));
 
   return (
-    <div className="relative flex flex-col gap-1 p-2 border rounded-md">
-      {contest.round != null && (
-        <span className="text-[10px]">Round {contest.round}</span>
-      )}
-      {rows.map((row) => (
-        <div className="flex items-center" key={row.key}>
-          <div>{row.label}:</div>
-          <input
-            value={values[row.key] ?? ""}
-            onChange={setValue(row.key)}
-            className="p-2 rounded-md w-[60px] border ml-1"
-          />
-        </div>
-      ))}
-      {contest.kind === "outing" && isIndOuting && (
-        <div className="flex items-center">
-          <div className="font-semibold">Team (optional):</div>
-          <input
-            value={values.team_score ?? ""}
-            onChange={setValue("team_score")}
-            className="p-2 rounded-md w-[60px] border ml-1"
-          />
-        </div>
-      )}
+    <div className="p-3 bg-white border border-gray-200 rounded-lg">
+      <div className="flex items-center justify-between pb-1">
+        {contest.round != null && (
+          <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-gray-100 text-light">
+            Round {contest.round}
+          </span>
+        )}
+        {!contest.is_complete && (
+          <span className="text-[10px] text-light">not played yet</span>
+        )}
+      </div>
+      <div className="flex flex-col divide-y divide-gray-50">
+        {rows.map((row) => (
+          <div
+            className="flex items-center justify-between gap-3 py-1.5"
+            key={row.key}
+          >
+            <span className="min-w-0 text-sm truncate">
+              {row.label}
+              {row.suffix && (
+                <span className="text-[10px] text-light"> ({row.suffix})</span>
+              )}
+            </span>
+            <input
+              value={values[row.key] ?? ""}
+              onChange={setValue(row.key)}
+              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+            />
+          </div>
+        ))}
+        {contest.kind === "outing" && isIndOuting && (
+          <div className="flex items-center justify-between gap-3 py-1.5">
+            <span className="text-sm text-light">Team total (optional)</span>
+            <input
+              value={values.team_score ?? ""}
+              onChange={setValue("team_score")}
+              className="w-16 p-2 text-center bg-white border border-gray-300 rounded-md shrink-0"
+            />
+          </div>
+        )}
+      </div>
       <button
-        className="absolute px-2 py-1 rounded-md bottom-2 right-2 bg-primary"
+        className="w-full py-2 mt-2 text-sm font-semibold text-white rounded-full bg-primary disabled:opacity-50"
         onClick={handleUpdateClicked}
+        disabled={saving}
       >
-        Update
+        {saving ? "Saving..." : "Save Result"}
       </button>
     </div>
   );
