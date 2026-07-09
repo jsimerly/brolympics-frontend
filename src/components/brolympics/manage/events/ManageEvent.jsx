@@ -424,6 +424,20 @@ const ManageEvent = ({ event }) => {
                     />
                   </SettingRow>
                 )}
+                <SettingRow
+                  label="Playoffs"
+                  hint="A seeded bracket after group play."
+                >
+                  <Segmented
+                    value={!!formValues.has_playoffs}
+                    options={[
+                      [true, "On"],
+                      [false, "Off"],
+                    ]}
+                    onChange={(v) => set("has_playoffs", v)}
+                    disabled={structureLocked}
+                  />
+                </SettingRow>
                 {formValues.has_playoffs && (
                   <SettingRow
                     label="Bracket size"
@@ -552,20 +566,6 @@ const ManageEvent = ({ event }) => {
             ) : (
               <div className="flex flex-col divide-y divide-gray-50">
                 {lockedNote}
-                <SettingRow
-                  label="Playoffs"
-                  hint="A seeded bracket after group play."
-                >
-                  <Segmented
-                    value={!!formValues.has_playoffs}
-                    options={[
-                      [true, "On"],
-                      [false, "Off"],
-                    ]}
-                    onChange={(v) => set("has_playoffs", v)}
-                    disabled={structureLocked}
-                  />
-                </SettingRow>
                 {formValues.has_playoffs && (
                   <SettingRow
                     label="Placement games"
