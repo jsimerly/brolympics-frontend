@@ -1,5 +1,5 @@
 import useClickOutside from "./useClickOutside";
-import useOpenClose from "./useDropdown";
+import useOpenClose from "./useOpenClose";
 import useDropdown from "./useDropdown";
 
 export {

@@ -29,6 +29,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 - **isInviteBound**
   - is true only for invite destinations
 
+## src/components/auth/login/LoginWithEmail.test.jsx (3 tests)
+
+- **LoginWithEmail**
+  - lands on the stashed invite path after signing in
+  - lands home when nothing sent us here
+  - surfaces a failed login instead of navigating
+
 ## src/components/brolympics/events/eventDisplay.test.js (9 tests)
 
 - **groupLog**
@@ -109,4 +116,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-50 tests cataloged.
+53 tests cataloged.
