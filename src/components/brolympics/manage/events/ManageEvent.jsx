@@ -229,6 +229,12 @@ const ManageEvent = ({ event, teams = [] }) => {
           min_score: formValues.min_score ?? null,
           max_score: formValues.max_score ?? null,
           decimal_places: formValues.decimal_places ?? null,
+          // station limit: whole number >= 1, anything else means no limit
+          n_active_limit:
+            Number.isInteger(Number(formValues.n_active_limit)) &&
+            Number(formValues.n_active_limit) >= 1
+              ? Number(formValues.n_active_limit)
+              : null,
           ...(isH2h
             ? {
                 tiebreakers: formValues.tiebreakers || DEFAULT_TIEBREAKERS,
@@ -715,10 +721,23 @@ const ManageEvent = ({ event, teams = [] }) => {
           >
             <div className="flex flex-col divide-y divide-gray-50">
               {lockedNote}
+              <SettingRow
+                label="Stations"
+                hint="How many games can run at once — 1 cornhole board, 3 lanes... Blank = no limit (arm wrestling). Changeable mid-event."
+              >
+                <input
+                  value={formValues.n_active_limit || ""}
+                  name="n_active_limit"
+                  onChange={handleInputChange}
+                  className={rowInputClass}
+                  type="number"
+                  placeholder="∞"
+                />
+              </SettingRow>
               {isFfa ? (
                 <SettingRow
                   label="Heat size"
-                  hint="Pre-builds balanced heats at start; blank = make heats at the party."
+                  hint="Racers per heat — the heats are built from this when the event starts, spreading teammates apart. Required before start."
                 >
                   <input
                     value={formValues.heat_size || ""}

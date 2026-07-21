@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
   addHeat,
   closeEventStage,
   fetchBrolympicsTeams,
-  recordContest,
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import { apiErrorMessage } from "../../Util/apiError";
@@ -17,46 +17,12 @@ const PLACE_STYLE = {
   3: "bg-orange-100 text-orange-700",
 };
 
-/** One heat: read-only results once recorded, placement inputs until then.
- * Participants and admins may record; the backend enforces. */
+/** One heat: results once recorded; until then a link into the same tap-the-
+ * finish-order scorecard every other game uses (no separate logging system). */
 const HeatCard = ({ contest, index }) => {
-  const { showNotification } = useNotification();
-  const [placements, setPlacements] = useState({});
-  const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
+  const { uuid: broUuid } = useParams();
   const players = contest.entries.filter((e) => e.player);
-
-  const setPlacement = (playerUuid) => (e) => {
-    const value = e.target.value;
-    if (value === "" || /^\d+$/.test(value)) {
-      setPlacements((prev) => ({ ...prev, [playerUuid]: value }));
-    }
-  };
-
-  const handleRecordClicked = async () => {
-    const values = players.map((p) => Number(placements[p.player]));
-    if (values.some((v) => !v)) {
-      showNotification(
-        "Enter a placement for every racer.",
-        "border-yellow-500"
-      );
-      return;
-    }
-    if (saving) return;
-    setSaving(true);
-    try {
-      await recordContest(contest.uuid, {
-        placements: Object.fromEntries(
-          players.map((p) => [p.player, Number(placements[p.player])])
-        ),
-      });
-      window.location.reload();
-    } catch (error) {
-      showNotification(
-        apiErrorMessage(error, "Error recording this heat.")
-      );
-      setSaving(false);
-    }
-  };
 
   if (contest.is_complete) {
     const ranked = [...players].sort(
@@ -93,7 +59,10 @@ const HeatCard = ({ contest, index }) => {
   }
 
   return (
-    <div className="p-4 bg-white border rounded-lg border-tertiary/40">
+    <button
+      className="w-full p-4 text-left bg-white border rounded-lg border-tertiary/40"
+      onClick={() => navigate(`/b/${broUuid}/competition/${contest.uuid}`)}
+    >
       <div className="flex items-center justify-between pb-2">
         <h4 className="text-xs font-semibold tracking-wide uppercase text-light">
           Heat {index + 1}
@@ -102,35 +71,20 @@ const HeatCard = ({ contest, index }) => {
           live
         </span>
       </div>
-      <div className="divide-y divide-gray-50">
+      <div className="flex flex-wrap gap-1.5">
         {players.map((entry) => (
-          <div
-            className="flex items-center justify-between gap-3 py-1.5"
+          <span
+            className="px-2 py-1 text-xs font-medium rounded-full bg-gray-50 text-near-black"
             key={entry.player}
           >
-            <span className="min-w-0 text-sm truncate">
-              {entry.player_name}
-            </span>
-            <input
-              value={placements[entry.player] ?? ""}
-              onChange={setPlacement(entry.player)}
-              placeholder="#"
-              className="w-14 h-10 shrink-0 input-box"
-              type="text"
-              inputMode="numeric"
-              pattern="\d*"
-            />
-          </div>
+            {entry.player_name}
+          </span>
         ))}
       </div>
-      <button
-        className="w-full py-2.5 mt-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
-        onClick={handleRecordClicked}
-        disabled={saving}
-      >
-        {saving ? "Saving..." : "Record Placements"}
-      </button>
-    </div>
+      <span className="flex items-center gap-0.5 pt-2 text-xs font-semibold text-primary">
+        Score this heat <ChevronRightIcon sx={{ fontSize: 16 }} />
+      </span>
+    </button>
   );
 };
 
@@ -185,8 +139,12 @@ const AddHeatForm = ({ eventUuid }) => {
   return (
     <div className="p-4 bg-white border border-gray-200 rounded-lg">
       <h4 className="pb-2 text-xs font-semibold tracking-wide uppercase text-light">
-        New Heat — pick the racers
+        Extra Heat — pick the racers
       </h4>
+      <p className="pb-2 text-[10px] text-light">
+        For re-runs and no-shows — the scheduled heats were built when the
+        event started.
+      </p>
       <div className="overflow-hidden border border-gray-200 rounded-lg divide-y">
         {players.map((player) => (
           <label
@@ -217,12 +175,14 @@ const AddHeatForm = ({ eventUuid }) => {
   );
 };
 
-/** Event-day controls for free-for-all events: run heats, record placements,
- * and (admin) close the event when racing is done. */
+/** Event-day view for free-for-all events: the scheduled heats with their
+ * results, each live heat linking into the shared scorecard. Admins keep two
+ * escape hatches -- an extra heat for re-runs, and an early finish. */
 const HeatManager = ({ event, is_admin }) => {
   const { showNotification } = useNotification();
   const [adding, setAdding] = useState(false);
   const heats = (event.contests || []).filter((c) => c.kind === "heat");
+  const unrecorded = heats.filter((h) => !h.is_complete).length;
 
   const handleFinishClicked = async () => {
     try {
@@ -242,7 +202,7 @@ const HeatManager = ({ event, is_admin }) => {
         <HeatCard contest={heat} index={i} key={heat.uuid} />
       ))}
       {heats.length === 0 && (
-        <p className="text-sm text-light">No heats run yet.</p>
+        <p className="text-sm text-light">No heats yet.</p>
       )}
       {is_admin && event.is_active && (
         <>
@@ -258,18 +218,26 @@ const HeatManager = ({ event, is_admin }) => {
               </>
             ) : (
               <>
-                <AddCircleOutlineIcon sx={{ fontSize: 18 }} /> Add Heat
+                <AddCircleOutlineIcon sx={{ fontSize: 18 }} /> Add Extra Heat
               </>
             )}
           </button>
           {adding && <AddHeatForm eventUuid={event.uuid} />}
-          {heats.length > 0 && heats.every((h) => h.is_complete) && (
-            <button
-              className="w-full py-2.5 font-semibold border rounded-full text-primary border-primary"
-              onClick={handleFinishClicked}
-            >
-              Finish Event (final standings)
-            </button>
+          {heats.length > 0 && (
+            <>
+              <button
+                className="w-full py-2.5 font-semibold border rounded-full text-primary border-primary"
+                onClick={handleFinishClicked}
+              >
+                Finish Event (final standings)
+              </button>
+              {unrecorded > 0 && (
+                <p className="text-[10px] text-center text-light">
+                  {unrecorded} heat{unrecorded === 1 ? "" : "s"} unrecorded —
+                  finishing now scores only what's been recorded.
+                </p>
+              )}
+            </>
           )}
         </>
       )}

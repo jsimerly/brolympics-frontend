@@ -1,16 +1,24 @@
+import { useNavigate, useParams } from "react-router-dom";
 import TeamsBlock from "./TeamBlock";
 import Img from "../../Util/Img";
 
 /** One card for any in-progress contest. Matches show both sides; outings
- * show the playing team. */
-const ActiveCompetition = ({ event_name, entries = [], format }) => {
+ * show the playing team; heats show the field of racers. Tapping reopens the
+ * scorecard -- checking in and pocketing your phone can't strand a game. */
+const ActiveCompetition = ({ event_name, entries = [], uuid, format }) => {
+  const navigate = useNavigate();
+  const { uuid: broUuid } = useParams();
   const teamEntries = entries.filter((e) => e.team && !e.player);
+  const racers = entries.filter((e) => e.player);
   const isMatch = format === "h2h" && teamEntries.length >= 2;
+  const isHeat = format === "ffa" && racers.length > 0;
   const [entry_1, entry_2] = teamEntries;
   const is_bracket = entry_1?.seed != null;
 
   return (
-    <div className="p-4 bg-white border rounded-lg border-tertiary/40">
+    <div
+      className="p-4 bg-white border rounded-lg cursor-pointer border-tertiary/40"
+      onClick={() => navigate(`/b/${broUuid}/competition/${uuid}`)}>
       <div className="flex items-center justify-between pb-2">
         <span className="text-xs font-semibold tracking-wide uppercase text-light">
           {event_name}
@@ -29,6 +37,17 @@ const ActiveCompetition = ({ event_name, entries = [], format }) => {
           team_2_seed={entry_2?.seed}
           is_bracket={is_bracket}
         />
+      ) : isHeat ? (
+        <div className="flex flex-wrap gap-1.5">
+          {racers.map((entry) => (
+            <span
+              className="px-2 py-1 text-xs font-medium rounded-full bg-gray-50 text-near-black"
+              key={entry.player}
+            >
+              {entry.player_name}
+            </span>
+          ))}
+        </div>
       ) : (
         <div className="flex items-center gap-2">
           <Img

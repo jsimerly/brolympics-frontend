@@ -5,13 +5,15 @@ import TeamsBlock from "./TeamBlock";
 import Img from "../../Util/Img";
 
 /** One card for any waiting contest. Matches (h2h) show both sides; outings
- * show the checking-in team. */
+ * show the checking-in team; heats show the field of racers. */
 const AvailableCompetition = ({ event_name, entries = [], uuid, format }) => {
   const navigate = useNavigate();
   const { uuid: broUuid } = useParams();
 
   const teamEntries = entries.filter((e) => e.team && !e.player);
+  const racers = entries.filter((e) => e.player);
   const isMatch = format === "h2h" && teamEntries.length >= 2;
+  const isHeat = format === "ffa" && racers.length > 0;
   const [entry_1, entry_2] = teamEntries;
   const is_bracket = entry_1?.seed != null;
 
@@ -40,6 +42,17 @@ const AvailableCompetition = ({ event_name, entries = [], uuid, format }) => {
             team_2_seed={entry_2?.seed}
             is_bracket={is_bracket}
           />
+        ) : isHeat ? (
+          <div className="flex flex-wrap gap-1.5">
+            {racers.map((entry) => (
+              <span
+                className="px-2 py-1 text-xs font-medium rounded-full bg-gray-50 text-near-black"
+                key={entry.player}
+              >
+                {entry.player_name}
+              </span>
+            ))}
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <Img

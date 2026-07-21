@@ -96,6 +96,15 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - splits championship tree from placement games, best place first
   - survives a dangling winner_to pointer
 
+## src/components/brolympics/inCompetitions/InCompetition_ffa.test.jsx (5 tests)
+
+- **InCompetition_ffa**
+  - numbers racers in tap order and auto-fills the last one
+  - un-taps a placed racer and shifts everyone after up
+  - refuses to submit an unfinished order
+  - records the exact tap order as placements and reloads
+  - surfaces the API rejection instead of reloading
+
 ## src/components/brolympics/inCompetitions/InCompetition_outing.test.jsx (4 tests)
 
 - **InCompetition_outing**
@@ -208,4 +217,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-93 tests cataloged.
+98 tests cataloged.

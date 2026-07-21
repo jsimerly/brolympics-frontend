@@ -31,6 +31,7 @@ const FORMATS = [
     label: "Free-for-All",
     hint: "Heats and placements",
     Icon: SportsMotorsportsIcon,
+    gem: true, // premium event type (ruled 2026-07-21)
   },
 ];
 
@@ -96,7 +97,7 @@ const CreateEvent = ({ handleEventAdded }) => {
       <div>
         <span className="form-label">Format</span>
         <div className="grid grid-cols-2 gap-1.5">
-          {FORMATS.map(({ type, label, hint, Icon }) => (
+          {FORMATS.map(({ type, label, hint, Icon, gem }) => (
             <button
               key={type}
               onClick={() => setSelectedType(type)}
@@ -111,8 +112,9 @@ const CreateEvent = ({ handleEventAdded }) => {
                 className={selectedType === type ? "text-primary" : "text-light"}
               />
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium leading-tight">
+                <span className="flex items-center gap-0.5 text-sm font-medium leading-tight">
                   {label}
+                  {gem && <DiamondOutlinedIcon sx={{ fontSize: 12 }} />}
                 </span>
                 <span className="text-[10px] text-light">{hint}</span>
               </div>
@@ -170,13 +172,13 @@ const CreateEvent = ({ handleEventAdded }) => {
           <span className="form-label">Heats</span>
           <SelectRow
             label="Heat size"
-            hint="Set it to pre-build balanced heats at start (16 racers in 8s = 8/8). Leave blank to make heats at the party."
+            hint="Racers per heat — balanced heats are built at start (16 racers in 8s = 8/8), teammates spread apart. Required before the event can start."
           >
             <input
               type="number"
               value={heatSize}
               onChange={(e) => setHeatSize(e.target.value)}
-              placeholder="—"
+              placeholder="8"
               className="w-16 shrink-0 input-box"
             />
           </SelectRow>

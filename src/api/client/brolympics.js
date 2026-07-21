@@ -86,8 +86,8 @@ export const fetchActiveHome = async (broUuid) => {
     fetchMyPendingConfirmations(),
   ]);
   const mine = myOpen
-    // ffa heats are run from the event page, not the check-in cards
-    .filter((c) => c.brolympics === broUuid && c.format !== "ffa")
+    // every format flows through the same check-in cards -- heats included
+    .filter((c) => c.brolympics === broUuid)
     .map((c) => ({ ...c, type: c.format }));
   const live = events.filter((e) => e.is_active && !e.is_cancelled);
   return {

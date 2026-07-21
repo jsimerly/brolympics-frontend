@@ -29,7 +29,14 @@ mobile's expense.
   (`parseFloat(x.toPrecision(10))`) and honor the event's score format.
 - Premium settings wear `DiamondOutlinedIcon` inline (the gem) and render
   through the `Premium` wrapper / `PREMIUM_LOCKED` flag in ManageEvent — the
-  Pro gate is a flag flip, never a redesign.
+  Pro gate is a flag flip, never a redesign. Free-for-All is a premium EVENT
+  TYPE (gem on the format card; the gate lands on creating new ffa events,
+  never on viewing/scoring existing ones).
+- ONE logging pipeline for every format (ruled 2026-07-21): all games flow
+  home-screen check-in card → `/b/:uuid/competition/:uuid` scorecard
+  (h2h scores / outing scores / ffa TAP-in-finish-order — taps, never drags).
+  Heats are preset at event start; HeatManager on the event page is results +
+  admin escape hatches (extra heat, early finish), not a recording surface.
 - Terminology: "Games" (never contests/competitions), "Run-off games"
   (never placement/classification in copy), Semi-RR / Full-RR / Swiss.
 

@@ -15,7 +15,8 @@
  *   take:        bracket size ('' / number; '' = whole field)
  *   runoffs:     'off' | 'third' | 'every' | 'custom'
  *   placeThrough: deepest place played out under custom (default take - 2)
- *   heatSize:    ffa heat size ('' = heats made at the party)
+ *   heatSize:    ffa racers per heat ('' allowed at creation; the event
+ *                can't START without one -- it surfaces as a setup issue)
  *   outingGames: ind/team games per team (default 1)
  * }
  */
