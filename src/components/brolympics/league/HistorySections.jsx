@@ -401,20 +401,31 @@ export const EventsThroughYears = ({ eventTypes }) => {
   return (
     <section>
       <h2 className="mb-4 header-3">All-Time Events</h2>
-      <div className="space-y-2">
-        {rows.map((et) => (
-          <div className="card" key={et.uuid}>
+      <div className="overflow-hidden card">
+        <div className="p-2 text-xs tracking-wide text-left uppercase bg-gray-50 text-light">
+          Event
+        </div>
+        {rows.map((et, i) => (
+          <React.Fragment key={et.uuid}>
             <div
-              className="flex items-center justify-between p-3 cursor-pointer"
+              className={`flex items-center justify-between p-2 border-t cursor-pointer ${
+                i % 2 === 0 ? "bg-gray-50" : ""
+              }`}
               onClick={() => setOpenType(openType === et.uuid ? null : et.uuid)}
             >
-              <h3 className="font-semibold">{et.name}</h3>
-              {openType === et.uuid ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              <span>{et.name}</span>
+              {openType === et.uuid ? (
+                <ExpandLessIcon sx={{ fontSize: 18 }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 18 }} />
+              )}
             </div>
             {openType === et.uuid && (
-              <EventTypeHistory eventTypeUuid={et.uuid} />
+              <div className="border-t">
+                <EventTypeHistory eventTypeUuid={et.uuid} />
+              </div>
             )}
-          </div>
+          </React.Fragment>
         ))}
       </div>
       <ShowMore
