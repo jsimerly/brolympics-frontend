@@ -291,8 +291,14 @@ const ManageEvent = ({ event, teams = [] }) => {
 
   const deleteEventFunc = async () => {
     try {
-      await deleteEvent(event.uuid);
-      showNotification(`Deleted ${event.name}.`, "!border-primary");
+      // played history archives (recoverable by support); unplayed deletes
+      const resp = await deleteEvent(event.uuid);
+      showNotification(
+        resp?.data?.archived
+          ? `${event.name} archived — its results are safe and support can restore it.`
+          : `Deleted ${event.name}.`,
+        "!border-primary"
+      );
       location.reload();
     } catch (error) {
       showNotification("There was an error deleting this event.");
