@@ -17,6 +17,7 @@ import {
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification.jsx";
 import ImageCropper from "../../Util/ImageCropper.jsx";
+import { apiErrorMessage } from "../../Util/apiError";
 
 export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
   const [editing, setEditing] = useState(false);
@@ -41,11 +42,8 @@ export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
       await removePlayerFromTeam(uuid, removePlayer.uuid);
       location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "Error while removing the player."
+        apiErrorMessage(error, "Error while removing the player.")
       );
     }
   };

@@ -132,6 +132,15 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - an ind event carries its games-per-team and low-score-wins choices
   - refuses to add a nameless event
 
+## src/components/Util/apiError.test.js (5 tests)
+
+- **apiErrorMessage**
+  - uses the fallback when there is no response at all
+  - shows the first message of a DRF error array
+  - shows a detail message
+  - names the field for DRF field errors
+  - passes a plain-string body through but never renders an HTML page
+
 ## src/components/Util/dates.test.js (3 tests)
 
 - **daysUntil**
@@ -199,4 +208,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-88 tests cataloged.
+93 tests cataloged.

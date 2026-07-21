@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { recordContest, unrecordContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import { apiErrorMessage } from "../../Util/apiError";
 
 /** Admin score correction for one contest, any kind. A completed contest is
  * unrecorded then re-recorded; the backend refuses when anything downstream
@@ -76,11 +77,8 @@ const ContestEditCard = ({ contest, onSaved }) => {
       showNotification("This game has been updated.", "!border-primary");
       onSaved?.();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error updating this game."
+        apiErrorMessage(error, "There was an error updating this game.")
       );
     } finally {
       setSaving(false);

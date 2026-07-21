@@ -68,7 +68,7 @@ describe('AccountValidator', () => {
   it('validatePassword demands 8+ chars with an uppercase and a special', () => {
     const v = new AccountValidator()
     const setter = vi.fn()
-    v.validatePassword('Str0ng!pass', setter)
+    v.validatePassword('FakeTestPassw0rd!', setter)
     expect(v.errors).toEqual([])
     expect(setter).toHaveBeenLastCalledWith(false)
 

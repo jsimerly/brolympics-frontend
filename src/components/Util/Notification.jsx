@@ -29,12 +29,18 @@ export const useNotification = () => {
 
 import React from 'react'
 
-const Notification = ({ message, className, onClose }) => {
+const Notification = ({ message, className = "", onClose }) => {
   return (
-    <div className={`${className} p-2 fixed top-[70px] left-0 right-0 z-50 mx-6 rounded-md border-errorRed bg-white border text-neutralDark`}>
-      <div className='flex items-start justify-between'>      
-        {message}
-        <button onClick={onClose}><CloseIcon/></button>
+    <div
+      className={`fixed top-[70px] left-0 right-0 z-50 p-3 mx-4 text-sm bg-white
+        border rounded-lg shadow-lg border-l-4 sm:mx-auto sm:max-w-md
+        text-near-black ${className || "border-errorRed"}`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="min-w-0 pt-0.5">{message}</span>
+        <button onClick={onClose} className="shrink-0 text-light">
+          <CloseIcon sx={{ fontSize: 18 }} />
+        </button>
       </div>
     </div>
   );

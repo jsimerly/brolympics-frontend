@@ -6,6 +6,7 @@ import { createEvent, defaultStagesFor } from "../../../api/client";
 import ManageEvent from "./events/ManageEvent.jsx";
 import CreateEvent from "../../create_league_page/events/CreateEvent.jsx";
 import { useNotification } from "../../Util/Notification";
+import { apiErrorMessage } from "../../Util/apiError";
 
 const ManageEvents = ({ events, teams }) => {
   const [addingEvent, setAddingEvent] = useState(false);
@@ -31,11 +32,8 @@ const ManageEvents = ({ events, teams }) => {
         showNotification(created.warnings.join(" "), "border-yellow-500");
       }
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error creating this event."
+        apiErrorMessage(error, "There was an error creating this event.")
       );
     }
   };

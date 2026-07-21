@@ -12,6 +12,7 @@ import {
   startEvent,
   endBrolympics,
 } from "../../../api/client";
+import { apiErrorMessage } from "../../Util/apiError";
 
 /** A self-reported result from the other side, waiting on my word. */
 const ConfirmCard = ({ uuid, event_name, entries = [], recorded_by_name }) => {
@@ -153,12 +154,7 @@ const HomeActive = ({ is_admin }) => {
       await startEvent(event.uuid);
       location.reload();
     } catch (error) {
-      const detail = error.response?.data;
-      showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : `Unable to start ${event.name}.`
-      );
+      showNotification(apiErrorMessage(error, `Unable to start ${event.name}.`));
     }
   };
 
@@ -167,11 +163,8 @@ const HomeActive = ({ is_admin }) => {
       await endBrolympics(uuid);
       location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail.detail ?? detail[0] ?? detail)
-          : "There was an error ending the Brolympics."
+        apiErrorMessage(error, "There was an error ending the Brolympics.")
       );
     }
   };

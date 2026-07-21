@@ -11,6 +11,7 @@ import CopyWrapper from "../../Util/CopyWrapper.jsx";
 import PopupContinue from "../../Util/PopupContinue.jsx";
 import { startBrolympics, inviteLinkBrolympics } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import { apiErrorMessage } from "../../Util/apiError";
 
 const CheckRow = ({ state, text, actionText, onAction }) => {
   const Icon =
@@ -62,11 +63,8 @@ const LaunchCard = ({ uuid, teams, events, team_size, setStatus }) => {
       await startBrolympics(uuid);
       setStatus("active");
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail.detail ?? detail[0] ?? detail)
-          : "There was an error starting your Brolympics."
+        apiErrorMessage(error, "There was an error starting your Brolympics.")
       );
       setStarting(false);
     }
