@@ -33,6 +33,26 @@ mobile's expense.
 - Terminology: "Games" (never contests/competitions), "Run-off games"
   (never placement/classification in copy), Semi-RR / Full-RR / Swiss.
 
+## Testing
+
+- `npm test` (vitest — check the EXIT CODE), `npm run test:watch`, and
+  `npm run test:catalog` regenerates `TESTING.md` (commit it with new tests).
+  CI (.github/workflows/tests.yml) runs vitest + a production build on every
+  push — the only pre-deploy safety net.
+- Write describe/it names as full sentences — they ARE the catalog.
+- `src/test/setup.js` mocks firebaseConfig globally (it initializes Firebase
+  at import time and would throw under vitest). In component tests mock
+  `context/AuthContext` and the `api/client` module — never firebase/auth or
+  axios directly — and stub `window.location.reload` (jsdom throws on it).
+- Pure logic lives in shared modules so it stays tested: `Util/format.js`
+  (trimFloat, isScoreInput, ordinal), `Util/dates.js` (daysUntil,
+  formatDateRange), `Util/stageBuilder.js` (buildStages/formFromStages —
+  CreateEvent and ManageEvent must BOTH use it; the round-trip is pinned),
+  `events/eventDisplay.js` (groupLog, stageSentence, placeLabel...). Never
+  re-inline copies into components — that divergence has shipped bugs.
+- Test mode pins `VITE_FRONTEND_URL=https://brolympic.test` (vite.config.ts),
+  so URL tests catch any hardcoded domain.
+
 ## Patterns
 
 - `useCachedFetch(key, fn)` — stale-while-revalidate module cache; revisits
