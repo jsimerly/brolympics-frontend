@@ -21,7 +21,7 @@ vi.mock('../../../context/AuthContext', () => ({
   useAuth: () => ({ signUp: mockSignUp, login: vi.fn() }),
 }))
 
-const fillAndSubmit = ({ password = 'Str0ng!pass', confirm = 'Str0ng!pass' } = {}) => {
+const fillAndSubmit = ({ password = 'FakeTestPassw0rd!', confirm = 'FakeTestPassw0rd!' } = {}) => {
   fireEvent.change(screen.getByLabelText('Email'), {
     target: { value: 'new@brolympic.test' },
   })
@@ -55,7 +55,7 @@ describe('CreateAccount', () => {
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith('/invite/league/xyz')
     )
-    expect(mockSignUp).toHaveBeenCalledWith('new@brolympic.test', 'Str0ng!pass')
+    expect(mockSignUp).toHaveBeenCalledWith('new@brolympic.test', 'FakeTestPassw0rd!')
   })
 
   it('catches a password mismatch before ever calling signUp', async () => {

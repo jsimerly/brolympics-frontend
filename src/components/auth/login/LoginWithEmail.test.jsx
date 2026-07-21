@@ -28,7 +28,7 @@ const signIn = async () => {
     target: { value: 'bro@brolympic.test' },
   })
   fireEvent.change(screen.getByLabelText('Password'), {
-    target: { value: 'Str0ng!pass' },
+    target: { value: 'FakeTestPassw0rd!' },
   })
   fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
 }
@@ -56,7 +56,7 @@ describe('LoginWithEmail', () => {
     )
     expect(mockLogin).toHaveBeenCalledWith('email', {
       email: 'bro@brolympic.test',
-      password: 'Str0ng!pass',
+      password: 'FakeTestPassw0rd!',
     })
   })
 
