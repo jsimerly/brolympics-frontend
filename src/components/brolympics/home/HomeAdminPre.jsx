@@ -51,6 +51,9 @@ const LaunchCard = ({ uuid, teams, events, team_size, setStatus }) => {
   const individual = team_size === 1;
   const openTeams = teams.filter((t) => t.is_available !== false).length;
   const undated = events.filter((e) => !e.projected_start_date).length;
+  // events whose config doesn't fit the current field (creation never errors
+  // on these -- THIS is where they surface, and they block the start button)
+  const needsUpdate = events.filter((e) => (e.setup_issues || []).length > 0);
 
   const start = async () => {
     if (starting) return;
@@ -106,17 +109,30 @@ const LaunchCard = ({ uuid, teams, events, team_size, setStatus }) => {
             onAction={() => navigate(`/b/${uuid}/manage/manage-events`)}
           />
         )}
+        {needsUpdate.length > 0 && (
+          <CheckRow
+            state="warn"
+            text={`${needsUpdate.length} event${
+              needsUpdate.length === 1 ? " needs" : "s need"
+            } updating for this field: ${needsUpdate
+              .map((e) => e.name)
+              .join(", ")}`}
+            actionText="Fix"
+            onAction={() => navigate(`/b/${uuid}/manage/manage-events`)}
+          />
+        )}
       </div>
       <button
         className="w-full py-2.5 mt-3 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
         onClick={() => setConfirmOpen(true)}
-        disabled={starting}
+        disabled={starting || needsUpdate.length > 0}
       >
         {starting ? "Starting..." : "Start Brolympics"}
       </button>
       <p className="pt-1.5 text-[11px] text-center text-light">
-        Starting locks registration. Events kick off one by one from their
-        pages.
+        {needsUpdate.length > 0
+          ? "Some events need updating before you can begin."
+          : "Starting locks registration. Events kick off one by one from their pages."}
       </p>
       <PopupContinue
         open={confirmOpen}
