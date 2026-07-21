@@ -96,6 +96,11 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - validatePhoneNumber wants 555-555-5555 and flags anything else
   - verifyPasswordsMatch catches mismatches and resetErrors clears
 
+## src/components/Util/pagination.test.js (1 tests)
+
+- **nextVisible**
+  - climbs 10 -> 50 -> 100 -> 200 -> 400
+
 ## src/components/Util/stageBuilder.test.js (12 tests)
 
 - **buildStages**
@@ -116,4 +121,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-53 tests cataloged.
+54 tests cataloged.
