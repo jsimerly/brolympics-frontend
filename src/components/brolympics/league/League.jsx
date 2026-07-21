@@ -12,21 +12,12 @@ import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
 import { SkeletonPage, SkeletonSection } from "../../Util/Skeleton";
 import useCachedFetch from "../../../hooks/useCachedFetch";
+import { daysUntil, formatDateRange } from "../../Util/dates";
 
 const formatFounded = (iso) => {
   if (!iso) return null;
   try {
     return format(parseISO(iso), "MMMM yyyy");
-  } catch {
-    return null;
-  }
-};
-
-const formatDateRange = (start, end) => {
-  const fmt = (d) => format(parseISO(d), "MMM d");
-  try {
-    if (start && end) return `${fmt(start)} – ${fmt(end)}`;
-    return start ? fmt(start) : end ? fmt(end) : null;
   } catch {
     return null;
   }
@@ -60,15 +51,6 @@ const LiveCard = ({ uuid, name, img }) => {
       </div>
     </div>
   );
-};
-
-const daysUntil = (iso) => {
-  if (!iso) return null;
-  try {
-    return Math.ceil((parseISO(iso) - new Date()) / (1000 * 60 * 60 * 24));
-  } catch {
-    return null;
-  }
 };
 
 /** One quiet line: a bold count, then names until the line runs out. */

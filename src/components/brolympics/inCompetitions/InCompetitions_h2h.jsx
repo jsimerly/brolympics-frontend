@@ -2,6 +2,7 @@ import { useState } from "react";
 import { recordContest, abandonContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
+import { isScoreInput } from "../../Util/format";
 
 /** The h2h scorecard: both teams, two big score boxes, one loud submit. */
 const InCompetitions_h2h = ({ contest }) => {
@@ -15,7 +16,7 @@ const InCompetitions_h2h = ({ contest }) => {
   // decimals welcome -- lap times and golf scores are scores too
   const handleScoreChange = (setter) => (e) => {
     const value = e.target.value;
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+    if (isScoreInput(value)) {
       setter(value);
     }
   };

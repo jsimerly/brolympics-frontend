@@ -15,14 +15,9 @@ import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
 } from "../../../api/client";
+import { ordinal } from "../../Util/format";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
-
-const ordinal = (n) => {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
-};
 
 /** Chips for every team a player has suited up for. Podium years always get
  * their medal; non-podium ordinals ("5th") only show when showAllFinishes --

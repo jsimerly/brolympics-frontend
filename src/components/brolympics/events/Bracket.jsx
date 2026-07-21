@@ -1,11 +1,5 @@
 import BracketNode from "./BracketNode";
-
-const placeLabel = (p) =>
-  p == null
-    ? "Placement Game" // legacy nodes without decides_place
-    : { 1: "Championship", 3: "Third Place", 5: "Fifth Place", 7: "Seventh Place" }[
-        p
-      ] || `${p}th Place`;
+import { groupBracketNodes, placeLabel } from "./eventDisplay";
 
 /** Tournament trees for one knockout stage. Nodes group by which terminal
  * game their winner_to chain reaches: the championship tree, then any
@@ -13,28 +7,7 @@ const placeLabel = (p) =>
  * (3rd, 7th) rendered as standalone labeled matches. Pure-CSS elbows. */
 const Bracket = ({ nodes = [] }) => {
   if (!nodes.length) return null;
-  const byKey = Object.fromEntries(
-    nodes.map((n) => [`${n.round}_${n.slot}`, n])
-  );
-  const terminalOf = (node) => {
-    let cur = node;
-    while (cur.winner_to) {
-      const next = byKey[`${cur.winner_to[0]}_${cur.winner_to[1]}`];
-      if (!next) break;
-      cur = next;
-    }
-    return cur;
-  };
-  const groups = new Map();
-  for (const node of nodes) {
-    const terminal = terminalOf(node);
-    const key = `${terminal.round}_${terminal.slot}`;
-    if (!groups.has(key)) groups.set(key, { terminal, members: [] });
-    groups.get(key).members.push(node);
-  }
-  const ordered = [...groups.values()].sort(
-    (a, b) => (a.terminal.decides_place || 99) - (b.terminal.decides_place || 99)
-  );
+  const ordered = groupBracketNodes(nodes);
 
   const Tree = ({ members }) => {
     const rounds = [...new Set(members.map((n) => n.round))].sort(

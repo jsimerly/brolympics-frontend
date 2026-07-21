@@ -6,6 +6,9 @@ import Individual from "./eventInfo/IndInfo";
 import TeamEvent from "./eventInfo/TeamInfo";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import {
+  SCORE_FORMAT_LABEL, hasRules, stageSentence,
+} from "./eventDisplay";
 
 const QuillDisplay = ({ content }) => (
   <>
@@ -37,15 +40,6 @@ const FORMAT_LABEL = {
   ffa: "Free-for-All",
 };
 
-const SCORE_FORMAT_LABEL = {
-  B: "Win/Loss only",
-  0: "Whole numbers (1)",
-  1: "Tenths (1.0)",
-  2: "Hundredths (1.00)",
-  3: "Thousandths (1.000)",
-  16: "Any decimal",
-};
-
 const Card = ({ title, children }) => (
   <div className="p-4 bg-white border border-gray-200 rounded-lg">
     <h2 className="pb-2 text-xs font-semibold tracking-wide uppercase text-light">
@@ -61,38 +55,6 @@ const InfoRow = ({ label, value }) => (
     <span className="font-medium text-right">{value}</span>
   </div>
 );
-
-const stageSentence = (stage) => {
-  const cfg = stage.config || {};
-  if (stage.structure === "round_robin") {
-    return cfg.full
-      ? "Full round robin — everyone plays everyone"
-      : `Round robin — ${cfg.games_per_team ?? "?"} games per team`;
-  }
-  if (stage.structure === "swiss") {
-    return `Swiss — ${cfg.rounds ?? "?"} rounds paired by record`;
-  }
-  if (stage.structure === "knockout") {
-    const bits = [cfg.take ? `top ${cfg.take}` : "everyone"];
-    if (cfg.classification) bits.push("every place played out");
-    else if (cfg.third_place) bits.push("3rd place game");
-    return `Playoffs — ${bits.join(", ")}`;
-  }
-  if (stage.structure === "heats") {
-    return cfg.heat_size
-      ? `Heats of ${cfg.heat_size}, preset at start`
-      : "Heats made at the party";
-  }
-  if (stage.structure === "open_play") {
-    const games = cfg.games_per_team ?? 1;
-    return games > 1 ? `${games} games per team` : "One game per team";
-  }
-  return stage.structure.replace("_", " ");
-};
-
-// Quill leaves "<p><br></p>" behind in emptied editors
-const hasRules = (rules) =>
-  rules && rules.replace(/<[^>]*>/g, "").trim().length > 0;
 
 export const EventInfo = ({ event }) => {
   const fmtDateTime = (iso) => {
