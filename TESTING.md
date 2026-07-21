@@ -19,6 +19,14 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - build each kind from the configured frontend origin
   - never carry a hardcoded production domain
 
+## src/api/client/wizard.test.js (4 tests)
+
+- **createBroWithEvents**
+  - creates the bro then every event and collects warnings
+  - deletes the orphan bro when an event fails, then rethrows
+  - surfaces the original error even when the rollback itself fails
+  - never deletes anything when the bro itself failed to create
+
 ## src/App.test.jsx (3 tests)
 
 - **App invite choreography**
@@ -222,6 +230,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - formFromStages(buildStages(form)) preserves every structure choice
   - a reopened saved event saves back byte-identical stages
 
+## src/hooks/useCachedFetch.test.js (2 tests)
+
+- **useCachedFetch**
+  - resolves data and reports no error
+  - surfaces the fetch error when there is no cached copy
+
 ---
 
-101 tests cataloged.
+107 tests cataloged.

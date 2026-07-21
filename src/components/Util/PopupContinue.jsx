@@ -1,49 +1,50 @@
-import React from 'react'
-import useClickOutside from '../../hooks/useClickOutside'
-import CloseIcon from '@mui/icons-material/Close';
+import useClickOutside from "../../hooks/useClickOutside";
 
-const PopupContinue = ({ open, setOpen, header, desc, continueText, continueFunc }) => {
-    const close = () => {
-        setOpen(false)
-    }
+/** The confirm dialog: one decision, two pill buttons. `danger` (the default)
+ * paints the continue action red — pass danger={false} for positive confirms
+ * like starting the games. */
+const PopupContinue = ({
+  open,
+  setOpen,
+  header,
+  desc,
+  continueText,
+  continueFunc,
+  danger = true,
+}) => {
+  const close = () => setOpen(false);
+  const continueClicked = () => {
+    setOpen(false);
+    continueFunc();
+  };
 
-    const continueClicked = () => {
-        setOpen(false)
-        continueFunc()
-    }
+  const node = useClickOutside(close);
 
-    let node = useClickOutside(close)
-    
   return (
-    open &&
-    <div 
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-    >
-      <div 
-        className="relative z-30 p-6 mx-6 bg-white rounded-md shadow-xl"
-        ref={node}
-    >
-        <h2 className="mb-4 text-2xl font-bold">{header}</h2>
-        <p className="mb-6">{desc}</p>
-        <div className='flex gap-3'>
-            <button 
-                className='p-2 border rounded-md border-primary min-w-[100px]'
-                onClick={close}
+    open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50">
+        <div className="w-full max-w-sm p-5 bg-white rounded-lg shadow-xl" ref={node}>
+          <h2 className="text-lg font-bold">{header}</h2>
+          <p className="pt-1.5 pb-5 text-sm text-light">{desc}</p>
+          <div className="flex gap-2">
+            <button
+              className="w-1/2 py-2.5 text-sm font-semibold border border-gray-300 rounded-full text-light"
+              onClick={close}
             >
-                Cancel
+              Cancel
             </button>
-            <button 
-                className="min-w-[100px] p-2 font-semibold rounded  bg-errorRed"
-                onClick={continueClicked}
+            <button
+              className={`w-1/2 py-2.5 text-sm font-semibold text-white rounded-full ${
+                danger ? "bg-red" : "bg-primary"
+              }`}
+              onClick={continueClicked}
             >
-            {continueText}
+              {continueText}
             </button>
+          </div>
         </div>
-        <button className='absolute top-2 right-2' onClick={close}>
-            <CloseIcon/>
-        </button>
       </div>
-    </div>
+    )
   );
 };
 

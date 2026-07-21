@@ -5,11 +5,7 @@ import AddPlayers from "../../create_league_page/AddPlayers";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
-import {
-  createBrolympics as apiCreateBrolympics,
-  createEvent,
-  defaultStagesFor,
-} from "../../../api/client";
+import { createBroWithEvents } from "../../../api/client/wizard";
 import usePersistentState, {
   clearPersistentState,
 } from "../../../hooks/usePersistentState";
@@ -54,41 +50,29 @@ const CreateBrolympicsManager = () => {
     if (creating) return;
     setCreating(true);
     try {
-      const newBro = await apiCreateBrolympics({ ...brolympics, league: uuid });
-      const events = [
-        ...h2hEvents.map((e) => ({ ...e, format: "h2h" })),
-        ...indEvents.map((e) => ({ ...e, format: "ind" })),
-        ...teamEvents.map((e) => ({ ...e, format: "team" })),
-        ...ffaEvents.map((e) => ({ ...e, format: "ffa" })),
-      ];
-      const warnings = [];
-      for (const event of events) {
-        const created = await createEvent({
-          brolympics: newBro.uuid,
-          event_type_name: event.name,
-          format: event.format,
-          stages: event.stages || defaultStagesFor(event.format),
-          ...(event.event_type && { event_type: event.event_type }),
-          ...(event.is_high_score_wins != null && {
-            is_high_score_wins: event.is_high_score_wins,
-          }),
-          ...(event.location && { location: event.location }),
-          ...(event.rules && { rules: event.rules }),
-          ...(event.config && { config: event.config }),
-        });
-        if (created.warnings?.length) {
-          warnings.push(`${event.name}: ${created.warnings.join(" ")}`);
-        }
-      }
+      // all-or-nothing: a mid-list event failure rolls the new bro back, so
+      // trying again can't leave half-built Brolympics behind
+      const { bro, warnings } = await createBroWithEvents(
+        { ...brolympics, league: uuid },
+        [
+          ...h2hEvents.map((e) => ({ ...e, format: "h2h" })),
+          ...indEvents.map((e) => ({ ...e, format: "ind" })),
+          ...teamEvents.map((e) => ({ ...e, format: "team" })),
+          ...ffaEvents.map((e) => ({ ...e, format: "ffa" })),
+        ]
+      );
       if (warnings.length) {
         showNotification(warnings.join(" — "), "border-yellow-500");
       }
-      setLink(newBro.uuid);
+      setLink(bro.uuid);
       nextStep();
     } catch (error) {
       console.log(error);
       showNotification(
-        apiErrorMessage(error, "There was an error creating your Brolympics. Please try again.")
+        apiErrorMessage(
+          error,
+          "There was an error creating your Brolympics. Nothing was saved, so it's safe to try again."
+        )
       );
     } finally {
       setCreating(false);

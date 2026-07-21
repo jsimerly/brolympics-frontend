@@ -19,17 +19,32 @@ import { fetchBrolympicsDetail, fetchMyOpenContests } from "../../api/client";
 import useCachedFetch from "../../hooks/useCachedFetch";
 import { SkeletonBroPage } from "../Util/Skeleton";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useNotification } from "../Util/Notification";
 
 const Brolympics = () => {
   const { uuid } = useParams();
-  const { data: broInfo } = useCachedFetch(`bro-detail:${uuid}`, () =>
-    fetchBrolympicsDetail(uuid)
+  const { data: broInfo, error: broError } = useCachedFetch(
+    `bro-detail:${uuid}`,
+    () => fetchBrolympicsDetail(uuid)
   );
   const { firebaseUser } = useAuth();
+  const { showNotification } = useNotification();
   const [status, setStatus] = useState("active");
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.split("/")[3];
+
+  // A dead link (deleted/archived bro, e.g. from a stale hamburger list) must
+  // bounce with a banner, never skeleton forever with dead buttons.
+  useEffect(() => {
+    if (!broInfo && broError?.response?.status === 404) {
+      showNotification(
+        "That Brolympics no longer exists — it may have been deleted.",
+        "border-yellow-500"
+      );
+      navigate("/", { replace: true });
+    }
+  }, [broError, broInfo, navigate, showNotification]);
 
   const [activeComp, setActiveComp] = useState({
     is_available: true,

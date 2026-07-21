@@ -10,6 +10,9 @@ const useCachedFetch = (key, fetcher) => {
   const [data, setData] = useState(() => (key ? cache.get(key) : undefined));
   const [loading, setLoading] = useState(() => Boolean(key) && !cache.has(key));
   const [refreshing, setRefreshing] = useState(false);
+  // surfaced so pages can react to "this thing doesn't exist anymore" instead
+  // of skeleton-ing forever (the prod ghost-bro incident, 2026-07-21)
+  const [error, setError] = useState(null);
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
 
@@ -20,12 +23,16 @@ const useCachedFetch = (key, fetcher) => {
     setData(cache.get(key));
     setLoading(!hit);
     setRefreshing(hit);
+    setError(null);
     fetcherRef.current()
       .then((fresh) => {
         cache.set(key, fresh);
         if (alive) setData(fresh);
       })
-      .catch((error) => console.error(`fetch ${key} failed:`, error))
+      .catch((fetchError) => {
+        console.error(`fetch ${key} failed:`, fetchError);
+        if (alive) setError(fetchError);
+      })
       .finally(() => {
         if (alive) {
           setLoading(false);
@@ -37,7 +44,7 @@ const useCachedFetch = (key, fetcher) => {
     };
   }, [key]);
 
-  return { data, loading, refreshing };
+  return { data, loading, refreshing, error };
 };
 
 export default useCachedFetch;

@@ -139,6 +139,7 @@ const LaunchCard = ({ uuid, teams, events, team_size, setStatus }) => {
         desc="Registration closes and the games officially begin. Event schedules generate when you start each event."
         continueText="Start"
         continueFunc={start}
+        danger={false}
       />
     </div>
   );
