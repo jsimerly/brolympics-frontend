@@ -4,6 +4,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import StarIcon from "@mui/icons-material/Star";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
@@ -584,10 +585,11 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
               <th className="p-2 w-[40px]">#</th>
               <th className="p-2 text-left">Team</th>
               <th className="p-2 w-[55px]">Pts</th>
-              <th className="p-2 w-[45px]" title="Championships">
+              {/* same icons, same meanings as the player table */}
+              <th className="p-2 w-[45px]" title="Event wins">
                 <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
-              <th className="p-2 w-[45px]" title="Event wins">
+              <th className="p-2 w-[45px]" title="Podiums">
                 <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
             </tr>
@@ -614,6 +616,16 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
                           className="object-cover w-6 h-6 rounded shrink-0"
                         />
                         <span className="truncate">{team.name}</span>
+                        {team.championships > 0 && (
+                          <span
+                            className="flex items-center text-xs font-semibold shrink-0 text-secondary-dark"
+                            title="League championships"
+                          >
+                            <StarIcon sx={{ fontSize: 14 }} />
+                            {team.championships > 1 &&
+                              `×${team.championships}`}
+                          </span>
+                        )}
                       </span>
                       {openTeam === team.name ? (
                         <ExpandLessIcon sx={{ fontSize: 18 }} />
@@ -626,10 +638,10 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
                     {trimFloat(team.points)}
                   </td>
                   <td className="p-2 text-center border-t">
-                    {team.championships}
+                    {team.event_wins}
                   </td>
                   <td className="p-2 text-center border-t">
-                    {team.event_wins}
+                    {team.podiums}
                   </td>
                 </tr>
                 {openTeam === team.name && (

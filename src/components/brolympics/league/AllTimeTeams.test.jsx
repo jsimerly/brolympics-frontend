@@ -84,12 +84,15 @@ describe('AllTimeTeams', () => {
     mockTeamCareer.mockReset().mockResolvedValue(CAREER)
   })
 
-  it('shows the career row: points, championships, event wins', () => {
+  it('shows the career row: points, event wins, podiums, champ star', () => {
     setup()
     expect(screen.getByText('El Salvador')).toBeInTheDocument()
     expect(screen.getByText('91.5')).toBeInTheDocument()
-    expect(screen.getAllByText('1')).toHaveLength(2) // rank # + championships
-    expect(screen.getByText('8')).toBeInTheDocument() // event wins column
+    // columns mean the SAME as the player table: event wins, then podiums
+    expect(screen.getByText('8')).toBeInTheDocument()
+    expect(screen.getByText('15')).toBeInTheDocument()
+    // championships live on the name as a star, not in a column
+    expect(screen.getByTitle('League championships')).toBeInTheDocument()
     // no fetch and no history until tapped
     expect(mockTeamCareer).not.toHaveBeenCalled()
     expect(screen.queryByText('Summer 2024')).toBeNull()

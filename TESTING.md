@@ -139,7 +139,7 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 ## src/components/brolympics/league/AllTimeTeams.test.jsx (3 tests)
 
 - **AllTimeTeams**
-  - shows the career row: points, championships, event wins
+  - shows the career row: points, event wins, podiums, champ star
   - opens into record, rotating rosters, and the trophy shelf
   - folds chip noise behind +N more and unfolds on tap
 
