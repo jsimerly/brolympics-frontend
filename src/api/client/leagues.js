@@ -71,7 +71,8 @@ export const addLeagueAdmin = (uuid, uid) =>
 export const removeLeagueAdmin = (uuid, uid) =>
   api.post(`/api/leagues/${uuid}/remove-admin/`, { uid }).then((r) => r.data);
 
-/** All-time: leaderboard, championships, team lineages (by duo / by name).
+/** All-time: leaderboard, championships, and the teams register (every team
+ * identity with its whole career -- renames fold in as `aka`).
  * `limit` caps the people-scaling lists server-side (Show More lazy loading);
  * the payload's `totals` block carries the full counts. */
 export const fetchLeagueAllTime = (uuid, limit) =>

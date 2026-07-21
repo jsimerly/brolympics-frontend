@@ -15,7 +15,7 @@ import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
 } from "../../../api/client";
-import { ordinal } from "../../Util/format";
+import { ordinal, trimFloat } from "../../Util/format";
 import ShowMore from "../../Util/ShowMore";
 import { INITIAL_VISIBLE, nextVisible } from "../../Util/pagination";
 
@@ -426,11 +426,15 @@ export const EventsThroughYears = ({ eventTypes }) => {
   );
 };
 
-export const Lineages = ({ lineages, total, onNeedMore }) => {
+/** The all-time TEAMS register: every team identity with its whole career.
+ * Lineage folds in server-side -- a renamed team is one row wearing its old
+ * names as "formerly ...". Tap a row for the year-by-year history. */
+export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
   const [visible, setVisible] = useState(INITIAL_VISIBLE);
-  const duos = lineages?.by_duo || [];
-  if (!duos.length) return null;
-  const rows = duos.slice(0, visible);
+  const [openTeam, setOpenTeam] = useState(null);
+  const rows = teams || [];
+  if (!rows.length) return null;
+  const shown = rows.slice(0, visible);
   const showMore = () => {
     const next = nextVisible(visible);
     setVisible(next);
@@ -439,25 +443,97 @@ export const Lineages = ({ lineages, total, onNeedMore }) => {
 
   return (
     <section>
-      <h2 className="mb-4 header-3">Team Lineages</h2>
-      <div className="space-y-3">
-        {rows.map((duo, i) => (
-          <div className="p-4 card" key={i + "_duo"}>
-            <h3 className="font-semibold"><PlayerNames players={duo.players} /></h3>
-            <div className="text-sm text-light">
-              {duo.appearances.map((a, j) => (
-                <p key={j + "_appearance"}>
-                  {a.brolympics}:{" "}
-                  <span className="text-near-black">{a.team_name}</span>
-                </p>
-              ))}
+      <h2 className="mb-4 header-3">All-Time Teams</h2>
+      <div className="space-y-2">
+        {shown.map((team) => {
+          const open = openTeam === team.name;
+          return (
+            <div className="card" key={team.name}>
+              <div
+                className="flex items-center gap-3 p-3 cursor-pointer"
+                onClick={() => setOpenTeam(open ? null : team.name)}
+              >
+                <Img
+                  src={team.img}
+                  alt={team.name}
+                  kind="team"
+                  className="object-cover w-10 h-10 rounded-lg shrink-0"
+                />
+                <div className="flex-grow min-w-0">
+                  <h3 className="flex items-center gap-1.5 font-semibold leading-tight">
+                    <span className="truncate">{team.name}</span>
+                    {team.championships > 0 && (
+                      <span className="flex items-center text-xs font-semibold shrink-0 text-secondary-dark">
+                        <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} />
+                        {team.championships > 1 && `×${team.championships}`}
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-[11px] truncate text-light">
+                    {team.aka.length > 0 && `formerly ${team.aka.join(", ")} · `}
+                    {team.players.join(", ") || "no roster"}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold">
+                    {trimFloat(team.points)} pts
+                  </p>
+                  <p className="text-[10px] text-light">
+                    {team.years} year{team.years === 1 ? "" : "s"}
+                  </p>
+                </div>
+                {open ? (
+                  <ExpandLessIcon className="shrink-0 text-light" />
+                ) : (
+                  <ExpandMoreIcon className="shrink-0 text-light" />
+                )}
+              </div>
+              {open && (
+                <div className="p-3 border-t border-gray-100 bg-gray-50/50">
+                  <div className="space-y-1.5">
+                    {team.appearances.map((a) => (
+                      <div
+                        className="flex items-center gap-2 text-sm"
+                        key={a.team_uuid}
+                      >
+                        {a.rank && a.rank <= 3 ? (
+                          <img
+                            src={medalFor[a.rank]}
+                            alt={ordinal(a.rank)}
+                            className="h-4 shrink-0"
+                          />
+                        ) : (
+                          <span className="w-4 text-[10px] text-center shrink-0 text-light">
+                            {a.rank ? ordinal(a.rank) : "—"}
+                          </span>
+                        )}
+                        <span className="font-medium shrink-0">
+                          {a.brolympics}
+                        </span>
+                        <span className="min-w-0 truncate text-light">
+                          {a.team_name !== team.name && `as ${a.team_name} · `}
+                          {a.players.join(", ")}
+                        </span>
+                        <span className="ml-auto text-xs shrink-0 text-light">
+                          {trimFloat(a.points)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="pt-2 text-[10px] text-light">
+                    {team.event_wins} event win
+                    {team.event_wins === 1 ? "" : "s"} · {team.podiums} podium
+                    {team.podiums === 1 ? "" : "s"} all-time
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <ShowMore
-        shown={rows.length}
-        total={total ?? duos.length}
+        shown={shown.length}
+        total={total ?? rows.length}
         onMore={showMore}
       />
     </section>

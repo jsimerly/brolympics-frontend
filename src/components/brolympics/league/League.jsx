@@ -10,7 +10,7 @@ import Img from "../../Util/Img";
 import RingStrip from "../../Util/RingStrip";
 import PlayerNames from "../../Util/PlayerNames";
 import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
-import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
+import { Leaderboard, EventsThroughYears, AllTimeTeams } from "./HistorySections";
 import { SkeletonPage, SkeletonSection } from "../../Util/Skeleton";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { daysUntil, formatDateRange } from "../../Util/dates";
@@ -334,9 +334,9 @@ const League = ({ leagueInfo }) => {
               />
               <div className="space-y-8">
                 <EventsThroughYears eventTypes={eventTypes || []} />
-                <Lineages
-                  lineages={allTime?.team_lineages}
-                  total={allTime?.totals?.by_duo}
+                <AllTimeTeams
+                  teams={allTime?.teams}
+                  total={allTime?.totals?.teams}
                   onNeedMore={bumpStatsLimit}
                 />
               </div>

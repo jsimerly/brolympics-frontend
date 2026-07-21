@@ -136,6 +136,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - records both scores as numbers and reloads
   - surfaces the API rejection instead of reloading
 
+## src/components/brolympics/league/AllTimeTeams.test.jsx (2 tests)
+
+- **AllTimeTeams**
+  - shows one identity with its old names folded in
+  - opens the year-by-year history and labels renamed seasons
+
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
 - **ManageEvent**
@@ -238,4 +244,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-107 tests cataloged.
+109 tests cataloged.
