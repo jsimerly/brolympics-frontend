@@ -4,7 +4,6 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
-import StarIcon from "@mui/icons-material/Star";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
@@ -618,10 +617,14 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
                         <span className="truncate">{team.name}</span>
                         {team.championships > 0 && (
                           <span
-                            className="flex items-center text-xs font-semibold shrink-0 text-secondary-dark"
+                            className="flex items-center gap-0.5 text-xs font-semibold shrink-0 text-secondary-dark"
                             title="League championships"
                           >
-                            <StarIcon sx={{ fontSize: 14 }} />
+                            <img
+                              src={Gold}
+                              alt="champion"
+                              className="h-3.5"
+                            />
                             {team.championships > 1 &&
                               `×${team.championships}`}
                           </span>
