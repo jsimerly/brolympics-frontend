@@ -9,6 +9,7 @@ import {
   recordContest,
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import { apiErrorMessage } from "../../Util/apiError";
 
 const PLACE_STYLE = {
   1: "bg-secondary/20 text-secondary-dark",
@@ -50,11 +51,8 @@ const HeatCard = ({ contest, index }) => {
       });
       window.location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "Error recording this heat."
+        apiErrorMessage(error, "Error recording this heat.")
       );
       setSaving(false);
     }
@@ -177,11 +175,8 @@ const AddHeatForm = ({ eventUuid }) => {
       await addHeat(eventUuid, [...selected]);
       window.location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "Error creating the heat."
+        apiErrorMessage(error, "Error creating the heat.")
       );
       setSaving(false);
     }
@@ -234,11 +229,8 @@ const HeatManager = ({ event, is_admin }) => {
       await closeEventStage(event.uuid);
       window.location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "Error finishing the event."
+        apiErrorMessage(error, "Error finishing the event.")
       );
     }
   };

@@ -13,6 +13,7 @@ import {
 import usePersistentState, {
   clearPersistentState,
 } from "../../../hooks/usePersistentState";
+import { apiErrorMessage } from "../../Util/apiError";
 
 const CreateBrolympicsManager = () => {
   const { uuid } = useParams();
@@ -86,11 +87,8 @@ const CreateBrolympicsManager = () => {
       nextStep();
     } catch (error) {
       console.log(error);
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error creating your Brolympics. Please try again."
+        apiErrorMessage(error, "There was an error creating your Brolympics. Please try again.")
       );
     } finally {
       setCreating(false);

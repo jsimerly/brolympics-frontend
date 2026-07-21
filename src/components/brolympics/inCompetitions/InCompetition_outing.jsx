@@ -3,6 +3,7 @@ import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
 import { isScoreInput } from "../../Util/format";
+import { apiErrorMessage } from "../../Util/apiError";
 
 /** Score entry for outing contests: one input per active roster player for
  * ind events (dormant players sit out), a single team input for team events.
@@ -74,12 +75,8 @@ const InCompetition_outing = ({ contest }) => {
       window.location.reload();
     } catch (error) {
       console.error("Error submitting scores:", error);
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "Error submitting scores",
-        "border-red-500"
+        apiErrorMessage(error, "Error submitting scores"), "border-red-500"
       );
       setSaving(false);
     }

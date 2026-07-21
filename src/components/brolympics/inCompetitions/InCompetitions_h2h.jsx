@@ -3,6 +3,7 @@ import { recordContest, abandonContest } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
 import { isScoreInput } from "../../Util/format";
+import { apiErrorMessage } from "../../Util/apiError";
 
 /** The h2h scorecard: both teams, two big score boxes, one loud submit. */
 const InCompetitions_h2h = ({ contest }) => {
@@ -38,12 +39,10 @@ const InCompetitions_h2h = ({ contest }) => {
       showNotification("Game recorded successfully", "border-primary");
       window.location.reload();
     } catch (error) {
-      const detail = error.response?.data;
-      if (error.response?.status === 400 && detail) {
-        showNotification(String(detail[0] ?? detail), "border-yellow-500");
-      } else {
-        showNotification("Error recording the game", "border-red-500");
-      }
+      showNotification(
+        apiErrorMessage(error, "Error recording the game"),
+        error.response?.status === 400 ? "border-yellow-500" : "border-red-500"
+      );
       setSaving(false);
     }
   };

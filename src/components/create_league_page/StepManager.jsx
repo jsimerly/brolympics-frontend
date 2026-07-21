@@ -11,6 +11,7 @@ import {
   defaultStagesFor,
 } from "../../api/client";
 import { useNotification } from "../Util/Notification.jsx";
+import { apiErrorMessage } from "../Util/apiError";
 
 const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
   const [league, setLeague] = useState({});
@@ -63,11 +64,8 @@ const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
       setLink(newBro.uuid);
       nextStep();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error creating your league. Please try again."
+        apiErrorMessage(error, "There was an error creating your league. Please try again.")
       );
     } finally {
       setCreating(false);

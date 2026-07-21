@@ -23,6 +23,7 @@ import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { apiErrorMessage } from "../../../Util/apiError";
 
 // Flips per-league when Pro gating lands. Premium is a property of individual
 // gem-marked settings, not a section: locked items swap to LockedNote in place.
@@ -278,11 +279,8 @@ const ManageEvent = ({ event, teams = [] }) => {
       await updateEvent(event.uuid, patch);
       showNotification(`${event.name} has been updated.`, "!border-primary");
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an issue updating this event."
+        apiErrorMessage(error, "There was an issue updating this event.")
       );
     } finally {
       setSaving(false);
@@ -311,11 +309,8 @@ const ManageEvent = ({ event, teams = [] }) => {
       showNotification(`${event.name} is cancelled.`, "!border-primary");
       location.reload();
     } catch (error) {
-      const detail = error.response?.data;
       showNotification(
-        detail
-          ? String(detail[0] ?? detail.detail ?? JSON.stringify(detail))
-          : "There was an error cancelling this event."
+        apiErrorMessage(error, "There was an error cancelling this event.")
       );
     }
   };
