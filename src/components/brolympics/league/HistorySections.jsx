@@ -146,7 +146,7 @@ const PlayerCareer = ({ playerUuid }) => {
               }
               name={`${r.event_type} · ${r.score}`}
               title="All-time record"
-              className="bg-orange-50 border-orange-300 text-orange-900 shadow-sm"
+              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
               key={"record_" + r.event_type}
             />
           ))}
@@ -400,7 +400,7 @@ export const EventsThroughYears = ({ eventTypes }) => {
 
   return (
     <section>
-      <h2 className="mb-4 header-3">Events Through the Years</h2>
+      <h2 className="mb-4 header-3">All-Time Events</h2>
       <div className="space-y-2">
         {rows.map((et) => (
           <div className="card" key={et.uuid}>
