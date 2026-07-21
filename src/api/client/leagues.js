@@ -79,3 +79,10 @@ export const fetchLeagueAllTime = (uuid, limit) =>
   api
     .get(`/api/leagues/${uuid}/all-time/${limit ? `?limit=${limit}` : ""}`)
     .then((r) => r.data);
+
+/** All-time line for one team NAME (the name is the lineage): the all-games
+ * record plus per-discipline finishes. */
+export const fetchTeamCareer = (uuid, name) =>
+  api
+    .get(`/api/leagues/${uuid}/team-career/?name=${encodeURIComponent(name)}`)
+    .then((r) => r.data);

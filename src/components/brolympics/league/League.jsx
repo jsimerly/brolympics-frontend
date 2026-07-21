@@ -327,19 +327,21 @@ const League = ({ leagueInfo }) => {
             </>
           ) : (
             <>
-              <Leaderboard
-                leaderboard={allTime?.leaderboard}
-                total={allTime?.totals?.leaderboard}
-                onNeedMore={bumpStatsLimit}
-              />
+              {/* it's a team game: teams first, then the events, then the
+                  individuals (commissioner's ordering) */}
               <div className="space-y-8">
-                <EventsThroughYears eventTypes={eventTypes || []} />
                 <AllTimeTeams
                   teams={allTime?.teams}
                   total={allTime?.totals?.teams}
                   onNeedMore={bumpStatsLimit}
                 />
+                <EventsThroughYears eventTypes={eventTypes || []} />
               </div>
+              <Leaderboard
+                leaderboard={allTime?.leaderboard}
+                total={allTime?.totals?.leaderboard}
+                onNeedMore={bumpStatsLimit}
+              />
             </>
           )}
         </div>

@@ -136,11 +136,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - records both scores as numbers and reloads
   - surfaces the API rejection instead of reloading
 
-## src/components/brolympics/league/AllTimeTeams.test.jsx (2 tests)
+## src/components/brolympics/league/AllTimeTeams.test.jsx (3 tests)
 
 - **AllTimeTeams**
   - shows the career row: points, championships, event wins
-  - opens the year-by-year history with each season's roster
+  - opens into record, rotating rosters, and the trophy shelf
+  - folds chip noise behind +N more and unfolds on tap
 
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
@@ -244,4 +245,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-109 tests cataloged.
+110 tests cataloged.

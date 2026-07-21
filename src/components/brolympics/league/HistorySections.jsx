@@ -14,6 +14,7 @@ import PlayerNames from "../../Util/PlayerNames";
 import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
+  fetchTeamCareer,
 } from "../../../api/client";
 import { ordinal, trimFloat } from "../../Util/format";
 import ShowMore from "../../Util/ShowMore";
@@ -71,6 +72,30 @@ const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
   </div>
 );
 
+/** The chip-noise valve: a trophy case shows its best shelf first. The most
+ * impressive chips lead, the rest fold behind a "+N more" toggle. */
+const CHIP_PREVIEW = 6;
+const ChipOverflow = ({ children, className = "" }) => {
+  const [expanded, setExpanded] = useState(false);
+  const chips = React.Children.toArray(children).filter(Boolean);
+  if (!chips.length) return null;
+  const hidden = chips.length - CHIP_PREVIEW;
+  const shown = expanded ? chips : chips.slice(0, CHIP_PREVIEW);
+  return (
+    <div className={`flex flex-wrap gap-2 ${className}`}>
+      {shown}
+      {hidden > 0 && (
+        <button
+          className="px-2.5 py-1 text-xs font-semibold border border-dashed border-gray-300 rounded-full text-light"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? "Show less" : `+${hidden} more`}
+        </button>
+      )}
+    </div>
+  );
+};
+
 /** The leaderboard expand: a highlight reel, not the full record. Medal
  * finishes, event wins/podiums, records held -- details live on the stats
  * page. */
@@ -105,7 +130,21 @@ const PlayerCareer = ({ playerUuid }) => {
         seconds.length > 0 ||
         thirds.length > 0 ||
         records.length > 0) && (
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+        <ChipOverflow className="pt-3 border-t border-gray-200">
+          {records.map((r) => (
+            <AchievementChip
+              icon={
+                <WhatshotOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-orange-500"
+                />
+              }
+              name={`${r.event_type} · ${r.score}`}
+              title="All-time record"
+              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
+              key={"record_" + r.event_type}
+            />
+          ))}
           {wins.map((it) => (
             <AchievementChip
               icon={<img src={Gold} alt="" className="h-3.5" />}
@@ -136,21 +175,7 @@ const PlayerCareer = ({ playerUuid }) => {
               key={"third_" + it.name}
             />
           ))}
-          {records.map((r) => (
-            <AchievementChip
-              icon={
-                <WhatshotOutlinedIcon
-                  sx={{ fontSize: 14 }}
-                  className="text-orange-500"
-                />
-              }
-              name={`${r.event_type} · ${r.score}`}
-              title="All-time record"
-              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
-              key={"record_" + r.event_type}
-            />
-          ))}
-        </div>
+        </ChipOverflow>
       )}
       <button
         className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
@@ -437,35 +462,103 @@ export const EventsThroughYears = ({ eventTypes }) => {
   );
 };
 
-/** A team's expand: the year-by-year history. The name IS the lineage --
- * rosters rotate (and get handed down) under it, so each season line shows
- * who wore the colors that year. */
-const TeamHistory = ({ team }) => (
-  <div className="p-2 space-y-1.5">
-    {team.appearances.map((a) => (
-      <div className="flex items-center gap-2 text-sm" key={a.team_uuid}>
-        {a.rank && a.rank <= 3 ? (
-          <img
-            src={medalFor[a.rank]}
-            alt={ordinal(a.rank)}
-            className="h-4 shrink-0"
-          />
-        ) : (
-          <span className="w-4 text-[10px] text-center shrink-0 text-light">
-            {a.rank ? ordinal(a.rank) : "—"}
-          </span>
-        )}
-        <span className="font-medium shrink-0">{a.brolympics}</span>
-        <span className="min-w-0 truncate text-light">
-          {a.players.join(", ") || "no roster"}
-        </span>
-        <span className="ml-auto text-xs shrink-0 text-light">
-          {trimFloat(a.points)}
-        </span>
+/** A team's expand: the all-games record, the trophy shelf, and the year-by-
+ * year history. The name IS the lineage -- rosters rotate (and get handed
+ * down) under it, so each season line shows who wore the colors that year. */
+const TeamHistory = ({ team }) => {
+  const { uuid: leagueUuid } = useParams();
+  const [career, setCareer] = useState(null);
+
+  useEffect(() => {
+    fetchTeamCareer(leagueUuid, team.name)
+      .then(setCareer)
+      .catch((error) => console.error("Error fetching team career:", error));
+  }, [leagueUuid, team.name]);
+
+  const record = career?.record;
+  const games = record ? record.wins + record.losses + record.ties : 0;
+  const wins = (career?.disciplines || [])
+    .filter((d) => d.event_wins > 0)
+    .map((d) => ({ name: d.event_type, count: d.event_wins }));
+  const seconds = (career?.disciplines || [])
+    .filter((d) => d.seconds > 0)
+    .map((d) => ({ name: d.event_type, count: d.seconds }));
+  const thirds = (career?.disciplines || [])
+    .filter((d) => d.thirds > 0)
+    .map((d) => ({ name: d.event_type, count: d.thirds }));
+
+  return (
+    <div className="p-2 space-y-3">
+      {games > 0 && (
+        <p className="text-sm">
+          <span className="font-semibold">
+            {record.wins}-{record.losses}
+            {record.ties ? `-${record.ties}` : ""}
+          </span>{" "}
+          <span className="text-light">in head-to-head games all-time</span>
+        </p>
+      )}
+      <div className="space-y-1.5">
+        {team.appearances.map((a) => (
+          <div className="flex items-center gap-2 text-sm" key={a.team_uuid}>
+            {a.rank && a.rank <= 3 ? (
+              <img
+                src={medalFor[a.rank]}
+                alt={ordinal(a.rank)}
+                className="h-4 shrink-0"
+              />
+            ) : (
+              <span className="w-4 text-[10px] text-center shrink-0 text-light">
+                {a.rank ? ordinal(a.rank) : "—"}
+              </span>
+            )}
+            <span className="font-medium shrink-0">{a.brolympics}</span>
+            <span className="min-w-0 truncate text-light">
+              {a.players.join(", ") || "no roster"}
+            </span>
+            <span className="ml-auto text-xs shrink-0 text-light">
+              {trimFloat(a.points)}
+            </span>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
-);
+      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0) && (
+        <ChipOverflow className="pt-3 border-t border-gray-200">
+          {wins.map((it) => (
+            <AchievementChip
+              icon={<img src={Gold} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Event wins"
+              className="bg-gray-50"
+              key={"win_" + it.name}
+            />
+          ))}
+          {seconds.map((it) => (
+            <AchievementChip
+              icon={<img src={Silver} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Second-place finishes"
+              className="bg-gray-50"
+              key={"second_" + it.name}
+            />
+          ))}
+          {thirds.map((it) => (
+            <AchievementChip
+              icon={<img src={Bronze} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Third-place finishes"
+              className="bg-gray-50"
+              key={"third_" + it.name}
+            />
+          ))}
+        </ChipOverflow>
+      )}
+    </div>
+  );
+};
 
 /** The all-time TEAMS register in the leaderboard's visual language: same
  * table, same columns -- one row per team NAME with its whole career. */
