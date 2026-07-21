@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -12,21 +13,12 @@ import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, Lineages } from "./HistorySections";
 import { SkeletonPage, SkeletonSection } from "../../Util/Skeleton";
 import useCachedFetch from "../../../hooks/useCachedFetch";
+import { daysUntil, formatDateRange } from "../../Util/dates";
 
 const formatFounded = (iso) => {
   if (!iso) return null;
   try {
     return format(parseISO(iso), "MMMM yyyy");
-  } catch {
-    return null;
-  }
-};
-
-const formatDateRange = (start, end) => {
-  const fmt = (d) => format(parseISO(d), "MMM d");
-  try {
-    if (start && end) return `${fmt(start)} – ${fmt(end)}`;
-    return start ? fmt(start) : end ? fmt(end) : null;
   } catch {
     return null;
   }
@@ -60,15 +52,6 @@ const LiveCard = ({ uuid, name, img }) => {
       </div>
     </div>
   );
-};
-
-const daysUntil = (iso) => {
-  if (!iso) return null;
-  try {
-    return Math.ceil((parseISO(iso) - new Date()) / (1000 * 60 * 60 * 24));
-  } catch {
-    return null;
-  }
 };
 
 /** One quiet line: a bold count, then names until the line runs out. */
@@ -225,16 +208,29 @@ const League = ({ leagueInfo }) => {
   const isAdmin = !!leagueInfo?.is_admin;
   const founded = formatFounded(leagueInfo?.founded);
 
+  // Show More ladder: sections reveal 10 -> 50 -> 100...; the server fetch
+  // limit follows the largest request so big leagues never ship full lists.
+  const [statsLimit, setStatsLimit] = useState(10);
+  const bumpStatsLimit = (next) =>
+    setStatsLimit((current) => Math.max(current, next));
+
   // cached: revisits paint instantly and refresh in the background
-  const { data: allTime, loading: loadingAllTime } = useCachedFetch(
-    uuid ? `league-alltime:${uuid}` : null,
-    () => fetchLeagueAllTime(uuid)
+  const { data: allTimeLive, loading: loadingAllTime } = useCachedFetch(
+    uuid ? `league-alltime:${uuid}:${statsLimit}` : null,
+    () => fetchLeagueAllTime(uuid, statsLimit)
   );
+  // keep the last payload while a bigger limit loads -- Show More should
+  // grow the list in place, never flash a skeleton
+  const lastAllTime = useRef(null);
+  if (allTimeLive) lastAllTime.current = allTimeLive;
+  const allTime = allTimeLive ?? lastAllTime.current;
+
   const { data: eventTypes, loading: loadingTypes } = useCachedFetch(
     uuid ? `league-eventtypes:${uuid}` : null,
     () => fetchEventTypes(uuid)
   );
-  const historyLoading = loadingAllTime || loadingTypes;
+  const historyLoading =
+    (loadingAllTime && !allTime) || (loadingTypes && !eventTypes);
 
   if (!leagueInfo) {
     return (
@@ -331,10 +327,18 @@ const League = ({ leagueInfo }) => {
             </>
           ) : (
             <>
-              <Leaderboard leaderboard={allTime?.leaderboard} />
+              <Leaderboard
+                leaderboard={allTime?.leaderboard}
+                total={allTime?.totals?.leaderboard}
+                onNeedMore={bumpStatsLimit}
+              />
               <div className="space-y-8">
                 <EventsThroughYears eventTypes={eventTypes || []} />
-                <Lineages lineages={allTime?.team_lineages} />
+                <Lineages
+                  lineages={allTime?.team_lineages}
+                  total={allTime?.totals?.by_duo}
+                  onNeedMore={bumpStatsLimit}
+                />
               </div>
             </>
           )}

@@ -19,6 +19,7 @@ import CopyWrapper from "../../Util/CopyWrapper.jsx";
 import PopupContinue from "../../Util/PopupContinue.jsx";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper.jsx";
 import { useNotification } from "../../Util/Notification.jsx";
+import { daysUntil } from "../../Util/dates";
 
 const FORMAT_LABEL = {
   h2h: "Head to Head",
@@ -27,14 +28,8 @@ const FORMAT_LABEL = {
   ffa: "Free-for-All",
 };
 
-const daysUntil = (dateStr) => {
-  if (!dateStr) return null;
-  const days = Math.ceil(
-    (parseISO(dateStr) - new Date()) / (1000 * 60 * 60 * 24)
-  );
-  return days;
-};
-
+/* dateRange stays local: it collapses same-day ranges and says "Dates TBD",
+   unlike the shared formatDateRange. */
 const dateRange = (start, end) => {
   if (!start) return "Dates TBD";
   const from = format(parseISO(start), "MMM d");

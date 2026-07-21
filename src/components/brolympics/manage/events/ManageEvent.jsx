@@ -8,6 +8,10 @@ import {
 } from "../../../../api/client";
 import PopupContinue from "../../../Util/PopupContinue";
 import { useNotification } from "../../../Util/Notification";
+import {
+  buildStages as buildStageList,
+  formFromStages,
+} from "../../../Util/stageBuilder";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -149,40 +153,20 @@ const ManageEvent = ({ event, teams = [] }) => {
 
   useEffect(() => {
     if (event) {
-      const stages = event.stages || [];
-      const rr = stages.find((s) => s.structure === "round_robin");
-      const swiss = stages.find((s) => s.structure === "swiss");
-      const ko = stages.find((s) => s.structure === "knockout");
-      const heats = stages.find((s) => s.structure === "heats");
-      const openPlay = stages.find((s) => s.structure === "open_play");
+      const structure = formFromStages(event.stages || []);
       setFormValues({
         ...event,
         ...(event.config || {}),
         projected_start_date: toLocalInput(event.projected_start_date),
         projected_end_date: toLocalInput(event.projected_end_date),
-        group_play: swiss
-          ? "swiss"
-          : rr
-          ? rr.config?.full
-            ? "full"
-            : "semi"
-          : "none",
-        n_matches: rr?.config?.games_per_team ?? swiss?.config?.rounds ?? "",
-        has_playoffs: !!ko,
-        bracket_take: ko?.config?.take ?? "",
-        runoffs: ko?.config?.classification
-          ? ko?.config?.unplayed_places?.length
-            ? "custom"
-            : "every"
-          : ko?.config?.third_place
-          ? "third"
-          : "off",
-        place_through:
-          ko?.config?.take && ko?.config?.unplayed_places?.length
-            ? ko.config.take - 2 * ko.config.unplayed_places.length
-            : "",
-        heat_size: heats?.config?.heat_size ?? "",
-        outing_games: openPlay?.config?.games_per_team ?? 1,
+        group_play: structure.groupPlay,
+        n_matches: structure.nMatches,
+        has_playoffs: structure.hasPlayoffs,
+        bracket_take: structure.take,
+        runoffs: structure.runoffs,
+        place_through: structure.placeThrough,
+        heat_size: structure.heatSize,
+        outing_games: structure.outingGames,
         tiebreakers: (event.config?.tiebreakers ?? DEFAULT_TIEBREAKERS).filter(
           (key) => key in TIEBREAKER_LABELS
         ),
@@ -213,59 +197,19 @@ const ManageEvent = ({ event, teams = [] }) => {
       return { ...prev, tiebreakers: list };
     });
 
-  // rebuild the stage list from the structure choices (CreateEvent semantics)
-  const buildStages = () => {
-    if (isFfa) {
-      const size = Number(formValues.heat_size);
-      return [
-        { structure: "heats", config: size >= 2 ? { heat_size: size } : {} },
-      ];
-    }
-    if (!isH2h) {
-      const games = Number(formValues.outing_games);
-      return [
-        {
-          structure: "open_play",
-          config: games >= 1 ? { games_per_team: games } : {},
-        },
-      ];
-    }
-    const stages = [];
-    const n = Number(formValues.n_matches);
-    if (formValues.group_play === "semi") {
-      stages.push({
-        structure: "round_robin",
-        config: { games_per_team: n || 4 },
-      });
-    } else if (formValues.group_play === "full") {
-      stages.push({ structure: "round_robin", config: { full: true } });
-    } else if (formValues.group_play === "swiss") {
-      stages.push({ structure: "swiss", config: { rounds: n || 4 } });
-    }
-    if (formValues.has_playoffs || stages.length === 0) {
-      const config = { byes: "seeded" };
-      const take = Number(formValues.bracket_take);
-      if (take >= 2) config.take = take;
-      const runoffs = formValues.runoffs;
-      if (runoffs === "every" || runoffs === "custom") {
-        // classification pools include the 3rd place game
-        config.classification = true;
-        if (runoffs === "custom" && take >= 6) {
-          const through =
-            Number(formValues.place_through) || take - 2;
-          const unplayed = [];
-          for (let place = 3; place < take; place += 2) {
-            if (place > through) unplayed.push(place);
-          }
-          if (unplayed.length) config.unplayed_places = unplayed;
-        }
-      } else if (runoffs === "third") {
-        config.third_place = true;
-      }
-      stages.push({ structure: "knockout", config });
-    }
-    return stages;
-  };
+  // rebuild the stage list from the structure choices (shared with CreateEvent)
+  const buildStages = () =>
+    buildStageList({
+      format,
+      groupPlay: formValues.group_play,
+      nMatches: formValues.n_matches,
+      hasPlayoffs: formValues.has_playoffs,
+      take: formValues.bracket_take,
+      runoffs: formValues.runoffs,
+      placeThrough: formValues.place_through,
+      heatSize: formValues.heat_size,
+      outingGames: formValues.outing_games,
+    });
 
   const canEditStructure = !structureLocked;
 
@@ -347,8 +291,14 @@ const ManageEvent = ({ event, teams = [] }) => {
 
   const deleteEventFunc = async () => {
     try {
-      await deleteEvent(event.uuid);
-      showNotification(`Deleted ${event.name}.`, "!border-primary");
+      // played history archives (recoverable by support); unplayed deletes
+      const resp = await deleteEvent(event.uuid);
+      showNotification(
+        resp?.data?.archived
+          ? `${event.name} archived — its results are safe and support can restore it.`
+          : `Deleted ${event.name}.`,
+        "!border-primary"
+      );
       location.reload();
     } catch (error) {
       showNotification("There was an error deleting this event.");

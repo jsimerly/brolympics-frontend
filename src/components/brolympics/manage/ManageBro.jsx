@@ -61,8 +61,14 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
 
   const deleteBro = async () => {
     try {
-      await deleteBrolympics(uuid);
-      showNotification("This Brolympics has been deleted.", "!border-primary");
+      // played history archives (recoverable by support); empty shells delete
+      const resp = await deleteBrolympics(uuid);
+      showNotification(
+        resp?.data?.archived
+          ? "Brolympics archived — its history is safe and support can restore it."
+          : "This Brolympics has been deleted.",
+        "!border-primary"
+      );
       navigate("/");
     } catch (error) {
       showNotification("There was an error deleting this Brolympics.");

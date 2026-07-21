@@ -15,14 +15,11 @@ import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
 } from "../../../api/client";
+import { ordinal } from "../../Util/format";
+import ShowMore from "../../Util/ShowMore";
+import { INITIAL_VISIBLE, nextVisible } from "../../Util/pagination";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
-
-const ordinal = (n) => {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
-};
 
 /** Chips for every team a player has suited up for. Podium years always get
  * their medal; non-podium ordinals ("5th") only show when showAllFinishes --
@@ -167,10 +164,17 @@ const PlayerCareer = ({ playerUuid }) => {
   );
 };
 
-export const Leaderboard = ({ leaderboard }) => {
+export const Leaderboard = ({ leaderboard, total, onNeedMore }) => {
   const [openPlayer, setOpenPlayer] = useState(null);
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
   if (!leaderboard?.length) return null;
+  const rows = leaderboard.slice(0, visible);
+  const showMore = () => {
+    const next = nextVisible(visible);
+    setVisible(next);
+    onNeedMore?.(next); // parent bumps the server-side fetch limit
+  };
 
   return (
     <section>
@@ -191,7 +195,7 @@ export const Leaderboard = ({ leaderboard }) => {
             </tr>
           </thead>
           <tbody>
-            {leaderboard.map((row, i) => (
+            {rows.map((row, i) => (
               <React.Fragment key={row.uuid}>
                 <tr
                   className={`cursor-pointer ${i % 2 === 0 ? "bg-gray-50" : ""}`}
@@ -232,6 +236,11 @@ export const Leaderboard = ({ leaderboard }) => {
           </tbody>
         </table>
       </div>
+      <ShowMore
+        shown={rows.length}
+        total={total ?? leaderboard.length}
+        onMore={showMore}
+      />
     </section>
   );
 };
@@ -384,14 +393,16 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
 
 export const EventsThroughYears = ({ eventTypes }) => {
   const [openType, setOpenType] = useState(null);
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
   if (!eventTypes?.length) return null;
+  const rows = eventTypes.slice(0, visible);
 
   return (
     <section>
       <h2 className="mb-4 header-3">Events Through the Years</h2>
       <div className="space-y-2">
-        {eventTypes.map((et) => (
+        {rows.map((et) => (
           <div className="card" key={et.uuid}>
             <div
               className="flex items-center justify-between p-3 cursor-pointer"
@@ -406,19 +417,31 @@ export const EventsThroughYears = ({ eventTypes }) => {
           </div>
         ))}
       </div>
+      <ShowMore
+        shown={rows.length}
+        total={eventTypes.length}
+        onMore={() => setVisible(nextVisible(visible))}
+      />
     </section>
   );
 };
 
-export const Lineages = ({ lineages }) => {
+export const Lineages = ({ lineages, total, onNeedMore }) => {
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
   const duos = lineages?.by_duo || [];
   if (!duos.length) return null;
+  const rows = duos.slice(0, visible);
+  const showMore = () => {
+    const next = nextVisible(visible);
+    setVisible(next);
+    onNeedMore?.(next); // parent bumps the server-side fetch limit
+  };
 
   return (
     <section>
       <h2 className="mb-4 header-3">Team Lineages</h2>
       <div className="space-y-3">
-        {duos.map((duo, i) => (
+        {rows.map((duo, i) => (
           <div className="p-4 card" key={i + "_duo"}>
             <h3 className="font-semibold"><PlayerNames players={duo.players} /></h3>
             <div className="text-sm text-light">
@@ -432,6 +455,11 @@ export const Lineages = ({ lineages }) => {
           </div>
         ))}
       </div>
+      <ShowMore
+        shown={rows.length}
+        total={total ?? duos.length}
+        onMore={showMore}
+      />
     </section>
   );
 };

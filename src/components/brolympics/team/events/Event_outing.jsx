@@ -1,4 +1,5 @@
 import EventWrapper from "./EventWrapper";
+import { trimFloat } from "../../../Util/format";
 
 /** One outing, game-log style: the score up front, player breakdown after. */
 const Outing = ({ contest }) => {
@@ -14,9 +15,7 @@ const Outing = ({ contest }) => {
   return (
     <div className="flex items-start gap-2 py-1.5 text-sm border-t first:border-t-0">
       <span className="w-10 font-bold shrink-0">
-        {contest.is_complete && total != null
-          ? parseFloat(total.toPrecision(10))
-          : "–"}
+        {contest.is_complete && total != null ? trimFloat(total) : "–"}
       </span>
       <span className="flex flex-col flex-grow min-w-0 text-light">
         {playerEntries.length > 0 ? (
@@ -50,7 +49,7 @@ const Event_outing = ({
 }) => {
   const display_score =
     stats.total != null && stats.total !== 0
-      ? `Score: ${parseFloat(Number(stats.total).toPrecision(10))}`
+      ? `Score: ${trimFloat(Number(stats.total))}`
       : "";
 
   return (

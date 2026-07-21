@@ -92,8 +92,14 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
 
   const confirmDelete = async () => {
     try {
-      await deleteLeague(leagueInfo.uuid);
-      showNotification("League deleted successfully", "success");
+      // played history archives (recoverable by support); empty shells delete
+      const resp = await deleteLeague(leagueInfo.uuid);
+      showNotification(
+        resp?.data?.archived
+          ? "League archived — its history is safe and support can restore it."
+          : "League deleted successfully",
+        "success"
+      );
       if (onDelete) onDelete(leagueInfo.uuid);
       navigate("/");
     } catch (error) {

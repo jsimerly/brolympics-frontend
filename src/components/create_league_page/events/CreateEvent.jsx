@@ -5,6 +5,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import SportsMotorsportsIcon from "@mui/icons-material/SportsMotorsports";
+import { buildStages as buildStageList } from "../../Util/stageBuilder";
 
 const FORMATS = [
   {
@@ -55,60 +56,18 @@ const CreateEvent = ({ handleEventAdded }) => {
   const [heatSize, setHeatSize] = useState("");
   const [outingGames, setOutingGames] = useState("1");
 
-  const buildStages = () => {
-    if (selectedType === "ffa") {
-      const size = Number(heatSize);
-      return [
-        {
-          structure: "heats",
-          config: size >= 2 ? { heat_size: size } : {},
-        },
-      ];
-    }
-    if (selectedType !== "h2h") {
-      const games = Number(outingGames);
-      return [
-        {
-          structure: "open_play",
-          config: games >= 1 ? { games_per_team: games } : {},
-        },
-      ];
-    }
-
-    const stages = [];
-    const n = Number(groupGames) || 4;
-    if (groupPlay === "semi") {
-      stages.push({ structure: "round_robin", config: { games_per_team: n } });
-    } else if (groupPlay === "full") {
-      stages.push({ structure: "round_robin", config: { full: true } });
-    } else if (groupPlay === "swiss") {
-      stages.push({ structure: "swiss", config: { rounds: n } });
-    }
-    if (playoffTake !== "none" || stages.length === 0) {
-      const config = { byes: "seeded" };
-      const take =
-        playoffTake !== "all" && playoffTake !== "none"
-          ? Number(playoffTake)
-          : null;
-      if (take) config.take = take;
-      if (runoffs === "every" || runoffs === "custom") {
-        // classification pools include the 3rd place game
-        config.classification = true;
-        if (runoffs === "custom" && take && take >= 6) {
-          const through = Number(placeThrough) || take - 2;
-          const unplayed = [];
-          for (let place = 3; place < take; place += 2) {
-            if (place > through) unplayed.push(place);
-          }
-          if (unplayed.length) config.unplayed_places = unplayed;
-        }
-      } else if (runoffs === "third") {
-        config.third_place = true;
-      }
-      stages.push({ structure: "knockout", config });
-    }
-    return stages;
-  };
+  const buildStages = () =>
+    buildStageList({
+      format: selectedType,
+      groupPlay,
+      nMatches: groupGames,
+      hasPlayoffs: playoffTake !== "none",
+      take: playoffTake !== "all" && playoffTake !== "none" ? playoffTake : "",
+      runoffs,
+      placeThrough,
+      heatSize,
+      outingGames,
+    });
 
   const addClicked = () => {
     handleEventAdded(eventName, selectedType, buildStages(), {

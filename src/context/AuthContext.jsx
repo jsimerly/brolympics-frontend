@@ -36,8 +36,10 @@ export function AuthProvider({ children }) {
           const data = await getUser();
           setUser(data);
 
-          // Check for pending invite
-          if (pendingInvite && user.account_complete) {
+          // Check for pending invite (read the FRESH user -- `user` here is
+          // the stale closure value, null on first sign-in, and reading it
+          // threw into the catch and silently killed the invite redirect)
+          if (pendingInvite && data.account_complete) {
             navigate(pendingInvite);
             setPendingInvite(null);
           }

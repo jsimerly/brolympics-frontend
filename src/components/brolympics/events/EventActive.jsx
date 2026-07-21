@@ -10,10 +10,8 @@ import Img from "../../Util/Img";
 import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import { EventInfo } from "./EventInfo.jsx";
-
-/** 25.05 + 25.208 should read 50.258, not 50.257999999999996. */
-const trimFloat = (value) =>
-  typeof value === "number" ? parseFloat(value.toPrecision(10)) : value;
+import { trimFloat } from "../../Util/format";
+import { groupLog } from "./eventDisplay";
 
 /** One outing line inside a team's group: total up front, players after. */
 const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
@@ -102,42 +100,6 @@ const TeamOutings = ({ contests, standings }) => {
 };
 
 const RESULT_STYLE = { w: "text-tertiary", l: "text-red", t: "text-light" };
-
-/** Chunk the (stage-desc, round-desc ordered) log into labeled sections:
- * playoff rounds first, then group-play rounds. */
-const groupLog = (contests) => {
-  const groups = [];
-  let key = null;
-  for (const contest of contests) {
-    const k = `${contest.stage_structure}|${contest.round}`;
-    if (k !== key) {
-      key = k;
-      groups.push({
-        structure: contest.stage_structure,
-        round: contest.round,
-        games: [],
-      });
-    }
-    groups[groups.length - 1].games.push(contest);
-  }
-  const finalsRound = Math.max(
-    0,
-    ...contests
-      .filter((c) => c.stage_structure === "knockout")
-      .map((c) => c.round ?? 0)
-  );
-  return groups.map((g) => ({
-    ...g,
-    label:
-      g.structure === "knockout"
-        ? g.round === finalsRound
-          ? "Playoffs · Finals"
-          : `Playoffs · Round ${g.round}`
-        : g.round != null
-        ? `Round ${g.round}`
-        : "Games",
-  }));
-};
 
 /** h2h games grouped one block per team, standings order. Every game shows
  * under both teams -- that's the point: find your flag, read your season. */

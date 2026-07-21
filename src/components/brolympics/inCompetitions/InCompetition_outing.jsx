@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { recordContest, abandonContest, fetchTeam } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
 import Img from "../../Util/Img";
+import { isScoreInput } from "../../Util/format";
 
 /** Score entry for outing contests: one input per active roster player for
  * ind events (dormant players sit out), a single team input for team events.
@@ -34,7 +35,7 @@ const InCompetition_outing = ({ contest }) => {
 
   const numericChange = (setter) => (e) => {
     const value = e.target.value;
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+    if (isScoreInput(value)) {
       setter(value);
     }
   };

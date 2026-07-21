@@ -1,0 +1,21 @@
+# Frontend CI: vitest + a production build on every push and PR.
+# Cloud Build only runs on main pushes (which DEPLOY) -- this is the only
+# pre-deploy safety net for branch work. Check `gh run list` after pushes.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
