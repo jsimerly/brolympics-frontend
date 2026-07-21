@@ -426,15 +426,44 @@ export const EventsThroughYears = ({ eventTypes }) => {
   );
 };
 
-/** The all-time TEAMS register: every team identity with its whole career.
- * Lineage folds in server-side -- a renamed team is one row wearing its old
- * names as "formerly ...". Tap a row for the year-by-year history. */
+/** A team's expand: the year-by-year history. The name IS the lineage --
+ * rosters rotate (and get handed down) under it, so each season line shows
+ * who wore the colors that year. */
+const TeamHistory = ({ team }) => (
+  <div className="p-2 space-y-1.5">
+    {team.appearances.map((a) => (
+      <div className="flex items-center gap-2 text-sm" key={a.team_uuid}>
+        {a.rank && a.rank <= 3 ? (
+          <img
+            src={medalFor[a.rank]}
+            alt={ordinal(a.rank)}
+            className="h-4 shrink-0"
+          />
+        ) : (
+          <span className="w-4 text-[10px] text-center shrink-0 text-light">
+            {a.rank ? ordinal(a.rank) : "—"}
+          </span>
+        )}
+        <span className="font-medium shrink-0">{a.brolympics}</span>
+        <span className="min-w-0 truncate text-light">
+          {a.players.join(", ") || "no roster"}
+        </span>
+        <span className="ml-auto text-xs shrink-0 text-light">
+          {trimFloat(a.points)}
+        </span>
+      </div>
+    ))}
+  </div>
+);
+
+/** The all-time TEAMS register in the leaderboard's visual language: same
+ * table, same columns -- one row per team NAME with its whole career. */
 export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
-  const [visible, setVisible] = useState(INITIAL_VISIBLE);
   const [openTeam, setOpenTeam] = useState(null);
-  const rows = teams || [];
-  if (!rows.length) return null;
-  const shown = rows.slice(0, visible);
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
+
+  if (!teams?.length) return null;
+  const rows = teams.slice(0, visible);
   const showMore = () => {
     const next = nextVisible(visible);
     setVisible(next);
@@ -444,96 +473,76 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
   return (
     <section>
       <h2 className="mb-4 header-3">All-Time Teams</h2>
-      <div className="space-y-2">
-        {shown.map((team) => {
-          const open = openTeam === team.name;
-          return (
-            <div className="card" key={team.name}>
-              <div
-                className="flex items-center gap-3 p-3 cursor-pointer"
-                onClick={() => setOpenTeam(open ? null : team.name)}
-              >
-                <Img
-                  src={team.img}
-                  alt={team.name}
-                  kind="team"
-                  className="object-cover w-10 h-10 rounded-lg shrink-0"
-                />
-                <div className="flex-grow min-w-0">
-                  <h3 className="flex items-center gap-1.5 font-semibold leading-tight">
-                    <span className="truncate">{team.name}</span>
-                    {team.championships > 0 && (
-                      <span className="flex items-center text-xs font-semibold shrink-0 text-secondary-dark">
-                        <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} />
-                        {team.championships > 1 && `×${team.championships}`}
+      <div className="overflow-hidden card">
+        <table className="w-full">
+          <thead>
+            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
+              <th className="p-2 w-[40px]">#</th>
+              <th className="p-2 text-left">Team</th>
+              <th className="p-2 w-[55px]">Pts</th>
+              <th className="p-2 w-[45px]" title="Championships">
+                <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+              <th className="p-2 w-[45px]" title="Event wins">
+                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((team, i) => (
+              <React.Fragment key={team.name}>
+                <tr
+                  className={`cursor-pointer ${i % 2 === 0 ? "bg-gray-50" : ""}`}
+                  onClick={() =>
+                    setOpenTeam(openTeam === team.name ? null : team.name)
+                  }
+                >
+                  <td className="p-2 font-semibold text-center border-t">
+                    {i + 1}
+                  </td>
+                  <td className="p-2 border-t">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center min-w-0 gap-2">
+                        <Img
+                          src={team.img}
+                          alt={team.name}
+                          kind="team"
+                          className="object-cover w-6 h-6 rounded shrink-0"
+                        />
+                        <span className="truncate">{team.name}</span>
                       </span>
-                    )}
-                  </h3>
-                  <p className="text-[11px] truncate text-light">
-                    {team.aka.length > 0 && `formerly ${team.aka.join(", ")} · `}
-                    {team.players.join(", ") || "no roster"}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold">
-                    {trimFloat(team.points)} pts
-                  </p>
-                  <p className="text-[10px] text-light">
-                    {team.years} year{team.years === 1 ? "" : "s"}
-                  </p>
-                </div>
-                {open ? (
-                  <ExpandLessIcon className="shrink-0 text-light" />
-                ) : (
-                  <ExpandMoreIcon className="shrink-0 text-light" />
+                      {openTeam === team.name ? (
+                        <ExpandLessIcon sx={{ fontSize: 18 }} />
+                      ) : (
+                        <ExpandMoreIcon sx={{ fontSize: 18 }} />
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {trimFloat(team.points)}
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {team.championships}
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {team.event_wins}
+                  </td>
+                </tr>
+                {openTeam === team.name && (
+                  <tr>
+                    <td colSpan={5} className="border-t">
+                      <TeamHistory team={team} />
+                    </td>
+                  </tr>
                 )}
-              </div>
-              {open && (
-                <div className="p-3 border-t border-gray-100 bg-gray-50/50">
-                  <div className="space-y-1.5">
-                    {team.appearances.map((a) => (
-                      <div
-                        className="flex items-center gap-2 text-sm"
-                        key={a.team_uuid}
-                      >
-                        {a.rank && a.rank <= 3 ? (
-                          <img
-                            src={medalFor[a.rank]}
-                            alt={ordinal(a.rank)}
-                            className="h-4 shrink-0"
-                          />
-                        ) : (
-                          <span className="w-4 text-[10px] text-center shrink-0 text-light">
-                            {a.rank ? ordinal(a.rank) : "—"}
-                          </span>
-                        )}
-                        <span className="font-medium shrink-0">
-                          {a.brolympics}
-                        </span>
-                        <span className="min-w-0 truncate text-light">
-                          {a.team_name !== team.name && `as ${a.team_name} · `}
-                          {a.players.join(", ")}
-                        </span>
-                        <span className="ml-auto text-xs shrink-0 text-light">
-                          {trimFloat(a.points)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="pt-2 text-[10px] text-light">
-                    {team.event_wins} event win
-                    {team.event_wins === 1 ? "" : "s"} · {team.podiums} podium
-                    {team.podiums === 1 ? "" : "s"} all-time
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
       <ShowMore
-        shown={shown.length}
-        total={total ?? rows.length}
+        shown={rows.length}
+        total={total ?? teams.length}
         onMore={showMore}
       />
     </section>

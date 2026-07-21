@@ -1,7 +1,7 @@
 /**
- * The all-time TEAMS register that replaced Team Lineages: one row per team
- * identity, renames folded in as "formerly ...", year-by-year history behind
- * a tap with "as <old name>" on renamed seasons.
+ * The all-time TEAMS register: the name IS the lineage (rosters rotate under
+ * it), rendered in the leaderboard's table language. Pins the career row
+ * values and the year-by-year expand with each season's roster.
  */
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
@@ -10,10 +10,9 @@ import { AllTimeTeams } from './HistorySections'
 
 const TEAMS = [
   {
-    name: 'Boland',
-    aka: ['Ireland'],
+    name: 'El Salvador',
     img: null,
-    players: ['Alex', 'Davis'],
+    players: ['Javi', 'Marco'],
     years: 2,
     championships: 1,
     event_wins: 3,
@@ -22,17 +21,15 @@ const TEAMS = [
     appearances: [
       {
         brolympics: 'Summer 2024',
-        team_name: 'Ireland',
         team_uuid: 't-24',
-        players: ['Alex', 'Davis'],
+        players: ['Bryce', 'Javi'],
         rank: 1,
         points: 46,
       },
       {
         brolympics: 'Summer 2025',
-        team_name: 'Boland',
         team_uuid: 't-25',
-        players: ['Alex', 'Davis'],
+        players: ['Javi', 'Marco'],
         rank: 4,
         points: 45.5,
       },
@@ -48,25 +45,23 @@ const setup = () =>
   )
 
 describe('AllTimeTeams', () => {
-  it('shows one identity with its old names folded in', () => {
+  it('shows the career row: points, championships, event wins', () => {
     setup()
-    expect(screen.getByText('Boland')).toBeInTheDocument()
-    expect(screen.getByText(/formerly Ireland/)).toBeInTheDocument()
-    expect(screen.getByText('91.5 pts')).toBeInTheDocument()
-    expect(screen.getByText('2 years')).toBeInTheDocument()
+    expect(screen.getByText('El Salvador')).toBeInTheDocument()
+    expect(screen.getByText('91.5')).toBeInTheDocument()
+    expect(screen.getAllByText('1')).toHaveLength(2) // rank # + championships
+    expect(screen.getByText('3')).toBeInTheDocument() // event wins column
     // history stays closed until tapped
-    expect(screen.queryByText(/Summer 2024/)).toBeNull()
+    expect(screen.queryByText('Summer 2024')).toBeNull()
   })
 
-  it('opens the year-by-year history and labels renamed seasons', () => {
+  it('opens the year-by-year history with each season\'s roster', () => {
     setup()
-    fireEvent.click(screen.getByText('Boland'))
+    fireEvent.click(screen.getByText('El Salvador'))
     expect(screen.getByText('Summer 2024')).toBeInTheDocument()
-    // the 2024 season ran under the old name
-    expect(screen.getByText(/as Ireland/)).toBeInTheDocument()
-    // the current-name season doesn't repeat itself
-    expect(screen.queryByText(/as Boland/)).toBeNull()
-    expect(screen.getByText(/3 event wins · 5 podiums all-time/)).toBeInTheDocument()
+    // the name persists while partners rotate under it
+    expect(screen.getByText('Bryce, Javi')).toBeInTheDocument()
+    expect(screen.getByText('Javi, Marco')).toBeInTheDocument()
     // rank 1 wears the medal, rank 4 the plain ordinal
     expect(screen.getByAltText('1st')).toBeInTheDocument()
     expect(screen.getByText('4th')).toBeInTheDocument()

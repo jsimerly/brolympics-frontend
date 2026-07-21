@@ -139,8 +139,8 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 ## src/components/brolympics/league/AllTimeTeams.test.jsx (2 tests)
 
 - **AllTimeTeams**
-  - shows one identity with its old names folded in
-  - opens the year-by-year history and labels renamed seasons
+  - shows the career row: points, championships, event wins
+  - opens the year-by-year history with each season's roster
 
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
