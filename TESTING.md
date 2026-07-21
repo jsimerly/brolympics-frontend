@@ -19,6 +19,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - build each kind from the configured frontend origin
   - never carry a hardcoded production domain
 
+## src/App.test.jsx (3 tests)
+
+- **App invite choreography**
+  - bounces an unauthenticated invite visit to login and stashes the path
+  - resumes the stashed invite once a user is signed in
+  - shows the loading gate, never a flash of the wrong page, while auth resolves
+
 ## src/components/auth/afterAuthPath.test.js (5 tests)
 
 - **afterAuthPath**
@@ -105,6 +112,18 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - records both scores as numbers and reloads
   - surfaces the API rejection instead of reloading
 
+## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
+
+- **ManageEvent**
+  - shows stored decimal_places 0 as Whole numbers, not Win/Loss
+  - reopening and saving sends back byte-identical stages and config
+
+## src/components/brolympics/standings/Standings.test.jsx (2 tests)
+
+- **Standings**
+  - sorts by rank and trims points to whole or one decimal
+  - an unstarted brolympics shows placeholder rows from the teams prop
+
 ## src/components/create_league_page/events/CreateEvent.test.jsx (4 tests)
 
 - **CreateEvent**
@@ -180,4 +199,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-81 tests cataloged.
+88 tests cataloged.
