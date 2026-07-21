@@ -6,6 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import IosShareIcon from "@mui/icons-material/IosShare";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import { format, parseISO } from "date-fns";
 import {
   createTeam,
@@ -405,7 +406,16 @@ export const EventLineup = ({ events = [] }) => {
           }
         >
           <div className="min-w-0">
-            <h4 className="text-sm font-medium leading-tight">{event.name}</h4>
+            <h4 className="flex items-center gap-1 text-sm font-medium leading-tight">
+              <span className="truncate">{event.name}</span>
+              {(event.setup_issues || []).length > 0 && (
+                <WarningAmberOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="shrink-0 text-secondary"
+                  titleAccess="Needs updating before the Brolympics can start"
+                />
+              )}
+            </h4>
             <p className="text-[11px] text-light">
               {FORMAT_LABEL[event.type] || event.type}
               {event.location ? ` · ${event.location}` : ""}

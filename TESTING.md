@@ -19,6 +19,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - build each kind from the configured frontend origin
   - never carry a hardcoded production domain
 
+## src/App.test.jsx (3 tests)
+
+- **App invite choreography**
+  - bounces an unauthenticated invite visit to login and stashes the path
+  - resumes the stashed invite once a user is signed in
+  - shows the loading gate, never a flash of the wrong page, while auth resolves
+
 ## src/components/auth/afterAuthPath.test.js (5 tests)
 
 - **afterAuthPath**
@@ -29,12 +36,47 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 - **isInviteBound**
   - is true only for invite destinations
 
+## src/components/auth/createAccount/CreateAccount.test.jsx (2 tests)
+
+- **CreateAccount**
+  - signs up and lands on the stashed invite path
+  - catches a password mismatch before ever calling signUp
+
 ## src/components/auth/login/LoginWithEmail.test.jsx (3 tests)
 
 - **LoginWithEmail**
   - lands on the stashed invite path after signing in
   - lands home when nothing sent us here
   - surfaces a failed login instead of navigating
+
+## src/components/auth/login/LoginWithGoogle.test.jsx (2 tests)
+
+- **LoginWithGoogle**
+  - lands on the stashed invite path after the Google popup resolves
+  - surfaces a failed popup instead of navigating
+
+## src/components/auth/login/VerifyPhone.test.jsx (3 tests)
+
+- **VerifyPhone**
+  - confirms the six digits and lands on the stashed invite path
+  - bounces back to login when there is no verification in flight
+  - shows the error and stays put on a bad code
+
+## src/components/brolympics/events/Bracket.test.jsx (4 tests)
+
+- **Bracket**
+  - titles the championship tree and names the third-place game
+  - labels a legacy node without decides_place as Placement Game, never Nullth
+  - renders a completed single-entry game as a walkover Bye
+  - renders nothing at all without nodes
+
+## src/components/brolympics/events/EventActive.test.jsx (4 tests)
+
+- **EventActive**
+  - trims float noise on standings and outing totals
+  - shows points whole, one-decimal, or an em dash for none
+  - shows the h2h record under the team name
+  - flies the blind banner only while the blind holds
 
 ## src/components/brolympics/events/eventDisplay.test.js (9 tests)
 
@@ -53,6 +95,42 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 - **groupBracketNodes**
   - splits championship tree from placement games, best place first
   - survives a dangling winner_to pointer
+
+## src/components/brolympics/inCompetitions/InCompetition_outing.test.jsx (4 tests)
+
+- **InCompetition_outing**
+  - gives every active player an input and skips the dormant one
+  - demands a score for every active player before calling the API
+  - sends player_scores keyed by uuid for ind events
+  - team events send one team_score and never fetch a roster
+
+## src/components/brolympics/inCompetitions/InCompetitions_h2h.test.jsx (4 tests)
+
+- **InCompetitions_h2h**
+  - accepts decimal typing and rejects junk in place
+  - demands a score for both teams before calling the API
+  - records both scores as numbers and reloads
+  - surfaces the API rejection instead of reloading
+
+## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
+
+- **ManageEvent**
+  - shows stored decimal_places 0 as Whole numbers, not Win/Loss
+  - reopening and saving sends back byte-identical stages and config
+
+## src/components/brolympics/standings/Standings.test.jsx (2 tests)
+
+- **Standings**
+  - sorts by rank and trims points to whole or one decimal
+  - an unstarted brolympics shows placeholder rows from the teams prop
+
+## src/components/create_league_page/events/CreateEvent.test.jsx (4 tests)
+
+- **CreateEvent**
+  - adds the default h2h: semi round robin into a seeded top-4 with 3rd place
+  - custom run-offs on a top 8 played through 4th skip the 5th and 7th games
+  - an ind event carries its games-per-team and low-score-wins choices
+  - refuses to add a nameless event
 
 ## src/components/Util/dates.test.js (3 tests)
 
@@ -121,4 +199,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-54 tests cataloged.
+88 tests cataloged.
