@@ -96,6 +96,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - splits championship tree from placement games, best place first
   - survives a dangling winner_to pointer
 
+## src/components/brolympics/home/AvailableCompetition.test.jsx (3 tests)
+
+- **AvailableCompetition station limit**
+  - hides Start Game entirely when the stations are full
+  - shows Start Game when a station is open
+  - surfaces the server message when a stale browser checks in anyway
+
 ## src/components/brolympics/inCompetitions/InCompetition_ffa.test.jsx (5 tests)
 
 - **InCompetition_ffa**
@@ -217,4 +224,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-98 tests cataloged.
+101 tests cataloged.
