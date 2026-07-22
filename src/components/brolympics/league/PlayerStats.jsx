@@ -368,7 +368,15 @@ const PlayerStats = () => {
         <section>
           <h2 className="mb-3 header-3">By Event</h2>
           <div className="grid gap-3 md:grid-cols-2">
-            {career.disciplines.map((d, i) => (
+            {/* best events first: avg finish ranks skill where points would
+                rank attendance -- agrees with the Best Event stat above */}
+            {[...career.disciplines]
+              .sort(
+                (a, b) =>
+                  (a.avg_finish ?? 99) - (b.avg_finish ?? 99) ||
+                  b.points - a.points
+              )
+              .map((d, i) => (
               <DisciplineCard
                 d={d}
                 contests={contests}
