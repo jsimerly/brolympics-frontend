@@ -513,21 +513,34 @@ const TeamHistory = ({ team }) => {
 
   return (
     <div className="p-3 space-y-4">
-      {(games > 0 || career?.avg_finish != null) && (
+      {!career ? (
+        // hold the strip's exact footprint while the career loads -- the
+        // numbers fill in place instead of shoving the years down
         <div className="flex gap-2">
-          {games > 0 && (
-            <MiniStat
-              value={`${record.wins}-${record.losses}${
-                record.ties ? `-${record.ties}` : ""
-              }`}
-              label="H2H Record"
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="flex-1 h-[52px] rounded-lg bg-gray-100 animate-pulse"
             />
-          )}
-          {games > 0 && <MiniStat value={`${winPct}%`} label="Win %" />}
-          {career?.avg_finish != null && (
-            <MiniStat value={career.avg_finish} label="Avg Finish" />
-          )}
+          ))}
         </div>
+      ) : (
+        (games > 0 || career.avg_finish != null) && (
+          <div className="flex gap-2">
+            {games > 0 && (
+              <MiniStat
+                value={`${record.wins}-${record.losses}${
+                  record.ties ? `-${record.ties}` : ""
+                }`}
+                label="H2H Record"
+              />
+            )}
+            {games > 0 && <MiniStat value={`${winPct}%`} label="Win %" />}
+            {career.avg_finish != null && (
+              <MiniStat value={career.avg_finish} label="Avg Finish" />
+            )}
+          </div>
+        )
       )}
       <div className="space-y-2">
         {team.appearances.map((a) => (
