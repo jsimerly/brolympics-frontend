@@ -14,8 +14,9 @@ import PlayerNames from "../../Util/PlayerNames";
 import {
   fetchPlayerCareer,
   fetchEventTypeHistory,
+  fetchTeamCareer,
 } from "../../../api/client";
-import { ordinal } from "../../Util/format";
+import { ordinal, trimFloat } from "../../Util/format";
 import ShowMore from "../../Util/ShowMore";
 import { INITIAL_VISIBLE, nextVisible } from "../../Util/pagination";
 
@@ -71,6 +72,30 @@ const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
   </div>
 );
 
+/** The chip-noise valve: a trophy case shows its best shelf first. The most
+ * impressive chips lead, the rest fold behind a "+N more" toggle. */
+const CHIP_PREVIEW = 6;
+const ChipOverflow = ({ children, className = "" }) => {
+  const [expanded, setExpanded] = useState(false);
+  const chips = React.Children.toArray(children).filter(Boolean);
+  if (!chips.length) return null;
+  const hidden = chips.length - CHIP_PREVIEW;
+  const shown = expanded ? chips : chips.slice(0, CHIP_PREVIEW);
+  return (
+    <div className={`flex flex-wrap gap-2 ${className}`}>
+      {shown}
+      {hidden > 0 && (
+        <button
+          className="px-2.5 py-1 text-xs font-semibold border border-dashed border-gray-300 rounded-full text-light"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? "Show less" : `+${hidden} more`}
+        </button>
+      )}
+    </div>
+  );
+};
+
 /** The leaderboard expand: a highlight reel, not the full record. Medal
  * finishes, event wins/podiums, records held -- details live on the stats
  * page. */
@@ -105,7 +130,21 @@ const PlayerCareer = ({ playerUuid }) => {
         seconds.length > 0 ||
         thirds.length > 0 ||
         records.length > 0) && (
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+        <ChipOverflow className="pt-3 border-t border-gray-200">
+          {records.map((r) => (
+            <AchievementChip
+              icon={
+                <WhatshotOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-orange-500"
+                />
+              }
+              name={`${r.event_type} · ${r.score}`}
+              title="All-time record"
+              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
+              key={"record_" + r.event_type}
+            />
+          ))}
           {wins.map((it) => (
             <AchievementChip
               icon={<img src={Gold} alt="" className="h-3.5" />}
@@ -136,21 +175,7 @@ const PlayerCareer = ({ playerUuid }) => {
               key={"third_" + it.name}
             />
           ))}
-          {records.map((r) => (
-            <AchievementChip
-              icon={
-                <WhatshotOutlinedIcon
-                  sx={{ fontSize: 14 }}
-                  className="text-orange-500"
-                />
-              }
-              name={`${r.event_type} · ${r.score}`}
-              title="All-time record"
-              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
-              key={"record_" + r.event_type}
-            />
-          ))}
-        </div>
+        </ChipOverflow>
       )}
       <button
         className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
@@ -401,20 +426,31 @@ export const EventsThroughYears = ({ eventTypes }) => {
   return (
     <section>
       <h2 className="mb-4 header-3">All-Time Events</h2>
-      <div className="space-y-2">
-        {rows.map((et) => (
-          <div className="card" key={et.uuid}>
+      <div className="overflow-hidden card">
+        <div className="p-2 text-xs tracking-wide text-left uppercase bg-gray-50 text-light">
+          Event
+        </div>
+        {rows.map((et, i) => (
+          <React.Fragment key={et.uuid}>
             <div
-              className="flex items-center justify-between p-3 cursor-pointer"
+              className={`flex items-center justify-between p-2 border-t cursor-pointer ${
+                i % 2 === 0 ? "bg-gray-50" : ""
+              }`}
               onClick={() => setOpenType(openType === et.uuid ? null : et.uuid)}
             >
-              <h3 className="font-semibold">{et.name}</h3>
-              {openType === et.uuid ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              <span>{et.name}</span>
+              {openType === et.uuid ? (
+                <ExpandLessIcon sx={{ fontSize: 18 }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 18 }} />
+              )}
             </div>
             {openType === et.uuid && (
-              <EventTypeHistory eventTypeUuid={et.uuid} />
+              <div className="border-t">
+                <EventTypeHistory eventTypeUuid={et.uuid} />
+              </div>
             )}
-          </div>
+          </React.Fragment>
         ))}
       </div>
       <ShowMore
@@ -426,11 +462,112 @@ export const EventsThroughYears = ({ eventTypes }) => {
   );
 };
 
-export const Lineages = ({ lineages, total, onNeedMore }) => {
+/** A team's expand: the all-games record, the trophy shelf, and the year-by-
+ * year history. The name IS the lineage -- rosters rotate (and get handed
+ * down) under it, so each season line shows who wore the colors that year. */
+const TeamHistory = ({ team }) => {
+  const { uuid: leagueUuid } = useParams();
+  const [career, setCareer] = useState(null);
+
+  useEffect(() => {
+    fetchTeamCareer(leagueUuid, team.name)
+      .then(setCareer)
+      .catch((error) => console.error("Error fetching team career:", error));
+  }, [leagueUuid, team.name]);
+
+  const record = career?.record;
+  const games = record ? record.wins + record.losses + record.ties : 0;
+  const wins = (career?.disciplines || [])
+    .filter((d) => d.event_wins > 0)
+    .map((d) => ({ name: d.event_type, count: d.event_wins }));
+  const seconds = (career?.disciplines || [])
+    .filter((d) => d.seconds > 0)
+    .map((d) => ({ name: d.event_type, count: d.seconds }));
+  const thirds = (career?.disciplines || [])
+    .filter((d) => d.thirds > 0)
+    .map((d) => ({ name: d.event_type, count: d.thirds }));
+
+  return (
+    <div className="p-2 space-y-3">
+      {games > 0 && (
+        <p className="text-sm">
+          <span className="font-semibold">
+            {record.wins}-{record.losses}
+            {record.ties ? `-${record.ties}` : ""}
+          </span>{" "}
+          <span className="text-light">in head-to-head games all-time</span>
+        </p>
+      )}
+      <div className="space-y-1.5">
+        {team.appearances.map((a) => (
+          <div className="flex items-center gap-2 text-sm" key={a.team_uuid}>
+            {a.rank && a.rank <= 3 ? (
+              <img
+                src={medalFor[a.rank]}
+                alt={ordinal(a.rank)}
+                className="h-4 shrink-0"
+              />
+            ) : (
+              <span className="w-4 text-[10px] text-center shrink-0 text-light">
+                {a.rank ? ordinal(a.rank) : "—"}
+              </span>
+            )}
+            <span className="font-medium shrink-0">{a.brolympics}</span>
+            <span className="min-w-0 truncate text-light">
+              {a.players.join(", ") || "no roster"}
+            </span>
+            <span className="ml-auto text-xs shrink-0 text-light">
+              {trimFloat(a.points)}
+            </span>
+          </div>
+        ))}
+      </div>
+      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0) && (
+        <ChipOverflow className="pt-3 border-t border-gray-200">
+          {wins.map((it) => (
+            <AchievementChip
+              icon={<img src={Gold} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Event wins"
+              className="bg-gray-50"
+              key={"win_" + it.name}
+            />
+          ))}
+          {seconds.map((it) => (
+            <AchievementChip
+              icon={<img src={Silver} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Second-place finishes"
+              className="bg-gray-50"
+              key={"second_" + it.name}
+            />
+          ))}
+          {thirds.map((it) => (
+            <AchievementChip
+              icon={<img src={Bronze} alt="" className="h-3.5" />}
+              name={it.name}
+              count={it.count}
+              title="Third-place finishes"
+              className="bg-gray-50"
+              key={"third_" + it.name}
+            />
+          ))}
+        </ChipOverflow>
+      )}
+    </div>
+  );
+};
+
+/** The all-time TEAMS register in the leaderboard's visual language: same
+ * table, same columns -- one row per team NAME with its whole career. */
+export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
+  const [openTeam, setOpenTeam] = useState(null);
   const [visible, setVisible] = useState(INITIAL_VISIBLE);
-  const duos = lineages?.by_duo || [];
-  if (!duos.length) return null;
-  const rows = duos.slice(0, visible);
+
+  if (!teams?.length) return null;
+  const rows = teams.slice(0, visible);
   const showMore = () => {
     const next = nextVisible(visible);
     setVisible(next);
@@ -439,25 +576,92 @@ export const Lineages = ({ lineages, total, onNeedMore }) => {
 
   return (
     <section>
-      <h2 className="mb-4 header-3">Team Lineages</h2>
-      <div className="space-y-3">
-        {rows.map((duo, i) => (
-          <div className="p-4 card" key={i + "_duo"}>
-            <h3 className="font-semibold"><PlayerNames players={duo.players} /></h3>
-            <div className="text-sm text-light">
-              {duo.appearances.map((a, j) => (
-                <p key={j + "_appearance"}>
-                  {a.brolympics}:{" "}
-                  <span className="text-near-black">{a.team_name}</span>
-                </p>
-              ))}
-            </div>
-          </div>
-        ))}
+      <h2 className="mb-4 header-3">All-Time Teams</h2>
+      <div className="overflow-hidden card">
+        <table className="w-full">
+          <thead>
+            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
+              <th className="p-2 w-[40px]">#</th>
+              <th className="p-2 text-left">Team</th>
+              <th className="p-2 w-[55px]">Pts</th>
+              {/* same icons, same meanings as the player table */}
+              <th className="p-2 w-[45px]" title="Event wins">
+                <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+              <th className="p-2 w-[45px]" title="Podiums">
+                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((team, i) => (
+              <React.Fragment key={team.name}>
+                <tr
+                  className={`cursor-pointer ${i % 2 === 0 ? "bg-gray-50" : ""}`}
+                  onClick={() =>
+                    setOpenTeam(openTeam === team.name ? null : team.name)
+                  }
+                >
+                  <td className="p-2 font-semibold text-center border-t">
+                    {i + 1}
+                  </td>
+                  <td className="p-2 border-t">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center min-w-0 gap-2">
+                        <Img
+                          src={team.img}
+                          alt={team.name}
+                          kind="team"
+                          className="object-cover w-6 h-6 rounded shrink-0"
+                        />
+                        <span className="truncate">{team.name}</span>
+                        {team.championships > 0 && (
+                          <span
+                            className="flex items-center gap-0.5 text-xs font-semibold shrink-0 text-secondary-dark"
+                            title="League championships"
+                          >
+                            <img
+                              src={Gold}
+                              alt="champion"
+                              className="h-3.5"
+                            />
+                            {team.championships > 1 &&
+                              `×${team.championships}`}
+                          </span>
+                        )}
+                      </span>
+                      {openTeam === team.name ? (
+                        <ExpandLessIcon sx={{ fontSize: 18 }} />
+                      ) : (
+                        <ExpandMoreIcon sx={{ fontSize: 18 }} />
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {trimFloat(team.points)}
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {team.event_wins}
+                  </td>
+                  <td className="p-2 text-center border-t">
+                    {team.podiums}
+                  </td>
+                </tr>
+                {openTeam === team.name && (
+                  <tr>
+                    <td colSpan={5} className="border-t">
+                      <TeamHistory team={team} />
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
       <ShowMore
         shown={rows.length}
-        total={total ?? duos.length}
+        total={total ?? teams.length}
         onMore={showMore}
       />
     </section>

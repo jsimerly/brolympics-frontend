@@ -81,10 +81,12 @@ const Slideout = ({ open, leagues, setOpen }) => {
         console.error("Error fetching upcoming events:", error.message);
       }
     };
-    if (firebaseUser) {
+    // refetch on every open: SPA navigation never reloads, so a login-time
+    // snapshot here once kept a deleted bro alive for a whole session
+    if (firebaseUser && open) {
       getInfo();
     }
-  }, [firebaseUser]);
+  }, [firebaseUser, open]);
 
   if (user && !user.account_complete) {
     return <Account setView={setView} />;

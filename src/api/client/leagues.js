@@ -71,10 +71,18 @@ export const addLeagueAdmin = (uuid, uid) =>
 export const removeLeagueAdmin = (uuid, uid) =>
   api.post(`/api/leagues/${uuid}/remove-admin/`, { uid }).then((r) => r.data);
 
-/** All-time: leaderboard, championships, team lineages (by duo / by name).
+/** All-time: leaderboard, championships, and the teams register (every team
+ * identity with its whole career -- renames fold in as `aka`).
  * `limit` caps the people-scaling lists server-side (Show More lazy loading);
  * the payload's `totals` block carries the full counts. */
 export const fetchLeagueAllTime = (uuid, limit) =>
   api
     .get(`/api/leagues/${uuid}/all-time/${limit ? `?limit=${limit}` : ""}`)
+    .then((r) => r.data);
+
+/** All-time line for one team NAME (the name is the lineage): the all-games
+ * record plus per-discipline finishes. */
+export const fetchTeamCareer = (uuid, name) =>
+  api
+    .get(`/api/leagues/${uuid}/team-career/?name=${encodeURIComponent(name)}`)
     .then((r) => r.data);

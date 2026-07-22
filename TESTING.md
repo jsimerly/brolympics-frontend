@@ -19,6 +19,14 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - build each kind from the configured frontend origin
   - never carry a hardcoded production domain
 
+## src/api/client/wizard.test.js (4 tests)
+
+- **createBroWithEvents**
+  - creates the bro then every event and collects warnings
+  - deletes the orphan bro when an event fails, then rethrows
+  - surfaces the original error even when the rollback itself fails
+  - never deletes anything when the bro itself failed to create
+
 ## src/App.test.jsx (3 tests)
 
 - **App invite choreography**
@@ -96,6 +104,22 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - splits championship tree from placement games, best place first
   - survives a dangling winner_to pointer
 
+## src/components/brolympics/home/AvailableCompetition.test.jsx (3 tests)
+
+- **AvailableCompetition station limit**
+  - hides Start Game entirely when the stations are full
+  - shows Start Game when a station is open
+  - surfaces the server message when a stale browser checks in anyway
+
+## src/components/brolympics/inCompetitions/InCompetition_ffa.test.jsx (5 tests)
+
+- **InCompetition_ffa**
+  - numbers racers in tap order and auto-fills the last one
+  - un-taps a placed racer and shifts everyone after up
+  - refuses to submit an unfinished order
+  - records the exact tap order as placements and reloads
+  - surfaces the API rejection instead of reloading
+
 ## src/components/brolympics/inCompetitions/InCompetition_outing.test.jsx (4 tests)
 
 - **InCompetition_outing**
@@ -111,6 +135,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - demands a score for both teams before calling the API
   - records both scores as numbers and reloads
   - surfaces the API rejection instead of reloading
+
+## src/components/brolympics/league/AllTimeTeams.test.jsx (3 tests)
+
+- **AllTimeTeams**
+  - shows the career row: points, event wins, podiums, champ star
+  - opens into record, rotating rosters, and the trophy shelf
+  - folds chip noise behind +N more and unfolds on tap
 
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
@@ -206,6 +237,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - formFromStages(buildStages(form)) preserves every structure choice
   - a reopened saved event saves back byte-identical stages
 
+## src/hooks/useCachedFetch.test.js (2 tests)
+
+- **useCachedFetch**
+  - resolves data and reports no error
+  - surfaces the fetch error when there is no cached copy
+
 ---
 
-93 tests cataloged.
+110 tests cataloged.

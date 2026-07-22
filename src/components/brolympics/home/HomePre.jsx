@@ -11,6 +11,7 @@ import { format, parseISO } from "date-fns";
 import {
   createTeam,
   updateTeam,
+  deleteTeam,
   joinTeam,
   leaveTeam,
   inviteLinkTeam,
@@ -20,6 +21,7 @@ import CopyWrapper from "../../Util/CopyWrapper.jsx";
 import PopupContinue from "../../Util/PopupContinue.jsx";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper.jsx";
 import { useNotification } from "../../Util/Notification.jsx";
+import { apiErrorMessage } from "../../Util/apiError";
 import { daysUntil } from "../../Util/dates";
 
 const FORMAT_LABEL = {
@@ -76,14 +78,25 @@ export const StatusCard = ({
   );
 };
 
-/** My team: logo (tap to swap), roster, inline rename, invite when open. */
-const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
+/** My team: logo (tap to swap), roster, inline rename, invite when open.
+ * The creator also runs it: invite-only toggle and delete, until the games
+ * start (ruled 2026-07-21). */
+const MyTeamCard = ({
+  uuid,
+  name,
+  img,
+  players = [],
+  is_available,
+  is_owner,
+  invite_only,
+}) => {
   const [editing, setEditing] = useState(false);
   const [teamName, setTeamName] = useState(name);
   const [imgSrc, setImgSrc] = useState(null);
   const [savedImg, setSavedImg] = useState(img);
   const [cropping, setCropping] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { showNotification } = useNotification();
 
   const handleImageUpload = async (e) => {
@@ -127,6 +140,26 @@ const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
     } catch (error) {
       console.log(error);
       showNotification("Couldn't leave the team.");
+    }
+  };
+
+  const toggleInviteOnly = async () => {
+    try {
+      await updateTeam(uuid, { invite_only: !invite_only });
+      location.reload();
+    } catch (error) {
+      showNotification(
+        apiErrorMessage(error, "Couldn't change how people join.")
+      );
+    }
+  };
+
+  const deleteThisTeam = async () => {
+    try {
+      await deleteTeam(uuid);
+      location.reload();
+    } catch (error) {
+      showNotification(apiErrorMessage(error, "Couldn't delete the team."));
     }
   };
 
@@ -177,12 +210,22 @@ const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
             </span>
           ))}
           {editing && (
-            <button
-              className="self-start pt-1 text-xs font-semibold text-red"
-              onClick={() => setLeaveOpen(true)}
-            >
-              Leave this team
-            </button>
+            <div className="flex gap-3 pt-1">
+              <button
+                className="text-xs font-semibold text-red"
+                onClick={() => setLeaveOpen(true)}
+              >
+                Leave this team
+              </button>
+              {is_owner && (
+                <button
+                  className="text-xs font-semibold text-red"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  Delete this team
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -200,9 +243,38 @@ const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
 
       {is_available !== false && (
         <div className="pt-3 mt-3 border-t border-gray-100">
-          <span className="text-xs font-semibold tracking-wide uppercase text-light">
-            Room on the roster
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold tracking-wide uppercase text-light">
+              Room on the roster
+            </span>
+            {is_owner && (
+              <div className="flex overflow-hidden text-[10px] font-semibold border border-gray-300 rounded-full">
+                {[
+                  [false, "Open"],
+                  [true, "Link only"],
+                ].map(([value, label]) => (
+                  <button
+                    key={label}
+                    className={`px-2 py-1 ${
+                      !!invite_only === value
+                        ? "bg-primary text-white"
+                        : "bg-white text-light"
+                    }`}
+                    onClick={() => !!invite_only !== value && toggleInviteOnly()}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {is_owner && (
+            <p className="pt-0.5 text-[10px] text-light">
+              {invite_only
+                ? "Hidden from the open-teams list — only this link joins."
+                : "Anyone in the Brolympics can join from the teams list."}
+            </p>
+          )}
           <div className="flex items-center gap-2 mt-1">
             <CopyWrapper copyString={inviteLinkTeam(uuid)}>
               <div className="flex items-center flex-grow min-w-0 gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer">
@@ -251,6 +323,14 @@ const MyTeamCard = ({ uuid, name, img, players = [], is_available }) => {
         continueText="Leave"
         continueFunc={leave}
       />
+      <PopupContinue
+        open={deleteOpen}
+        setOpen={setDeleteOpen}
+        header="Delete this team?"
+        desc="The team and its roster spots go away. Anyone on it will need to join or create another team."
+        continueText="Delete"
+        continueFunc={deleteThisTeam}
+      />
     </div>
   );
 };
@@ -275,16 +355,20 @@ const CreateTeamCard = ({ broUuid }) => {
     if (!teamName.trim() || busy) return;
     setBusy(true);
     try {
-      const team = await createTeam({
+      // one atomic request: name, logo, and the creator on the roster --
+      // the old create->join chain could strand a memberless team
+      await createTeam({
         name: teamName.trim(),
         brolympics: broUuid,
+        join_creator: true,
+        ...(teamImg && { img: teamImg }),
       });
-      if (teamImg) await updateTeam(team.uuid, { img: teamImg });
-      await joinTeam(team.uuid);
       location.reload();
     } catch (error) {
       console.log(error);
-      showNotification("Couldn't create the team. Try again in a second.");
+      showNotification(
+        apiErrorMessage(error, "Couldn't create the team. Try again in a second.")
+      );
       setBusy(false);
     }
   };
@@ -496,6 +580,13 @@ const TeamsSection = ({ teams = [], user_team, team_size, broUuid }) => {
               <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 bg-primary/10 text-primary">
                 Your team
               </span>
+            ) : team.invite_only ? (
+              // joinable only through the team's invite link
+              !individual && (
+                <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 bg-gray-100 text-light">
+                  Invite only
+                </span>
+              )
             ) : (
               !individual &&
               !user_team &&

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ImageCropper, { readImageFile } from "../../Util/ImageCropper";
@@ -11,6 +11,7 @@ import {
   inviteLinkBrolympics,
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification";
+import { apiErrorMessage } from "../../Util/apiError";
 
 // datetime-local inputs need "YYYY-MM-DDTHH:mm"; the API returns full ISO
 const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : "");
@@ -27,7 +28,6 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
     projected_end_date: toLocalInput(projected_end_date),
   });
 
-  const navigate = useNavigate();
   const { showNotification } = useNotification();
   const { uuid } = useParams();
 
@@ -69,9 +69,13 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
           : "This Brolympics has been deleted.",
         "!border-primary"
       );
-      navigate("/");
+      // full load, not SPA navigation: every cached list (hamburger, league
+      // page) must forget this bro right now
+      window.location.href = "/";
     } catch (error) {
-      showNotification("There was an error deleting this Brolympics.");
+      showNotification(
+        apiErrorMessage(error, "There was an error deleting this Brolympics.")
+      );
     }
   };
 
