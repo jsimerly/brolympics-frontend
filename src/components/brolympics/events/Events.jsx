@@ -100,23 +100,6 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
         selectedId={selectedEventId}
         onSelect={handleEventSelect}
       />
-      {(() => {
-        const selected = events.find((e) => e.uuid === selectedEventId);
-        const typeUuid = selected?.event_type?.uuid;
-        // the discipline's career page -- champions, leaders, record books
-        return typeUuid && league ? (
-          <div className="flex justify-end px-2 pb-1">
-            <button
-              className="flex items-center gap-1 text-xs font-semibold text-primary"
-              onClick={() =>
-                navigate(`/league/${league}/event/${typeUuid}/stats`)
-              }
-            >
-              <QueryStatsIcon sx={{ fontSize: 14 }} /> All-time stats
-            </button>
-          </div>
-        ) : null;
-      })()}
       {loading || !eventInfo ? (
         <SkeletonPage />
       ) : (
@@ -128,6 +111,25 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
           {renderEventComponent()}
         </div>
       )}
+      {(() => {
+        const selected = events.find((e) => e.uuid === selectedEventId);
+        const typeUuid = selected?.event_type?.uuid;
+        // the discipline's career page -- tucked under the event, out of the
+        // way of game day
+        return typeUuid && league && eventInfo ? (
+          <div className="flex justify-center pt-2 pb-6">
+            <button
+              className="flex items-center gap-1 text-xs font-semibold text-light"
+              onClick={() =>
+                navigate(`/league/${league}/event/${typeUuid}/stats`)
+              }
+            >
+              <QueryStatsIcon sx={{ fontSize: 14 }} /> All-time{" "}
+              {selected?.name} stats
+            </button>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 };

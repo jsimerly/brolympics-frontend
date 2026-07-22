@@ -19,7 +19,11 @@ const TeamRow = ({ entry, decided }) => {
         className="object-cover w-6 h-6 rounded shrink-0"
       />
       {entry?.seed != null && (
-        <span className="w-3 text-[10px] text-center shrink-0 text-light">
+        <span
+          className={`w-3 text-[10px] text-center shrink-0 ${
+            isWinner ? "font-semibold text-near-black" : "text-light"
+          }`}
+        >
           {entry.seed}
         </span>
       )}

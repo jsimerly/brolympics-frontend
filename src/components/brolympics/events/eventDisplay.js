@@ -117,3 +117,31 @@ export const groupBracketNodes = (nodes) => {
     (a, b) => (a.terminal.decides_place || 99) - (b.terminal.decides_place || 99)
   );
 };
+
+/** The Olympics answer to "how did the games go": per-team podium hardware
+ * rolled up from the podiums payload, sorted gold-first. Ties share medals
+ * (a two-way tie for 1st is two golds). */
+export const medalTable = (podiums = []) => {
+  const rows = new Map();
+  const bump = (entry, medal) => {
+    const team = entry?.team ?? entry;
+    if (!team) return;
+    const row =
+      rows.get(team) || { team, img: null, gold: 0, silver: 0, bronze: 0 };
+    row[medal] += 1;
+    if (!row.img && entry?.img) row.img = entry.img;
+    rows.set(team, row);
+  };
+  podiums.forEach((podium) => {
+    (podium.first || []).forEach((r) => bump(r, "gold"));
+    (podium.second || []).forEach((r) => bump(r, "silver"));
+    (podium.third || []).forEach((r) => bump(r, "bronze"));
+  });
+  return [...rows.values()].sort(
+    (a, b) =>
+      b.gold - a.gold ||
+      b.silver - a.silver ||
+      b.bronze - a.bronze ||
+      String(a.team).localeCompare(String(b.team))
+  );
+};

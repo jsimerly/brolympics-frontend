@@ -11,6 +11,7 @@ import {
 } from "../../../api/client";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
+import { medalTable } from "../events/eventDisplay";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 
@@ -43,13 +44,6 @@ const HomePost = ({ events = [] }) => {
   const runnersUp = standings.filter(
     (row) => row.rank === 2 || row.rank === 3
   );
-  const eventFor = (podium) =>
-    events.find((e) => String(e.uuid) === String(podium.event_uuid));
-
-  const goToEvent = (podium) => {
-    const event = eventFor(podium);
-    if (event) navigate(`/b/${uuid}/event/${event.type}/${event.uuid}`);
-  };
 
   return (
     <div className="container-padding w-full max-w-3xl py-6 mx-auto space-y-8">
@@ -162,37 +156,57 @@ const HomePost = ({ events = [] }) => {
 
         {podiums.length > 0 && (
           <section>
-            <h2 className="mb-4 header-3">Event Winners</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {podiums.map((podium, i) => {
-                const winners = podium.first || [];
-                return (
-                  <button
-                    key={podium.event_uuid || i}
-                    className="p-3 text-left card disabled:cursor-default"
-                    onClick={() => goToEvent(podium)}
-                    disabled={!eventFor(podium)}
-                  >
-                    <span className="block text-[10px] font-semibold tracking-wide uppercase truncate text-light">
-                      {podium.event}
-                    </span>
-                    <div className="flex items-center gap-2 pt-1.5">
-                      <img src={Gold} alt="Winner" className="h-5 shrink-0" />
-                      {winners.length === 1 && winners[0].img && (
-                        <Img
-                          src={winners[0].img}
-                          alt={winners[0].team ?? ""}
-                          kind="team"
-                          className="object-cover rounded-md w-9 h-9 shrink-0"
-                        />
-                      )}
-                      <span className="min-w-0 text-sm font-semibold leading-tight">
-                        {winners.map((row) => row.team ?? row).join(", ")}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+            <h2 className="mb-4 header-3">Medal Table</h2>
+            <div className="overflow-hidden card">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
+                    <th className="p-2 text-left">Team</th>
+                    <th className="p-2 w-[45px]">
+                      <img src={Gold} alt="Gold" className="h-4 mx-auto" />
+                    </th>
+                    <th className="p-2 w-[45px]">
+                      <img src={Silver} alt="Silver" className="h-4 mx-auto" />
+                    </th>
+                    <th className="p-2 w-[45px]">
+                      <img src={Bronze} alt="Bronze" className="h-4 mx-auto" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medalTable(podiums).map((row, i) => (
+                    <tr
+                      key={row.team}
+                      className={i % 2 === 0 ? "bg-gray-50" : ""}
+                    >
+                      <td className="p-2 border-t">
+                        <div className="flex items-center gap-2">
+                          {row.img && (
+                            <Img
+                              src={row.img}
+                              alt={row.team}
+                              kind="team"
+                              className="object-cover w-6 h-6 rounded shrink-0"
+                            />
+                          )}
+                          <span className="text-sm leading-tight">
+                            {row.team}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2 text-sm font-semibold text-center border-t">
+                        {row.gold || ""}
+                      </td>
+                      <td className="p-2 text-sm text-center border-t">
+                        {row.silver || ""}
+                      </td>
+                      <td className="p-2 text-sm text-center border-t">
+                        {row.bronze || ""}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
