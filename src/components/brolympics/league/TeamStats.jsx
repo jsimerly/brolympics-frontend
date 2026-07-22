@@ -115,7 +115,7 @@ const TeamStats = () => {
 
       {career.appearances?.length > 0 && (
         <section>
-          <h2 className="mb-3 header-3">Brolympics History</h2>
+          <h2 className="mb-3 header-3">History</h2>
           <div className="overflow-hidden card">
             <table className="w-full">
               <thead>

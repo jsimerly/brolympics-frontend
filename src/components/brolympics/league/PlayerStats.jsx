@@ -23,7 +23,7 @@ const Seasons = ({ seasons }) => {
   if (!seasons?.length) return null;
   return (
     <section>
-      <h2 className="mb-3 header-3">Brolympics History</h2>
+      <h2 className="mb-3 header-3">History</h2>
       <div className="overflow-hidden card">
         <table className="w-full">
           <thead>
