@@ -8,7 +8,7 @@ import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import { fetchEventTypeHistory } from "../../../api/client";
-import { leaderLine } from "./HistorySections";
+import { MiniStat, leaderLine } from "./HistorySections";
 import ShowMore from "../../Util/ShowMore";
 import { INITIAL_VISIBLE, nextVisible } from "../../Util/pagination";
 
@@ -137,6 +137,23 @@ const EventStats = () => {
           label="Most Titles"
         />
       </div>
+
+      {(history.superlatives?.best || history.superlatives?.worst) && (
+        <div className="flex gap-2">
+          {history.superlatives.best && (
+            <MiniStat
+              value={history.superlatives.best.team}
+              label={`Dynasty · avg ${history.superlatives.best.avg_finish}`}
+            />
+          )}
+          {history.superlatives.worst && (
+            <MiniStat
+              value={history.superlatives.worst.team}
+              label={`Cursed · avg ${history.superlatives.worst.avg_finish}`}
+            />
+          )}
+        </div>
+      )}
 
       {completeYears.length > 0 && (
         <section className="p-4 card">

@@ -113,6 +113,23 @@ const TeamStats = () => {
         </div>
       )}
 
+      {(career.best_event || career.worst_event) && (
+        <div className="flex gap-2">
+          {career.best_event && (
+            <MiniStat
+              value={career.best_event.event_type}
+              label={`Best Event · avg ${career.best_event.avg_finish}`}
+            />
+          )}
+          {career.worst_event && (
+            <MiniStat
+              value={career.worst_event.event_type}
+              label={`Worst Event · avg ${career.worst_event.avg_finish}`}
+            />
+          )}
+        </div>
+      )}
+
       {career.appearances?.length > 0 && (
         <section>
           <h2 className="mb-3 header-3">History</h2>

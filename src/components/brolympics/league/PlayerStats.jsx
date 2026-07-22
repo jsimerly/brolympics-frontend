@@ -10,7 +10,7 @@ import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
-import { RivalryList } from "./HistorySections";
+import { MiniStat, RivalryList } from "./HistorySections";
 import { ordinal, trimFloat } from "../../Util/format";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
@@ -329,6 +329,23 @@ const PlayerStats = () => {
           label="Podiums"
         />
       </div>
+
+      {(career.best_event || career.worst_event) && (
+        <div className="flex gap-2">
+          {career.best_event && (
+            <MiniStat
+              value={career.best_event.event_type}
+              label={`Best Event · avg ${career.best_event.avg_finish}`}
+            />
+          )}
+          {career.worst_event && (
+            <MiniStat
+              value={career.worst_event.event_type}
+              label={`Worst Event · avg ${career.worst_event.avg_finish}`}
+            />
+          )}
+        </div>
+      )}
 
       {career.records?.length > 0 && (
         <div className="flex items-start gap-2 p-3 text-sm card">

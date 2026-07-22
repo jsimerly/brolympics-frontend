@@ -40,6 +40,8 @@ const CAREER = {
     { team: 'Kazakhstan', wins: 5, losses: 2, ties: 0, games: 7 },
     { team: 'Greece', wins: 3, losses: 3, ties: 1, games: 7 },
   ],
+  best_event: { event_type: 'Cornhole', avg_finish: 1.2 },
+  worst_event: { event_type: 'Golf', avg_finish: 6.5 },
   appearances: [
     {
       brolympics: 'Summer 2024',
@@ -87,10 +89,15 @@ describe('TeamStats', () => {
     expect(screen.getByText('Bryce, Javi')).toBeInTheDocument()
     expect(screen.getByText('Javi, Marco')).toBeInTheDocument()
     expect(screen.getByAltText('1st')).toBeInTheDocument()
-    expect(screen.getByText('Cornhole')).toBeInTheDocument() // trophy shelf
+    // Cornhole shows twice: the Best Event block AND the trophy shelf
+    expect(screen.getAllByText('Cornhole')).toHaveLength(2)
     // the name-vs-name ledger, colored by who's ahead
     expect(screen.getByText('vs Kazakhstan')).toBeInTheDocument()
     expect(screen.getByText('5-2')).toBeInTheDocument()
     expect(screen.getByText('3-3-1')).toBeInTheDocument()
+    // best/worst event by average finish
+    expect(screen.getByText('Best Event · avg 1.2')).toBeInTheDocument()
+    expect(screen.getByText('Golf')).toBeInTheDocument()
+    expect(screen.getByText('Worst Event · avg 6.5')).toBeInTheDocument()
   })
 })

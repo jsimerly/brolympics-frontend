@@ -50,6 +50,10 @@ const HISTORY = {
     { who: 'Javi', points: 9, games: 4, wins: 2, losses: 2, ties: 0,
       win_pct: 0.5 },
   ],
+  superlatives: {
+    best: { team: 'El Salvador', avg_finish: 1.5, appearances: 2 },
+    worst: { team: 'Boland', avg_finish: 5.5, appearances: 2 },
+  },
 }
 
 const setup = () =>
@@ -77,6 +81,9 @@ describe('EventStats', () => {
     // most-titles falls to the first encountered (Ireland)
     expect(screen.getByText('Reigning Champion')).toBeInTheDocument()
     expect(screen.getAllByText('El Salvador').length).toBeGreaterThan(0)
+    // the event's dynasty and its cursed name
+    expect(screen.getByText('Dynasty · avg 1.5')).toBeInTheDocument()
+    expect(screen.getByText('Cursed · avg 5.5')).toBeInTheDocument()
   })
 
   it('shows the timeline newest-first with the record books', async () => {
