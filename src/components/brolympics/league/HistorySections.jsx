@@ -57,9 +57,27 @@ export const PlayerTeams = ({ teams, showAllFinishes = false }) => {
   );
 };
 
+/** The quiet door to a full stats page -- a text link, not a billboard. */
+export const MoreStatsLink = ({ label = "View full stats", onClick }) => (
+  <button
+    className="flex items-center justify-center w-full gap-0.5 pt-1 text-xs font-semibold text-primary"
+    onClick={onClick}
+  >
+    {label} <ArrowForwardIcon sx={{ fontSize: 13 }} />
+  </button>
+);
+
+/** A compact labeled number for expand panels: big value, whisper label. */
+export const MiniStat = ({ value, label }) => (
+  <div className="flex-1 min-w-0 px-2 py-1.5 text-center rounded-lg bg-gray-50">
+    <div className="text-sm font-bold leading-tight truncate">{value}</div>
+    <div className="text-[9px] tracking-wide uppercase text-light">{label}</div>
+  </div>
+);
+
 /** Achievement chips in the same visual language as the team chips: an icon,
  * the event, and a ×count when it happened more than once. */
-const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
+export const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
   <div
     className={`flex items-center gap-1 pl-1.5 pr-2.5 py-1 text-xs border rounded-full ${
       className || "bg-white"
@@ -75,7 +93,7 @@ const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (
 /** The chip-noise valve: a trophy case shows its best shelf first. The most
  * impressive chips lead, the rest fold behind a "+N more" toggle. */
 const CHIP_PREVIEW = 6;
-const ChipOverflow = ({ children, className = "" }) => {
+export const ChipOverflow = ({ children, className = "" }) => {
   const [expanded, setExpanded] = useState(false);
   const chips = React.Children.toArray(children).filter(Boolean);
   if (!chips.length) return null;
@@ -177,14 +195,11 @@ const PlayerCareer = ({ playerUuid }) => {
           ))}
         </ChipOverflow>
       )}
-      <button
-        className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
+      <MoreStatsLink
         onClick={() =>
           navigate(`/league/${leagueUuid}/player/${playerUuid}/stats`)
         }
-      >
-        View full stats <ArrowForwardIcon sx={{ fontSize: 16 }} />
-      </button>
+      />
     </div>
   );
 };
@@ -309,14 +324,6 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
 
   return (
     <div className="p-2 space-y-3">
-      <button
-        className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
-        onClick={() =>
-          navigate(`/league/${leagueUuid}/event/${eventTypeUuid}/stats`)
-        }
-      >
-        View full stats <ArrowForwardIcon sx={{ fontSize: 16 }} />
-      </button>
       {history.leaders?.length > 0 && (
         <div>
           <h4 className="font-semibold">
@@ -422,6 +429,11 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
           ))}
         </div>
       )}
+      <MoreStatsLink
+        onClick={() =>
+          navigate(`/league/${leagueUuid}/event/${eventTypeUuid}/stats`)
+        }
+      />
     </div>
   );
 };
@@ -477,6 +489,7 @@ export const EventsThroughYears = ({ eventTypes }) => {
  * down) under it, so each season line shows who wore the colors that year. */
 const TeamHistory = ({ team }) => {
   const { uuid: leagueUuid } = useParams();
+  const navigate = useNavigate();
   const [career, setCareer] = useState(null);
 
   useEffect(() => {
@@ -501,28 +514,20 @@ const TeamHistory = ({ team }) => {
   return (
     <div className="p-2 space-y-3">
       {(games > 0 || career?.avg_finish != null) && (
-        <p className="text-sm">
+        <div className="flex gap-2">
           {games > 0 && (
-            <>
-              <span className="font-semibold">
-                {record.wins}-{record.losses}
-                {record.ties ? `-${record.ties}` : ""}
-              </span>{" "}
-              <span className="text-light">({winPct}%) in head-to-head</span>
-            </>
+            <MiniStat
+              value={`${record.wins}-${record.losses}${
+                record.ties ? `-${record.ties}` : ""
+              }`}
+              label="H2H Record"
+            />
           )}
-          {games > 0 && career?.avg_finish != null && (
-            <span className="text-light"> · </span>
-          )}
+          {games > 0 && <MiniStat value={`${winPct}%`} label="Win %" />}
           {career?.avg_finish != null && (
-            <span className="text-light">
-              avg event finish{" "}
-              <span className="font-semibold text-near-black">
-                {career.avg_finish}
-              </span>
-            </span>
+            <MiniStat value={career.avg_finish} label="Avg Finish" />
           )}
-        </p>
+        </div>
       )}
       <div className="space-y-1.5">
         {team.appearances.map((a) => (
@@ -582,6 +587,14 @@ const TeamHistory = ({ team }) => {
           ))}
         </ChipOverflow>
       )}
+      <MoreStatsLink
+        label="View more stats"
+        onClick={() =>
+          navigate(
+            `/league/${leagueUuid}/team/${encodeURIComponent(team.name)}/stats`
+          )
+        }
+      />
     </div>
   );
 };

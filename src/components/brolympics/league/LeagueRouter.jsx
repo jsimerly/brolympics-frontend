@@ -10,6 +10,7 @@ import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import LeagueSettings from "./LeagueSettings";
 import PlayerStats from "./PlayerStats";
 import EventStats from "./EventStats";
+import TeamStats from "./TeamStats";
 import League from "./League";
 
 const LeagueRouter = () => {
@@ -28,6 +29,7 @@ const LeagueRouter = () => {
         />
         <Route path="/player/:playerUuid/stats" element={<PlayerStats />} />
         <Route path="/event/:eventTypeUuid/stats" element={<EventStats />} />
+        <Route path="/team/:teamName/stats" element={<TeamStats />} />
         <Route
           path="/create-brolympics"
           element={<CreateBrolympicsManager />}

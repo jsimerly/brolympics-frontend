@@ -150,6 +150,11 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - crowns the reigning champion and counts seasons
   - shows the timeline newest-first with the record books
 
+## src/components/brolympics/league/TeamStats.test.jsx (1 tests)
+
+- **TeamStats**
+  - renders the career: tiles, h2h strip, seasons, trophy shelf
+
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
 - **ManageEvent**
@@ -259,4 +264,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-116 tests cataloged.
+117 tests cataloged.

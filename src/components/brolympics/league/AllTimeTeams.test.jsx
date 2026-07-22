@@ -107,15 +107,16 @@ describe('AllTimeTeams', () => {
     expect(screen.getByText('Javi, Marco')).toBeInTheDocument()
     expect(screen.getByAltText('1st')).toBeInTheDocument()
     expect(screen.getByText('4th')).toBeInTheDocument()
-    // the lazy career fetch fills in the record line + chips
+    // the lazy career fetch fills in the mini-stat strip + chips
     await waitFor(() =>
       expect(screen.getByText('34-12-1')).toBeInTheDocument()
     )
-    // 34 of 47 games = 72%, and the average finish rides the same line
-    expect(screen.getByText(/\(72%\) in head-to-head/)).toBeInTheDocument()
-    expect(screen.getByText(/avg event finish/)).toBeInTheDocument()
+    // 34 of 47 games = 72%, avg finish beside it, and the door to the page
+    expect(screen.getByText('72%')).toBeInTheDocument()
+    expect(screen.getByText('Avg Finish')).toBeInTheDocument()
     expect(screen.getByText('2.4')).toBeInTheDocument()
     expect(screen.getByText('Cornhole')).toBeInTheDocument()
+    expect(screen.getByText('View more stats')).toBeInTheDocument()
   })
 
   it('folds chip noise behind +N more and unfolds on tap', async () => {
