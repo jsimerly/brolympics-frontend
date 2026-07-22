@@ -44,7 +44,10 @@ const Seasons = ({ seasons }) => {
                 <td className="p-2 border-t">
                   {s.brolympics}
                   {!s.complete && (
-                    <span className="text-[10px] text-light"> (live)</span>
+                    <span
+                      title="In progress"
+                      className="inline-block w-2 h-2 ml-1.5 rounded-full bg-tertiary animate-pulse"
+                    />
                   )}
                 </td>
                 <td className="p-2 border-t">{s.team}</td>
@@ -174,21 +177,42 @@ const ContestRow = ({ contest, myTeamUuids, playerUuid, seasonBreak }) => {
   );
 };
 
+/** The format-specific mini-stat: record for h2h, heat wins for ffa, best
+ * score (with the average) for outings. */
+const formatStat = (d) => {
+  if (d.format === "h2h") {
+    return {
+      value: `${d.record.wins}-${d.record.losses}${
+        d.record.ties ? `-${d.record.ties}` : ""
+      }`,
+      label: "Record",
+    };
+  }
+  if (d.heats.played > 0) {
+    return { value: `${d.heats.wins}/${d.heats.played}`, label: "Heat Wins" };
+  }
+  return {
+    value: d.best_score ?? "—",
+    label: d.avg_score != null ? `Best · avg ${d.avg_score.toFixed(1)}` : "Best",
+  };
+};
+
 const DisciplineCard = ({ d, contests, myTeamUuids, playerUuid }) => {
   const [open, setOpen] = useState(false);
   const mine = contests.filter(
     (c) => c.event_type_name === d.event_type && c.is_complete
   );
+  const detail = formatStat(d);
 
   return (
     <div className="card">
       <div
-        className="p-4 cursor-pointer"
+        className="p-3 cursor-pointer"
         onClick={() => setOpen((o) => !o)}
       >
         <div className="flex items-center justify-between pb-2">
-          <h3 className="font-bold">{d.event_type}</h3>
-          <span className="flex items-center gap-1 text-sm text-light">
+          <h3 className="font-semibold">{d.event_type}</h3>
+          <span className="flex items-center gap-1 text-xs text-light">
             {d.years.join(", ")}
             {open ? (
               <ExpandLessIcon sx={{ fontSize: 18 }} />
@@ -197,46 +221,22 @@ const DisciplineCard = ({ d, contests, myTeamUuids, playerUuid }) => {
             )}
           </span>
         </div>
-        <div className="grid grid-cols-2 text-sm gap-x-6 gap-y-1">
-          <span>
-            Points: <span className="font-semibold">{d.points}</span>
+        <div className="flex gap-2">
+          <MiniStat value={trimFloat(d.points)} label="Points" />
+          <MiniStat value={detail.value} label={detail.label} />
+          <MiniStat value={d.avg_finish ?? "—"} label="Avg Finish" />
+        </div>
+        <div className="flex items-center gap-4 pt-2 text-xs text-light">
+          <span className="flex items-center gap-1" title="Event wins">
+            <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} /> {d.event_wins}
           </span>
-          {d.format === "h2h" ? (
-            <span>
-              Record:{" "}
-              <span className="font-semibold">
-                {d.record.wins}-{d.record.losses}
-                {d.record.ties ? `-${d.record.ties}` : ""}
-              </span>
-            </span>
-          ) : d.heats.played > 0 ? (
-            <span>
-              Heats:{" "}
-              <span className="font-semibold">
-                {d.heats.wins} wins / {d.heats.played}
-              </span>
-            </span>
-          ) : (
-            <span>
-              Best: <span className="font-semibold">{d.best_score ?? "—"}</span>
-              {d.avg_score != null && (
-                <span className="text-light">
-                  {" "}
-                  (avg {d.avg_score.toFixed(1)})
-                </span>
-              )}
-            </span>
-          )}
-          <span>
-            Event wins: <span className="font-semibold">{d.event_wins}</span>
-          </span>
-          <span>
-            Podiums: <span className="font-semibold">{d.podiums}</span>
+          <span className="flex items-center gap-1" title="Podiums">
+            <LeaderboardOutlinedIcon sx={{ fontSize: 14 }} /> {d.podiums}
           </span>
         </div>
       </div>
       {open && (
-        <div className="px-4 pb-3">
+        <div className="px-3 pb-3">
           <h4 className="pb-1 text-xs font-semibold tracking-wide uppercase text-light">
             Game history
           </h4>

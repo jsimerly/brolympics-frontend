@@ -148,7 +148,10 @@ const TeamStats = () => {
                     <td className="p-2 border-t whitespace-nowrap">
                       {a.brolympics}
                       {!a.complete && (
-                        <span className="text-[10px] text-light"> (live)</span>
+                        <span
+                          title="In progress"
+                          className="inline-block w-2 h-2 ml-1.5 rounded-full bg-tertiary animate-pulse"
+                        />
                       )}
                     </td>
                     <td className="p-2 text-sm border-t text-light">
