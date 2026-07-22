@@ -72,7 +72,7 @@ describe('EventStats', () => {
   it('crowns the reigning champion and counts seasons', async () => {
     setup()
     await waitFor(() => expect(screen.getByText('Cornhole')).toBeInTheDocument())
-    expect(screen.getByText('Head to Head · 2 seasons')).toBeInTheDocument()
+    expect(screen.getByText('Head to Head · held 2 times')).toBeInTheDocument()
     // reigning = last complete year's gold; both champs have 1 title each so
     // most-titles falls to the first encountered (Ireland)
     expect(screen.getByText('Reigning Champion')).toBeInTheDocument()

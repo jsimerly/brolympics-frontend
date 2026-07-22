@@ -115,12 +115,12 @@ const TeamStats = () => {
 
       {career.appearances?.length > 0 && (
         <section>
-          <h2 className="mb-3 header-3">Seasons</h2>
+          <h2 className="mb-3 header-3">Brolympics History</h2>
           <div className="overflow-hidden card">
             <table className="w-full">
               <thead>
                 <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
-                  <th className="p-2 text-left">Season</th>
+                  <th className="p-2 text-left">Brolympics</th>
                   <th className="p-2 text-left">Roster</th>
                   <th className="p-2 w-[55px]">Finish</th>
                   <th className="p-2 w-[55px]">Pts</th>

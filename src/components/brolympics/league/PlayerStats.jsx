@@ -10,7 +10,6 @@ import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
-import { PlayerTeams } from "./HistorySections";
 import { ordinal, trimFloat } from "../../Util/format";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
@@ -18,17 +17,18 @@ import Bronze from "../../../assets/svgs/bronze.svg";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 
-/** One line per Brolympics attended: team, overall finish, points, hardware. */
+/** One line per Brolympics attended: team, overall finish, points, hardware.
+ * "History", not "seasons" -- these can happen weekly if the league wants. */
 const Seasons = ({ seasons }) => {
   if (!seasons?.length) return null;
   return (
     <section>
-      <h2 className="mb-3 header-3">Seasons</h2>
+      <h2 className="mb-3 header-3">Brolympics History</h2>
       <div className="overflow-hidden card">
         <table className="w-full">
           <thead>
             <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
-              <th className="p-2 text-left">Season</th>
+              <th className="p-2 text-left">Brolympics</th>
               <th className="p-2 text-left">Team</th>
               <th className="p-2 w-[55px]">Finish</th>
               <th className="p-2 w-[55px]">Pts</th>
@@ -340,8 +340,6 @@ const PlayerStats = () => {
           </h1>
         </div>
       </div>
-
-      <PlayerTeams teams={career.teams} showAllFinishes />
 
       <div className="flex gap-3">
         <StatTile

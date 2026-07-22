@@ -113,8 +113,8 @@ const EventStats = () => {
             {history.event_type}
           </h1>
           <p className="text-sm text-light">
-            {FORMAT_LABEL[history.format] || history.format} ·{" "}
-            {history.years.length} season
+            {FORMAT_LABEL[history.format] || history.format} · held{" "}
+            {history.years.length} time
             {history.years.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -124,7 +124,7 @@ const EventStats = () => {
         <StatTile
           icon={<CalendarMonthOutlinedIcon />}
           value={history.years.length}
-          label="Seasons"
+          label="Brolympics"
         />
         <StatTile
           icon={<EmojiEventsOutlinedIcon />}
@@ -191,7 +191,7 @@ const EventStats = () => {
 
       <RankedList
         title="Record Book"
-        sub="best single season"
+        sub="best single brolympics"
         rows={(history.best_seasons || []).map((row) => ({
           who: row.who,
           detail: `${row.wins}-${row.losses}${

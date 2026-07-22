@@ -69,7 +69,7 @@ export const MoreStatsLink = ({ label = "View full stats", onClick }) => (
 
 /** A compact labeled number for expand panels: big value, whisper label. */
 export const MiniStat = ({ value, label }) => (
-  <div className="flex-1 min-w-0 px-2 py-1.5 text-center rounded-lg bg-gray-50">
+  <div className="flex-1 min-w-0 px-2 py-2.5 text-center rounded-lg bg-gray-50">
     <div className="text-sm font-bold leading-tight truncate">{value}</div>
     <div className="text-[9px] tracking-wide uppercase text-light">{label}</div>
   </div>
@@ -142,7 +142,7 @@ const PlayerCareer = ({ playerUuid }) => {
   const records = career.records || [];
 
   return (
-    <div className="p-2 space-y-3">
+    <div className="p-3 space-y-4">
       <PlayerTeams teams={career.teams} />
       {(wins.length > 0 ||
         seconds.length > 0 ||
@@ -323,7 +323,7 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
   if (!history) return <div className="p-2 text-sm text-light">Loading...</div>;
 
   return (
-    <div className="p-2 space-y-3">
+    <div className="p-3 space-y-4">
       {history.leaders?.length > 0 && (
         <div>
           <h4 className="font-semibold">
@@ -512,7 +512,7 @@ const TeamHistory = ({ team }) => {
     .map((d) => ({ name: d.event_type, count: d.thirds }));
 
   return (
-    <div className="p-2 space-y-3">
+    <div className="p-3 space-y-4">
       {(games > 0 || career?.avg_finish != null) && (
         <div className="flex gap-2">
           {games > 0 && (
@@ -529,7 +529,7 @@ const TeamHistory = ({ team }) => {
           )}
         </div>
       )}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {team.appearances.map((a) => (
           <div className="flex items-center gap-2 text-sm" key={a.team_uuid}>
             {a.rank && a.rank <= 3 ? (
