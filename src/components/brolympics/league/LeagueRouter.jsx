@@ -9,6 +9,7 @@ import useCachedFetch from "../../../hooks/useCachedFetch";
 import CreateBrolympicsManager from "./CreateBrolympicsManager";
 import LeagueSettings from "./LeagueSettings";
 import PlayerStats from "./PlayerStats";
+import EventStats from "./EventStats";
 import League from "./League";
 
 const LeagueRouter = () => {
@@ -26,6 +27,7 @@ const LeagueRouter = () => {
           element={<LeagueSettings leagueInfo={leagueInfo} />}
         />
         <Route path="/player/:playerUuid/stats" element={<PlayerStats />} />
+        <Route path="/event/:eventTypeUuid/stats" element={<EventStats />} />
         <Route
           path="/create-brolympics"
           element={<CreateBrolympicsManager />}

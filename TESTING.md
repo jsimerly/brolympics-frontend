@@ -143,6 +143,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - opens into record, rotating rosters, and the trophy shelf
   - folds chip noise behind +N more and unfolds on tap
 
+## src/components/brolympics/league/EventStats.test.jsx (2 tests)
+
+- **EventStats**
+  - crowns the reigning champion and counts seasons
+  - shows the timeline newest-first with the record books
+
 ## src/components/brolympics/manage/events/ManageEvent.test.jsx (2 tests)
 
 - **ManageEvent**
@@ -245,4 +251,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-110 tests cataloged.
+112 tests cataloged.

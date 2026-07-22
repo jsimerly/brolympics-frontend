@@ -11,6 +11,110 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
 import { PlayerTeams } from "./HistorySections";
+import { ordinal, trimFloat } from "../../Util/format";
+import Gold from "../../../assets/svgs/gold.svg";
+import Silver from "../../../assets/svgs/silver.svg";
+import Bronze from "../../../assets/svgs/bronze.svg";
+
+const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
+
+/** One line per Brolympics attended: team, overall finish, points, hardware. */
+const Seasons = ({ seasons }) => {
+  if (!seasons?.length) return null;
+  return (
+    <section>
+      <h2 className="mb-3 header-3">Seasons</h2>
+      <div className="overflow-hidden card">
+        <table className="w-full">
+          <thead>
+            <tr className="text-xs tracking-wide uppercase bg-gray-50 text-light">
+              <th className="p-2 text-left">Season</th>
+              <th className="p-2 text-left">Team</th>
+              <th className="p-2 w-[55px]">Finish</th>
+              <th className="p-2 w-[55px]">Pts</th>
+              <th className="p-2 w-[45px]" title="Event wins">
+                <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {seasons.map((s, i) => (
+              <tr key={s.brolympics} className={i % 2 === 0 ? "bg-gray-50" : ""}>
+                <td className="p-2 border-t">
+                  {s.brolympics}
+                  {!s.complete && (
+                    <span className="text-[10px] text-light"> (live)</span>
+                  )}
+                </td>
+                <td className="p-2 border-t">{s.team}</td>
+                <td className="p-2 text-center border-t">
+                  {s.rank && s.rank <= 3 && s.complete ? (
+                    <img
+                      src={medalFor[s.rank]}
+                      alt={ordinal(s.rank)}
+                      className="h-4 mx-auto"
+                    />
+                  ) : s.rank ? (
+                    ordinal(s.rank)
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="p-2 text-center border-t">
+                  {trimFloat(s.points)}
+                </td>
+                <td className="p-2 text-center border-t">{s.event_wins}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+};
+
+/** Every h2h game tallied against the players across the table. */
+const RIVALS_PREVIEW = 8;
+const Rivalries = ({ rivalries }) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!rivalries?.length) return null;
+  const rows = showAll ? rivalries : rivalries.slice(0, RIVALS_PREVIEW);
+  return (
+    <section>
+      <h2 className="mb-3 header-3">Rivalries</h2>
+      <div className="p-4 card space-y-1.5">
+        {rows.map((r) => (
+          <div className="flex items-center gap-2 text-sm" key={r.player}>
+            <span className="flex-grow min-w-0 truncate">vs {r.player}</span>
+            <span
+              className={`font-semibold shrink-0 ${
+                r.wins > r.losses
+                  ? "text-tertiary"
+                  : r.wins < r.losses
+                  ? "text-red"
+                  : ""
+              }`}
+            >
+              {r.wins}-{r.losses}
+              {r.ties ? `-${r.ties}` : ""}
+            </span>
+            <span className="w-16 text-xs text-right shrink-0 text-light">
+              {r.games} game{r.games === 1 ? "" : "s"}
+            </span>
+          </div>
+        ))}
+        {rivalries.length > RIVALS_PREVIEW && (
+          <button
+            className="pt-1 text-xs font-semibold text-primary"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show less" : `Show all ${rivalries.length}`}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+};
 
 const StatTile = ({ icon, value, label }) => (
   <div className="flex flex-col items-center flex-1 gap-1 p-3 card">
@@ -274,6 +378,10 @@ const PlayerStats = () => {
           </span>
         </div>
       )}
+
+      <Seasons seasons={career.seasons} />
+
+      <Rivalries rivalries={career.rivalries} />
 
       {career.disciplines.length > 0 && (
         <section>

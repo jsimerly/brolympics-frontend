@@ -271,7 +271,7 @@ export const Leaderboard = ({ leaderboard, total, onNeedMore }) => {
 };
 
 /** One all-time leader line: points, then the format-specific detail. */
-const leaderLine = (leader, format) => {
+export const leaderLine = (leader, format) => {
   const points = Number.isInteger(leader.points)
     ? leader.points
     : leader.points.toFixed(1);
@@ -296,6 +296,8 @@ const leaderLine = (leader, format) => {
 
 const EventTypeHistory = ({ eventTypeUuid }) => {
   const [history, setHistory] = useState(null);
+  const navigate = useNavigate();
+  const { uuid: leagueUuid } = useParams();
 
   useEffect(() => {
     fetchEventTypeHistory(eventTypeUuid)
@@ -307,6 +309,14 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
 
   return (
     <div className="p-2 space-y-3">
+      <button
+        className="flex items-center justify-center w-full gap-1 px-4 py-2 text-sm font-semibold transition-colors border rounded-full text-primary border-primary hover:bg-primary hover:text-white"
+        onClick={() =>
+          navigate(`/league/${leagueUuid}/event/${eventTypeUuid}/stats`)
+        }
+      >
+        View full stats <ArrowForwardIcon sx={{ fontSize: 16 }} />
+      </button>
       {history.leaders?.length > 0 && (
         <div>
           <h4 className="font-semibold">
