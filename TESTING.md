@@ -78,13 +78,14 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - renders a completed single-entry game as a walkover Bye
   - renders nothing at all without nodes
 
-## src/components/brolympics/events/EventActive.test.jsx (4 tests)
+## src/components/brolympics/events/EventActive.test.jsx (5 tests)
 
 - **EventActive**
   - trims float noise on standings and outing totals
   - shows points whole, one-decimal, or an em dash for none
   - shows the h2h record under the team name
   - flies the blind banner only while the blind holds
+  - says Cancelled, never Final, on a cancelled event (2023 Trivia)
 
 ## src/components/brolympics/events/eventDisplay.test.js (9 tests)
 
@@ -251,4 +252,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-112 tests cataloged.
+113 tests cataloged.

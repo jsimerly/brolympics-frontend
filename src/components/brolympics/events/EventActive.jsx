@@ -5,6 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import Bracket from "./Bracket";
 import Img from "../../Util/Img";
 import HeatManager from "./HeatManager.jsx";
@@ -244,6 +245,13 @@ const EventActive = ({ eventInfo, is_admin }) => {
 
   return (
     <div className="max-w-4xl">
+      {eventInfo.is_cancelled && (
+        <div className="flex items-center gap-2 p-3 mx-4 mb-3 text-sm border rounded-lg border-red/30 bg-red/5">
+          <BlockOutlinedIcon sx={{ fontSize: 18 }} className="shrink-0 text-red" />
+          This event was cancelled — no points were awarded. Any recorded
+          games below are kept for history.
+        </div>
+      )}
       {eventInfo.blind_active && (
         <div className="flex items-center gap-2 p-3 mx-4 mb-3 text-sm border rounded-lg border-secondary/40 bg-secondary/5">
           <VisibilityOffOutlinedIcon
@@ -257,11 +265,15 @@ const EventActive = ({ eventInfo, is_admin }) => {
         <div className="flex items-center justify-between pb-2">
           <h2 className="flex items-center header-3">
             Standings
-            {eventInfo.is_complete && (
+            {eventInfo.is_cancelled ? (
+              <span className="ml-2 pt-2 text-red text-[10px] flex items-center gap-1">
+                Cancelled <BlockOutlinedIcon sx={{ fontSize: 14 }} />
+              </span>
+            ) : eventInfo.is_complete ? (
               <span className="ml-2 pt-2 text-secondary text-[10px] flex items-center gap-1">
                 Final <TaskAltIcon sx={{ fontSize: 14 }} />
               </span>
-            )}
+            ) : null}
           </h2>
         </div>
         <div className="overflow-hidden card">

@@ -103,7 +103,7 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
               event.uuid === selectedEventId
                 ? "bg-primary text-white border-primary"
                 : "bg-white text-near-black border-gray-200"
-            }`}
+            } ${event.is_cancelled ? "line-through opacity-50" : ""}`}
           >
             {event.name}
           </button>

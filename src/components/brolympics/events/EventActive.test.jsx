@@ -101,4 +101,16 @@ describe('EventActive', () => {
     rerender(<EventActive eventInfo={indEvent()} is_admin={false} />)
     expect(screen.queryByText(/scores reveal on their own/i)).not.toBeInTheDocument()
   })
+
+  it('says Cancelled, never Final, on a cancelled event (2023 Trivia)', () => {
+    render(
+      <EventActive
+        eventInfo={indEvent({ is_cancelled: true, is_complete: true })}
+        is_admin={false}
+      />
+    )
+    expect(screen.getByText('Cancelled')).toBeInTheDocument()
+    expect(screen.getByText(/no points were awarded/i)).toBeInTheDocument()
+    expect(screen.queryByText('Final')).toBeNull()
+  })
 })

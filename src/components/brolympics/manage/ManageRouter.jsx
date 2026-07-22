@@ -37,7 +37,7 @@ const ManageRouter = ({ brolympics }) => {
         </div>
       )}
       <Routes>
-        <Route path="/" element={<Manage />} />
+        <Route path="/" element={<Manage is_active={brolympics?.is_active} />} />
         <Route path="edit-bracket" element={<EditBracket />} />
         <Route path="edit-competition" element={<EditComp />} />
         <Route

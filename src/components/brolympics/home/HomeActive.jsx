@@ -4,13 +4,11 @@ import { format, parseISO } from "date-fns";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import AvailableCompetition from "./AvailableCompetition.jsx";
 import ActiveCompetition from "./ActiveCompetition.jsx";
-import PopupContinue from "../../Util/PopupContinue";
 import { useNotification } from "../../Util/Notification";
 import {
   fetchActiveHome,
   confirmContest,
   startEvent,
-  endBrolympics,
 } from "../../../api/client";
 import { apiErrorMessage } from "../../Util/apiError";
 
@@ -129,7 +127,6 @@ const HomeActive = ({ is_admin }) => {
     upcoming_events: [],
     pending_confirmations: [],
   });
-  const [endOpen, setEndOpen] = useState(false);
   const { uuid } = useParams();
   const navigate = useNavigate();
   const { showNotification } = useNotification();
@@ -155,17 +152,6 @@ const HomeActive = ({ is_admin }) => {
       location.reload();
     } catch (error) {
       showNotification(apiErrorMessage(error, `Unable to start ${event.name}.`));
-    }
-  };
-
-  const endBro = async () => {
-    try {
-      await endBrolympics(uuid);
-      location.reload();
-    } catch (error) {
-      showNotification(
-        apiErrorMessage(error, "There was an error ending the Brolympics.")
-      );
     }
   };
 
@@ -242,30 +228,6 @@ const HomeActive = ({ is_admin }) => {
         </p>
       )}
 
-      {is_admin && (
-        <div className="p-3 border rounded-lg border-red/30">
-          <h4 className="text-sm font-semibold text-red">Wrap It Up</h4>
-          <p className="text-[11px] text-light">
-            Ending the Brolympics freezes the standings where they sit, closes
-            every event, and clears everyone's open games.
-          </p>
-          <button
-            className="w-full py-2 mt-2 text-sm font-semibold border rounded-full text-red border-red"
-            onClick={() => setEndOpen(true)}
-          >
-            End Brolympics
-          </button>
-        </div>
-      )}
-
-      <PopupContinue
-        open={endOpen}
-        setOpen={setEndOpen}
-        header="End the Brolympics?"
-        desc="The games are over: standings freeze, events close, and unplayed games go away. There's no restart button."
-        continueText="End it"
-        continueFunc={endBro}
-      />
     </div>
   );
 };
