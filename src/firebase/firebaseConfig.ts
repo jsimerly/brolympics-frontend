@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from 'firebase/auth'
+import { getAuth, connectAuthEmulator } from 'firebase/auth'
 
 const env = import.meta.env
 
@@ -16,6 +16,14 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
+
+// E2E lane only (.env.e2e): point the SDK at the local Auth emulator. The
+// flag is an empty string in dev/prod builds, so this never runs there.
+if (env.VITE_FB_AUTH_EMULATOR) {
+  connectAuthEmulator(auth, `http://${env.VITE_FB_AUTH_EMULATOR}`, {
+    disableWarnings: true,
+  })
+}
 
 export { auth, app }
 export default app;

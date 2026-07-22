@@ -22,6 +22,8 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_STORAGE_BUCKET': JSON.stringify(env.VITE_STORAGE_BUCKET ?? ''),
       'import.meta.env.VITE_MESSAGING_SENDER_ID': JSON.stringify(env.VITE_MESSAGING_SENDER_ID ?? ''),
       'import.meta.env.VITE_MEASUREMENT_ID': JSON.stringify(env.VITE_MEASUREMENT_ID ?? ''),
+      // set only by .env.e2e (playwright lane) -- empty string in dev/prod
+      'import.meta.env.VITE_FB_AUTH_EMULATOR': JSON.stringify(env.VITE_FB_AUTH_EMULATOR ?? ''),
     },
     plugins: [react()],
     test: {
@@ -29,6 +31,8 @@ export default defineConfig(({ mode }) => {
       globals: true,
       setupFiles: './src/test/setup.js',
       css: false,
+      // src only: e2e/*.spec.js belongs to Playwright, not vitest
+      include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
     },
   }
 })

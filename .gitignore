@@ -1,6 +1,14 @@
 #env
 .env*
 !.env.example
+# the e2e env is all-fake values (demo project + emulator) and must ship
+!.env.e2e
+
+# playwright artifacts
+e2e/test-results/
+playwright-report/
+e2e/*-debug.log
+e2e/.firebase/
 
 
 # Logs

@@ -59,6 +59,19 @@ mobile's expense.
   re-inline copies into components — that divergence has shipped bugs.
 - Test mode pins `VITE_FRONTEND_URL=https://brolympic.test` (vite.config.ts),
   so URL tests catch any hardcoded domain.
+- E2E lane: `npm run e2e` (`e2e:headed` / `e2e:ui` to watch) — Playwright
+  drives real Chromium (mobile viewport) against the real stack with NO
+  mocks: Vite :5175 in `--mode e2e` (.env.e2e, all-fake values), Django
+  :8001 on a throwaway sqlite (`../api/scripts/run_e2e_server.py`, settings
+  `api.settings.e2e`), and the Firebase AUTH EMULATOR :9099 (project
+  `demo-brolympics` — signups are real but local; a broken emulator hookup
+  fails loudly instead of touching prod Firebase). Playwright boots and owns
+  all three servers; specs live in `e2e/` and create their world through the
+  UI (unique emails per run). This lane exists because component tests mock
+  the API and can't see cross-screen staleness (the ghost-bro lesson).
+  Gotcha for specs: the create wizard is a translateX carousel — every step
+  is "visible" to Playwright at all times, so gate step transitions on real
+  data (e.g. a uuid appearing), never on step-content visibility.
 
 ## Patterns
 
