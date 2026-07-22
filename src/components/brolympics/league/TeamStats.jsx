@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import BackLink from "../../Util/BackLink";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
@@ -59,12 +59,7 @@ const TeamStats = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] container-padding w-full max-w-3xl mx-auto py-6 space-y-6">
       <div>
-        <button
-          className="flex items-center gap-1"
-          onClick={() => navigate(`/league/${uuid}`)}
-        >
-          <ArrowBackIcon /> Back
-        </button>
+        <BackLink to={`/league/${uuid}`} label="League" />
         <div className="flex items-center gap-3 pt-3">
           <Img
             src={career.img}

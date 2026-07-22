@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import BackLink from "../../Util/BackLink";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
@@ -102,12 +102,7 @@ const EventStats = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] container-padding w-full max-w-3xl mx-auto py-6 space-y-6">
       <div>
-        <button
-          className="flex items-center gap-1"
-          onClick={() => navigate(`/league/${uuid}`)}
-        >
-          <ArrowBackIcon /> Back
-        </button>
+        <BackLink to={`/league/${uuid}`} label="League" />
         <div className="pt-3">
           <h1 className="text-3xl font-bold leading-tight text-near-black">
             {history.event_type}
