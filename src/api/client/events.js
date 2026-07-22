@@ -112,5 +112,11 @@ export const fetchEventTypes = (leagueUuid) =>
     .then((r) => r.data);
 
 /** A discipline through the years: podiums per year + all-time bests. */
-export const fetchEventTypeHistory = (uuid) =>
-  api.get(`/api/event-types/${uuid}/history/`).then((r) => r.data);
+export const fetchEventTypeHistory = (uuid, leaders) =>
+  api
+    .get(
+      `/api/event-types/${uuid}/history/${
+        leaders != null ? `?leaders=${leaders}` : ""
+      }`
+    )
+    .then((r) => r.data);

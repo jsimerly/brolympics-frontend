@@ -7,10 +7,15 @@ const SEARCH_THRESHOLD = 8;
 /** The horizontal pill switcher (events, teams). Past the threshold a search
  * pill appears up front — type-to-jump beats flicking through twenty pills.
  * Picking a match clears the search so the bar snaps back to normal. */
-const PillBar = ({ items = [], selectedId, onSelect }) => {
+const PillBar = ({
+  items = [],
+  selectedId,
+  onSelect,
+  threshold = SEARCH_THRESHOLD,
+}) => {
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
-  const searchable = items.length > SEARCH_THRESHOLD;
+  const searchable = items.length > threshold;
 
   const shown = useMemo(() => {
     if (!searching || !query.trim()) return items;

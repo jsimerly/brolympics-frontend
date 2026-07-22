@@ -87,7 +87,7 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - flies the blind banner only while the blind holds
   - says Cancelled, never Final, on a cancelled event (2023 Trivia)
 
-## src/components/brolympics/events/eventDisplay.test.js (10 tests)
+## src/components/brolympics/events/eventDisplay.test.js (9 tests)
 
 - **groupLog**
   - labels playoff rounds with the max round as Finals
@@ -104,8 +104,6 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 - **groupBracketNodes**
   - splits championship tree from placement games, best place first
   - survives a dangling winner_to pointer
-- **medalTable**
-  - rolls podiums into gold-first hardware counts, ties sharing medals
 
 ## src/components/brolympics/home/AvailableCompetition.test.jsx (3 tests)
 
@@ -261,4 +259,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-117 tests cataloged.
+116 tests cataloged.

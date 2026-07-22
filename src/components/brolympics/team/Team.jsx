@@ -133,6 +133,7 @@ const Team = ({ status, teams, default_uuid }) => {
         items={teams}
         selectedId={selectedTeamId}
         onSelect={(team) => handleTeamChange({ target: { value: team.uuid } })}
+        threshold={4}
       />
       {loading && <SkeletonPage rows={4} />}
       <div

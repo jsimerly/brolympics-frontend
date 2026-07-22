@@ -9,6 +9,8 @@ import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
 import { fetchEventTypeHistory } from "../../../api/client";
 import { leaderLine } from "./HistorySections";
+import ShowMore from "../../Util/ShowMore";
+import { INITIAL_VISIBLE, nextVisible } from "../../Util/pagination";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
 const FORMAT_LABEL = {
@@ -18,15 +20,25 @@ const FORMAT_LABEL = {
   ffa: "Free-for-All",
 };
 
-const StatTile = ({ icon, value, label }) => (
-  <div className="flex flex-col items-center flex-1 gap-1 p-3 card">
-    <div className="text-primary">{icon}</div>
-    <span className="text-xl font-bold leading-none text-center">{value}</span>
-    <span className="text-[11px] text-light text-center">{label}</span>
-  </div>
-);
+/** Value text auto-shrinks: numbers sit big, "Luxembourg ×2" fits too. */
+const StatTile = ({ icon, value, label }) => {
+  const text = String(value);
+  const size =
+    text.length > 12 ? "text-sm" : text.length > 7 ? "text-base" : "text-xl";
+  return (
+    <div className="flex flex-col items-center justify-center flex-1 gap-1 p-3 text-center card">
+      <div className="text-primary">{icon}</div>
+      <span
+        className={`${size} w-full font-bold leading-tight break-words`}
+      >
+        {text}
+      </span>
+      <span className="text-[11px] text-light">{label}</span>
+    </div>
+  );
+};
 
-const RankedList = ({ title, sub, rows }) =>
+const RankedList = ({ title, sub, rows, total, onMore }) =>
   rows?.length > 0 && (
     <section className="p-4 card">
       <h2 className="pb-2 font-bold">
@@ -44,6 +56,9 @@ const RankedList = ({ title, sub, rows }) =>
           </div>
         ))}
       </div>
+      {total != null && (
+        <ShowMore shown={rows.length} total={total} onMore={onMore} />
+      )}
     </section>
   );
 
@@ -53,9 +68,11 @@ const EventStats = () => {
   const { uuid, eventTypeUuid } = useParams();
   const navigate = useNavigate();
   const [history, setHistory] = useState(null);
+  const [visibleLeaders, setVisibleLeaders] = useState(INITIAL_VISIBLE);
 
   useEffect(() => {
-    fetchEventTypeHistory(eventTypeUuid)
+    // leaders=0: the full page gets everyone and pages through client-side
+    fetchEventTypeHistory(eventTypeUuid, 0)
       .then(setHistory)
       .catch((error) => console.error("Error fetching event stats:", error));
   }, [eventTypeUuid]);
@@ -162,10 +179,14 @@ const EventStats = () => {
       <RankedList
         title="All-Time Leaders"
         sub="by points earned"
-        rows={(history.leaders || []).map((leader) => ({
-          who: leader.who,
-          detail: leaderLine(leader, history.format),
-        }))}
+        rows={(history.leaders || [])
+          .slice(0, visibleLeaders)
+          .map((leader) => ({
+            who: leader.who,
+            detail: leaderLine(leader, history.format),
+          }))}
+        total={(history.leaders || []).length}
+        onMore={() => setVisibleLeaders(nextVisible(visibleLeaders))}
       />
 
       <RankedList

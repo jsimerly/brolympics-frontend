@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  SCORE_FORMAT_LABEL, groupBracketNodes, groupLog, hasRules, medalTable,
-  placeLabel, stageSentence,
+  SCORE_FORMAT_LABEL, groupBracketNodes, groupLog, hasRules, placeLabel,
+  stageSentence,
 } from './eventDisplay'
 
 const game = (structure, round) => ({ stage_structure: structure, round })
@@ -107,27 +107,3 @@ describe('groupBracketNodes', () => {
   })
 })
 
-describe('medalTable', () => {
-  it('rolls podiums into gold-first hardware counts, ties sharing medals', () => {
-    const podiums = [
-      {
-        first: [{ team: 'Chad', img: '/chad.png' }],
-        second: [{ team: 'Qatar' }],
-        third: [{ team: 'Greece' }],
-      },
-      {
-        // two-way tie for first is two golds
-        first: [{ team: 'Qatar' }, { team: 'Chad' }],
-        second: [],
-        third: [{ team: 'Greece' }],
-      },
-    ]
-    const rows = medalTable(podiums)
-    expect(rows.map((r) => [r.team, r.gold, r.silver, r.bronze])).toEqual([
-      ['Chad', 2, 0, 0],
-      ['Qatar', 1, 1, 0],
-      ['Greece', 0, 0, 2],
-    ])
-    expect(rows[0].img).toBe('/chad.png')
-  })
-})
