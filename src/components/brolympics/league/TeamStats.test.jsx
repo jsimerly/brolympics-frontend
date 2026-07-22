@@ -42,6 +42,9 @@ const CAREER = {
   ],
   best_event: { event_type: 'Cornhole', avg_finish: 1.2 },
   worst_event: { event_type: 'Golf', avg_finish: 6.5 },
+  records: [
+    { event_type: 'Trivia', score: 90, brolympics: 'Summer 2024' },
+  ],
   appearances: [
     {
       brolympics: 'Summer 2024',
@@ -99,5 +102,7 @@ describe('TeamStats', () => {
     expect(screen.getByText('Best Event · avg 1.2')).toBeInTheDocument()
     expect(screen.getByText('Golf')).toBeInTheDocument()
     expect(screen.getByText('Toughest Event · avg 6.5')).toBeInTheDocument()
+    // the banner's all-time record wears the fire chip
+    expect(screen.getByText('Trivia · 90')).toBeInTheDocument()
   })
 })

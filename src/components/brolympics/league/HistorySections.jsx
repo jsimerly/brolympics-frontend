@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
@@ -271,7 +271,7 @@ export const Leaderboard = ({ leaderboard, total, onNeedMore }) => {
                 <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
               <th className="p-2 w-[45px]" title="Podiums">
-                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
+                <LeaderboardOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
             </tr>
           </thead>
@@ -607,8 +607,23 @@ const TeamHistory = ({ team }) => {
           </div>
         ))}
       </div>
-      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0) && (
+      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0 ||
+        (career?.records || []).length > 0) && (
         <ChipOverflow className="pt-3 border-t border-gray-200">
+          {(career?.records || []).map((r) => (
+            <AchievementChip
+              icon={
+                <WhatshotOutlinedIcon
+                  sx={{ fontSize: 14 }}
+                  className="text-orange-500"
+                />
+              }
+              name={`${r.event_type} · ${r.score}`}
+              title="All-time record"
+              className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
+              key={"record_" + r.event_type}
+            />
+          ))}
           {wins.map((it) => (
             <AchievementChip
               icon={<img src={Gold} alt="" className="h-3.5" />}
@@ -682,7 +697,7 @@ export const AllTimeTeams = ({ teams, total, onNeedMore }) => {
                 <EmojiEventsOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
               <th className="p-2 w-[45px]" title="Podiums">
-                <WorkspacePremiumOutlinedIcon sx={{ fontSize: 18 }} />
+                <LeaderboardOutlinedIcon sx={{ fontSize: 18 }} />
               </th>
             </tr>
           </thead>

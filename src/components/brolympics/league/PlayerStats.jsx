@@ -5,7 +5,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
@@ -319,7 +319,7 @@ const PlayerStats = () => {
           label="Event Wins"
         />
         <StatTile
-          icon={<WorkspacePremiumOutlinedIcon />}
+          icon={<LeaderboardOutlinedIcon />}
           value={career.podiums}
           label="Podiums"
         />

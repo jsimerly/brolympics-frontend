@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import BackLink from "../../Util/BackLink";
 import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
+import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -85,7 +86,7 @@ const TeamStats = () => {
           label="Event Wins"
         />
         <StatTile
-          icon={<WorkspacePremiumOutlinedIcon />}
+          icon={<LeaderboardOutlinedIcon />}
           value={career.podiums}
           label="Podiums"
         />
@@ -186,11 +187,26 @@ const TeamStats = () => {
         </section>
       )}
 
-      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0) && (
+      {(wins.length > 0 || seconds.length > 0 || thirds.length > 0 ||
+        (career.records || []).length > 0) && (
         <section>
           <h2 className="mb-3 header-3">Trophy Shelf</h2>
           {/* the full page shows the WHOLE shelf -- no +N-more fold here */}
           <div className="flex flex-wrap gap-2">
+            {(career.records || []).map((r) => (
+              <AchievementChip
+                icon={
+                  <WhatshotOutlinedIcon
+                    sx={{ fontSize: 14 }}
+                    className="text-orange-500"
+                  />
+                }
+                name={`${r.event_type} · ${r.score}`}
+                title="All-time record"
+                className="text-orange-900 border-orange-300 shadow-sm bg-orange-50"
+                key={"record_" + r.event_type}
+              />
+            ))}
             {wins.map((it) => (
               <AchievementChip
                 icon={<img src={Gold} alt="" className="h-3.5" />}
