@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { fetchEventInfo } from "../../../api/client";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
@@ -7,7 +8,7 @@ import { SkeletonPage } from "../../Util/Skeleton";
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
 
-const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
+const Events = ({ events, default_uuid, default_type, status, is_admin, league }) => {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const navigate = useNavigate();
   const { eventUuid, eventType, uuid } = useParams();
@@ -108,6 +109,23 @@ const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
           </button>
         ))}
       </div>
+      {(() => {
+        const selected = events.find((e) => e.uuid === selectedEventId);
+        const typeUuid = selected?.event_type?.uuid;
+        // the discipline's career page -- champions, leaders, record books
+        return typeUuid && league ? (
+          <div className="flex justify-end px-2 pb-1">
+            <button
+              className="flex items-center gap-1 text-xs font-semibold text-primary"
+              onClick={() =>
+                navigate(`/league/${league}/event/${typeUuid}/stats`)
+              }
+            >
+              <QueryStatsIcon sx={{ fontSize: 14 }} /> All-time stats
+            </button>
+          </div>
+        ) : null;
+      })()}
       {loading || !eventInfo ? (
         <SkeletonPage />
       ) : (

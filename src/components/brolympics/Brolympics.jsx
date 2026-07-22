@@ -150,6 +150,7 @@ const Brolympics = () => {
                 default_type={broInfo.events?.[0]?.type}
                 status={status}
                 is_admin={broInfo.is_admin}
+                league={broInfo.league}
               />
             }
           />
