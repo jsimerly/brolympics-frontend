@@ -28,12 +28,22 @@ const TYPES = [
   },
 ];
 
+/** Human name for a league's structure (team_size). */
+const structureLabel = (size) => {
+  if (size === 1) return "Individual — every player for themself";
+  if (size === 2) return "Traditional — teams of 2";
+  return `Teams of ${size}`;
+};
+
 const CreateBrolympics = ({
   step,
   totalSteps,
   nextStep,
   setBrolympics,
   storageKey,
+  // set when creating inside an existing league: the structure is the
+  // league's, not a choice (ruled 2026-07-22 -- new structure = new league)
+  lockedTeamSize = null,
 }) => {
   const [form, setForm] = usePersistentState(storageKey || "wizard:bro-form", {
     name: "",
@@ -51,17 +61,25 @@ const CreateBrolympics = ({
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+  const locked = lockedTeamSize != null;
   const datesInvalid =
     form.projected_start_date &&
     form.projected_end_date &&
     form.projected_end_date < form.projected_start_date;
   const customSize = Number(form.custom_size);
   const customInvalid =
-    mode === "custom" && (!Number.isInteger(customSize) || customSize < 2);
+    !locked &&
+    mode === "custom" &&
+    (!Number.isInteger(customSize) || customSize < 2);
   const valid = form.name.trim().length > 0 && !datesInvalid && !customInvalid;
 
-  const teamSize =
-    mode === "individual" ? 1 : mode === "custom" ? customSize : 2;
+  const teamSize = locked
+    ? lockedTeamSize
+    : mode === "individual"
+    ? 1
+    : mode === "custom"
+    ? customSize
+    : 2;
 
   const handleCreateClicked = () => {
     if (!valid) return;
@@ -119,6 +137,20 @@ const CreateBrolympics = ({
           </p>
         </div>
 
+        {locked ? (
+          <div>
+            <span className="form-label">Type</span>
+            <div className="p-3 bg-white border border-gray-200 rounded-lg">
+              <p className="text-sm font-semibold">
+                {structureLabel(lockedTeamSize)}
+              </p>
+              <p className="text-[11px] text-light">
+                League standard — every Brolympics in this league shares one
+                structure. Want a different one? Start a new league.
+              </p>
+            </div>
+          </div>
+        ) : (
         <div>
           <span className="form-label">Type</span>
           <div className="grid grid-cols-3 gap-1.5">
@@ -176,6 +208,7 @@ const CreateBrolympics = ({
             </p>
           )}
         </div>
+        )}
 
         <div>
           <span className="form-label">

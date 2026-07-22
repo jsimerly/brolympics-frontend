@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../Util/Notification";
 import { createBroWithEvents } from "../../../api/client/wizard";
+import { fetchLeague } from "../../../api/client";
+import useCachedFetch from "../../../hooks/useCachedFetch";
 import usePersistentState, {
   clearPersistentState,
 } from "../../../hooks/usePersistentState";
@@ -13,6 +15,11 @@ import { apiErrorMessage } from "../../Util/apiError";
 
 const CreateBrolympicsManager = () => {
   const { uuid } = useParams();
+  // the league's structure locks the wizard's type step (one structure per
+  // league, ruled 2026-07-22)
+  const { data: league } = useCachedFetch(`league:${uuid}`, () =>
+    fetchLeague(uuid)
+  );
   const K = (name) => `wizard:bro:${uuid}:${name}`;
   const [step, setStep] = usePersistentState(K("step"), 1);
   const [brolympics, setBrolympics] = usePersistentState(K("bro"), {});
@@ -92,6 +99,7 @@ const CreateBrolympicsManager = () => {
           nextStep={nextStep}
           setBrolympics={setBrolympics}
           storageKey={K("form")}
+          lockedTeamSize={league?.team_size ?? null}
         />
         <AddEvent
           step={2}

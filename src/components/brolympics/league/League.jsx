@@ -256,7 +256,16 @@ const League = ({ leagueInfo }) => {
               <h1 className="text-3xl font-bold leading-tight text-near-black">
                 {leagueInfo.name}
               </h1>
-              {founded && <p className="text-sm text-light">Est. {founded}</p>}
+              {(founded || leagueInfo.team_size) && (
+                <p className="text-sm text-light">
+                  {founded && `Est. ${founded}`}
+                  {founded && leagueInfo.team_size && " · "}
+                  {leagueInfo.team_size === 1
+                    ? "Individual"
+                    : leagueInfo.team_size &&
+                      `Teams of ${leagueInfo.team_size}`}
+                </p>
+              )}
               <RingStrip className="w-20 mt-2" />
             </div>
           </div>

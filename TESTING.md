@@ -178,6 +178,12 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - sorts by rank and trims points to whole or one decimal
   - an unstarted brolympics shows placeholder rows from the teams prop
 
+## src/components/create_league_page/CreateBrolympics.test.jsx (2 tests)
+
+- **CreateBrolympics structure step**
+  - locks to the league standard instead of offering the type picker
+  - offers the full picker when founding a new league
+
 ## src/components/create_league_page/events/CreateEvent.test.jsx (4 tests)
 
 - **CreateEvent**
@@ -294,4 +300,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-134 tests cataloged.
+136 tests cataloged.
