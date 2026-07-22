@@ -11,6 +11,7 @@ import Event_outing from "./events/Event_outing";
 import { fetchTeamInfo } from "../../../api/client";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
+import PillBar from "../../Util/PillBar";
 
 const Team = ({ status, teams, default_uuid }) => {
   const { uuid, teamUuid } = useParams();
@@ -128,26 +129,11 @@ const Team = ({ status, teams, default_uuid }) => {
 
   return (
     <div className="max-w-4xl p-2">
-      <div
-        className="flex gap-2 px-2 py-3 -mx-2 overflow-x-auto"
-        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-      >
-        {teams.map((team) => (
-          <button
-            key={team.uuid}
-            onClick={() =>
-              handleTeamChange({ target: { value: team.uuid } })
-            }
-            className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full border transition-colors ${
-              team.uuid === selectedTeamId
-                ? "bg-primary text-white border-primary"
-                : "bg-white text-near-black border-gray-200"
-            }`}
-          >
-            {team.name}
-          </button>
-        ))}
-      </div>
+      <PillBar
+        items={teams}
+        selectedId={selectedTeamId}
+        onSelect={(team) => handleTeamChange({ target: { value: team.uuid } })}
+      />
       {loading && <SkeletonPage rows={4} />}
       <div
         className={`transition-opacity duration-200 ${

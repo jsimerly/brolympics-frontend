@@ -1,5 +1,7 @@
 import BracketNode from "./BracketNode";
 import { groupBracketNodes, placeLabel } from "./eventDisplay";
+import Gold from "../../../assets/svgs/gold.svg";
+import Img from "../../Util/Img";
 
 /** Tournament trees for one knockout stage. Nodes group by which terminal
  * game their winner_to chain reaches: the championship tree, then any
@@ -55,11 +57,42 @@ const Bracket = ({ nodes = [] }) => {
             : members.length > 1
             ? `Places ${span}`
             : placeLabel(p);
+        // showcase the pool's decision once its terminal game is in
+        const winner = terminal.contest?.is_complete
+          ? (terminal.contest.entries || []).find((e) => e.outcome === "w")
+          : null;
         return (
           <div key={`${terminal.round}_${terminal.slot}`}>
             <h2 className={p === 1 ? "mb-2 header-3" : "pb-2 text-xs font-semibold tracking-wide uppercase text-light"}>
               {title}
             </h2>
+            {p === 1 && winner && (
+              <div className="flex items-center gap-3 p-3 mb-3 border rounded-lg border-secondary/40 bg-secondary/5">
+                <img src={Gold} alt="" className="h-6 shrink-0" />
+                <Img
+                  src={winner.team_img}
+                  alt={winner.team_name}
+                  kind="team"
+                  className="object-cover w-10 h-10 rounded-lg shrink-0"
+                />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-semibold tracking-wide uppercase text-light">
+                    Bracket Champion
+                  </span>
+                  <span className="font-bold leading-tight truncate">
+                    {winner.team_name}
+                  </span>
+                </div>
+              </div>
+            )}
+            {p > 1 && winner && (
+              <p className="pb-2 -mt-1 text-xs text-light">
+                <span className="font-semibold text-near-black">
+                  {winner.team_name}
+                </span>{" "}
+                took {placeLabel(p)}
+              </p>
+            )}
             {members.length > 1 ? (
               <Tree members={members} />
             ) : (

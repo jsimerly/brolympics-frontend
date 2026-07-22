@@ -226,6 +226,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 - **nextVisible**
   - climbs 10 -> 50 -> 100 -> 200 -> 400
 
+## src/components/Util/PillBar.test.jsx (3 tests)
+
+- **PillBar**
+  - hides the search pill for short lists
+  - filters pills live and jumps on pick
+  - says so when nothing matches
+
 ## src/components/Util/stageBuilder.test.js (12 tests)
 
 - **buildStages**
@@ -252,4 +259,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-113 tests cataloged.
+116 tests cataloged.

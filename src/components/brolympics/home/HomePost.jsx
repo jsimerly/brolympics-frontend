@@ -163,24 +163,36 @@ const HomePost = ({ events = [] }) => {
         {podiums.length > 0 && (
           <section>
             <h2 className="mb-4 header-3">Event Winners</h2>
-            <div className="overflow-hidden card">
-              {podiums.map((podium, i) => (
-                <div
-                  key={podium.event_uuid || i}
-                  className={`flex items-center gap-2 p-3 text-sm border-t first:border-t-0 ${
-                    eventFor(podium) ? "cursor-pointer hover:bg-gray-50" : ""
-                  }`}
-                  onClick={() => goToEvent(podium)}
-                >
-                  <img src={Gold} alt="Winner" className="h-4" />
-                  <span className="font-medium">
-                    {podium.first.map((row) => row.team ?? row).join(", ")}
-                  </span>
-                  <span className="flex-grow text-right text-light">
-                    {podium.event}
-                  </span>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {podiums.map((podium, i) => {
+                const winners = podium.first || [];
+                return (
+                  <button
+                    key={podium.event_uuid || i}
+                    className="p-3 text-left card disabled:cursor-default"
+                    onClick={() => goToEvent(podium)}
+                    disabled={!eventFor(podium)}
+                  >
+                    <span className="block text-[10px] font-semibold tracking-wide uppercase truncate text-light">
+                      {podium.event}
+                    </span>
+                    <div className="flex items-center gap-2 pt-1.5">
+                      <img src={Gold} alt="Winner" className="h-5 shrink-0" />
+                      {winners.length === 1 && winners[0].img && (
+                        <Img
+                          src={winners[0].img}
+                          alt={winners[0].team ?? ""}
+                          kind="team"
+                          className="object-cover rounded-md w-9 h-9 shrink-0"
+                        />
+                      )}
+                      <span className="min-w-0 text-sm font-semibold leading-tight">
+                        {winners.map((row) => row.team ?? row).join(", ")}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
         )}

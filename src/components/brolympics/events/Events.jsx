@@ -4,6 +4,7 @@ import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { fetchEventInfo } from "../../../api/client";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
+import PillBar from "../../Util/PillBar";
 
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
@@ -91,24 +92,14 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div
-        className="flex gap-2 px-2 py-3 -mx-2 overflow-x-auto"
-        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-      >
-        {events.map((event) => (
-          <button
-            key={event.uuid}
-            onClick={() => handleEventSelect(event)}
-            className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-full border transition-colors ${
-              event.uuid === selectedEventId
-                ? "bg-primary text-white border-primary"
-                : "bg-white text-near-black border-gray-200"
-            } ${event.is_cancelled ? "line-through opacity-50" : ""}`}
-          >
-            {event.name}
-          </button>
-        ))}
-      </div>
+      <PillBar
+        items={events.map((event) => ({
+          ...event,
+          dimmed: event.is_cancelled,
+        }))}
+        selectedId={selectedEventId}
+        onSelect={handleEventSelect}
+      />
       {(() => {
         const selected = events.find((e) => e.uuid === selectedEventId);
         const typeUuid = selected?.event_type?.uuid;
