@@ -24,7 +24,7 @@ const InCompetitions_h2h = ({ contest }) => {
 
   const handleSubmitClicked = async () => {
     if (team1Score === "" || team2Score === "") {
-      showNotification("Enter a score for both teams", "border-red-500");
+      showNotification("Enter a score for both teams", "warning");
       return;
     }
     if (saving) return;
@@ -36,12 +36,12 @@ const InCompetitions_h2h = ({ contest }) => {
           [entry_2.team]: Number(team2Score),
         },
       });
-      showNotification("Game recorded successfully", "border-primary");
+      showNotification("Game recorded successfully", "success");
       window.location.reload();
     } catch (error) {
       showNotification(
         apiErrorMessage(error, "Error recording the game"),
-        error.response?.status === 400 ? "border-yellow-500" : "border-red-500"
+        error.response?.status === 400 ? "warning" : "error"
       );
       setSaving(false);
     }
@@ -52,7 +52,7 @@ const InCompetitions_h2h = ({ contest }) => {
       await abandonContest(contest.uuid);
       window.location.reload();
     } catch (error) {
-      showNotification("Error backing out of the game", "border-red-500");
+      showNotification("Error backing out of the game", "error");
     }
   };
 

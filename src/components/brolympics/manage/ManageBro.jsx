@@ -50,7 +50,7 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
         projected_start_date: broData.projected_start_date || null,
         projected_end_date: broData.projected_end_date || null,
       });
-      showNotification("Your Brolympics has been updated.", "!border-primary");
+      showNotification("Your Brolympics has been updated.", "success");
     } catch (error) {
       console.log(error);
       showNotification("There was an issue saving your changes.");

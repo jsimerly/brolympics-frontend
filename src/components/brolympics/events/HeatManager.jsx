@@ -120,7 +120,7 @@ const AddHeatForm = ({ eventUuid }) => {
 
   const handleAddClicked = async () => {
     if (selected.size < 2) {
-      showNotification("A heat needs at least 2 racers.", "border-yellow-500");
+      showNotification("A heat needs at least 2 racers.", "warning");
       return;
     }
     if (saving) return;

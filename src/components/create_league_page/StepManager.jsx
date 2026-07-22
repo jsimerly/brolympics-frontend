@@ -37,7 +37,7 @@ const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
         events
       );
       if (warnings.length) {
-        showNotification(warnings.join(" — "), "border-yellow-500");
+        showNotification(warnings.join(" — "), "warning");
       }
       setLink(bro.uuid);
       nextStep();

@@ -43,14 +43,3 @@ export const setPlayerActive = (teamUuid, playerUuid, isActive) =>
  * breakdown (rank/points/stats where known, plus this team's contests). */
 export const fetchTeamInfo = (teamUuid) =>
   api.get(`/api/teams/${teamUuid}/summary/`).then((r) => r.data);
-
-/** Multipart image update (crop-tool File objects). */
-export const updateTeamImage = (uuid, file) => {
-  const form = new FormData();
-  form.append("img", file);
-  return api
-    .patch(`/api/teams/${uuid}/`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-    .then((r) => r.data);
-};

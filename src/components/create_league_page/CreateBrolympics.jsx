@@ -243,7 +243,11 @@ const CreateBrolympics = ({
             )}
           </label>
           {cropping && (
-            <ImageCropper img={imgSrc} setCroppedImage={setCroppedImage} />
+            <ImageCropper
+              img={imgSrc}
+              setCroppedImage={setCroppedImage}
+              handleCloseCropper={() => setCropping(false)}
+            />
           )}
         </div>
       </div>

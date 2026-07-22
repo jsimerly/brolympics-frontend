@@ -18,7 +18,7 @@ const CreateLeaguePage = ({ step, nextStep, setLeague }) => {
       nextStep();
       setLeague(league);
     } else {
-      showNotification("You must enter a league name.");
+      showNotification("You must enter a league name.", "warning");
     }
   };
 
@@ -100,6 +100,7 @@ const CreateLeaguePage = ({ step, nextStep, setLeague }) => {
             <ImageCropper
               img={league.imgSrc}
               setCroppedImage={setCroppedImage}
+              handleCloseCropper={() => setCropping(false)}
             />
           )}
         </div>

@@ -65,8 +65,8 @@ function App() {
       {notification.show && (
         <Notification
           message={notification.message}
-          className={notification.className}
-          onClose={() => showNotification("", "", false)}
+          tone={notification.tone}
+          onClose={() => showNotification("")}
         />
       )}
       <Routes>

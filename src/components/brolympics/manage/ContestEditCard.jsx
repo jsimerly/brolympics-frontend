@@ -74,7 +74,7 @@ const ContestEditCard = ({ contest, onSaved }) => {
         await unrecordContest(contest.uuid);
       }
       await recordContest(contest.uuid, buildPayload());
-      showNotification("This game has been updated.", "!border-primary");
+      showNotification("This game has been updated.", "success");
       onSaved?.();
     } catch (error) {
       showNotification(

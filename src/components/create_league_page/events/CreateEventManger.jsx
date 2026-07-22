@@ -11,7 +11,7 @@ const CreateEventManger = ({
 
   const handleEventAdded = (eventName, selectedType, stages, extra = {}) => {
     if (!eventName) {
-      showNotification("You must enter an event name.");
+      showNotification("You must enter an event name.", "warning");
       return;
     }
     const newEvent = { name: eventName.trim(), stages, ...extra };

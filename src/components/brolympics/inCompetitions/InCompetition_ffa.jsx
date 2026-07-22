@@ -44,7 +44,7 @@ const InCompetition_ffa = ({ contest }) => {
     if (!done) {
       showNotification(
         "Tap every racer in the order they finished.",
-        "border-yellow-500"
+        "warning"
       );
       return;
     }
@@ -54,12 +54,12 @@ const InCompetition_ffa = ({ contest }) => {
       await recordContest(contest.uuid, {
         placements: Object.fromEntries(order.map((uuid, i) => [uuid, i + 1])),
       });
-      showNotification("Heat recorded successfully", "border-primary");
+      showNotification("Heat recorded successfully", "success");
       window.location.reload();
     } catch (error) {
       showNotification(
         apiErrorMessage(error, "Error recording the heat"),
-        error.response?.status === 400 ? "border-yellow-500" : "border-red-500"
+        error.response?.status === 400 ? "warning" : "error"
       );
       setSaving(false);
     }
@@ -70,7 +70,7 @@ const InCompetition_ffa = ({ contest }) => {
       await abandonContest(contest.uuid);
       window.location.reload();
     } catch (error) {
-      showNotification("Error backing out of the heat", "border-red-500");
+      showNotification("Error backing out of the heat", "error");
     }
   };
 

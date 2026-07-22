@@ -29,7 +29,7 @@ const ManageEvents = ({ events, teams }) => {
       ]);
       setAddingEvent(false);
       if (created.warnings?.length) {
-        showNotification(created.warnings.join(" "), "border-yellow-500");
+        showNotification(created.warnings.join(" "), "warning");
       }
     } catch (error) {
       showNotification(

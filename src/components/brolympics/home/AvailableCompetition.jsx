@@ -37,7 +37,7 @@ const AvailableCompetition = ({
       // stale browser: the board filled up after this page rendered
       showNotification(
         apiErrorMessage(error, "Unable to start this game."),
-        "border-yellow-500"
+        "warning"
       );
     }
   };

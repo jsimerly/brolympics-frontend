@@ -62,7 +62,7 @@ const CreateBrolympicsManager = () => {
         ]
       );
       if (warnings.length) {
-        showNotification(warnings.join(" — "), "border-yellow-500");
+        showNotification(warnings.join(" — "), "warning");
       }
       setLink(bro.uuid);
       nextStep();

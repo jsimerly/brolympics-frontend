@@ -15,7 +15,7 @@ import {
   deleteTeam,
   removePlayerFromTeam,
   setPlayerActive,
-  updateTeamImage,
+  updateTeam,
 } from "../../../api/client";
 import { useNotification } from "../../Util/Notification.jsx";
 import ImageCropper from "../../Util/ImageCropper.jsx";
@@ -85,17 +85,13 @@ export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
 
   const setCroppedImage = async (croppedImage) => {
     try {
-      const response = await fetch(croppedImage);
-      const blob = await response.blob();
-      const file = new File([blob], "team_image.jpg", {
-        type: "image/jpeg",
-      });
-
-      // Placeholder API call - replace with actual implementation
-      await updateTeamImage(uuid, file);
+      // data-URL through the serializer, same as MyTeamCard: the backend
+      // assigns a unique filename (constant multipart names once made every
+      // team share one storage object -- the Summer 2023 same-flag incident)
+      await updateTeam(uuid, { img: croppedImage });
       setImageSrc(croppedImage);
       setCropping(false);
-      showNotification("Team image updated successfully.");
+      showNotification("Team image updated successfully.", "success");
     } catch (error) {
       console.error("Error updating team image:", error);
       showNotification("Error updating team image.");

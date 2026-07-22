@@ -26,7 +26,7 @@ const InCompetition_outing = ({ contest }) => {
         setTeam(await fetchTeam(teamEntry.team));
       } catch (error) {
         console.error("Error fetching team:", error);
-        showNotification("Error loading the game", "border-red-500");
+        showNotification("Error loading the game", "error");
       }
     };
     getTeam();
@@ -53,7 +53,7 @@ const InCompetition_outing = ({ contest }) => {
         if (roster.some((p) => !scores[p.uuid]?.length)) {
           showNotification(
             "Enter a score for every player.",
-            "border-yellow-500"
+            "warning"
           );
           return;
         }
@@ -65,18 +65,18 @@ const InCompetition_outing = ({ contest }) => {
         });
       } else {
         if (teamScore === "") {
-          showNotification("Enter a score.", "border-yellow-500");
+          showNotification("Enter a score.", "warning");
           return;
         }
         setSaving(true);
         await recordContest(contest.uuid, { team_score: Number(teamScore) });
       }
-      showNotification("Scores submitted successfully", "border-primary");
+      showNotification("Scores submitted successfully", "success");
       window.location.reload();
     } catch (error) {
       console.error("Error submitting scores:", error);
       showNotification(
-        apiErrorMessage(error, "Error submitting scores"), "border-red-500"
+        apiErrorMessage(error, "Error submitting scores"), "error"
       );
       setSaving(false);
     }
@@ -88,7 +88,7 @@ const InCompetition_outing = ({ contest }) => {
       window.location.reload();
     } catch (error) {
       console.error("Error cancelling competition:", error);
-      showNotification("Error backing out of the game", "border-red-500");
+      showNotification("Error backing out of the game", "error");
     }
   };
 

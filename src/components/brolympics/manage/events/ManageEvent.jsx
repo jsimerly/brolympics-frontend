@@ -285,7 +285,7 @@ const ManageEvent = ({ event, teams = [] }) => {
         ...(canEditStructure ? { stages: buildStages() } : {}),
       };
       await updateEvent(event.uuid, patch);
-      showNotification(`${event.name} has been updated.`, "!border-primary");
+      showNotification(`${event.name} has been updated.`, "success");
     } catch (error) {
       showNotification(
         apiErrorMessage(error, "There was an issue updating this event.")
@@ -314,7 +314,7 @@ const ManageEvent = ({ event, teams = [] }) => {
   const cancelEventFunc = async () => {
     try {
       await cancelEvent(event.uuid);
-      showNotification(`${event.name} is cancelled.`, "!border-primary");
+      showNotification(`${event.name} is cancelled.`, "success");
       location.reload();
     } catch (error) {
       showNotification(
@@ -326,7 +326,7 @@ const ManageEvent = ({ event, teams = [] }) => {
   const reinstateEventFunc = async () => {
     try {
       await reinstateEvent(event.uuid);
-      showNotification(`${event.name} is back on.`, "!border-primary");
+      showNotification(`${event.name} is back on.`, "success");
       location.reload();
     } catch (error) {
       showNotification("There was an error reinstating this event.");

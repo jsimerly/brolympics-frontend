@@ -40,7 +40,7 @@ const Brolympics = () => {
     if (!broInfo && broError?.response?.status === 404) {
       showNotification(
         "That Brolympics no longer exists — it may have been deleted.",
-        "border-yellow-500"
+        "warning"
       );
       navigate("/", { replace: true });
     }
