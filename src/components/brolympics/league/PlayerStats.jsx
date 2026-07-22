@@ -7,8 +7,8 @@ import DiamondOutlinedIcon from "@mui/icons-material/DiamondOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import Img from "../../Util/Img";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
 import { MiniStat, RivalryList } from "./HistorySections";
 import { ordinal, trimFloat } from "../../Util/format";
@@ -298,9 +298,12 @@ const PlayerStats = () => {
       <div>
         <BackLink to={`/league/${uuid}`} label="League" />
         <div className="flex items-center gap-3 pt-3">
-          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-gray-100 text-gray-400">
-            <PersonOutlineIcon sx={{ fontSize: 32 }} />
-          </div>
+          <Img
+            src={career.img}
+            alt={career.player}
+            kind="player"
+            className="object-cover rounded-full w-14 h-14"
+          />
           <h1 className="text-3xl font-bold leading-tight text-near-black">
             {career.player}
           </h1>
