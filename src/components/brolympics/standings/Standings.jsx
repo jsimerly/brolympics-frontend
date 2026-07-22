@@ -8,6 +8,8 @@ import Img from "../../Util/Img";
 import PlayerNames from "../../Util/PlayerNames";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
+import { trimFloat } from "../../Util/format";
+import { outingDisplayScore } from "../events/eventDisplay";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
 import Bronze from "../../../assets/svgs/bronze.svg";
@@ -213,9 +215,12 @@ const Standings = ({ status, teams }) => {
                         {row.stats?.wins != null
                           ? `${row.stats.wins}-${row.stats.losses}` +
                             (row.stats.ties ? `-${row.stats.ties}` : "")
-                          : row.stats?.total != null
-                          ? row.stats.total
-                          : ""}
+                          : trimFloat(
+                              outingDisplayScore(
+                                row.stats,
+                                !!event.display_avg_scores
+                              )
+                            )}
                         {row.points != null && (
                           <span className="ml-2 font-semibold text-near-black">
                             {Number.isInteger(row.points)

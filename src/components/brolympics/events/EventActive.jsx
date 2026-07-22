@@ -12,7 +12,7 @@ import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import { EventInfo } from "./EventInfo.jsx";
 import { trimFloat } from "../../Util/format";
-import { groupLog } from "./eventDisplay";
+import { groupLog, outingDisplayScore } from "./eventDisplay";
 
 /** One outing line inside a team's group: total up front, players after. */
 const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
@@ -220,7 +220,9 @@ const EventActive = ({ eventInfo, is_admin }) => {
         stats.ties ? `-${stats.ties}` : ""
       }`;
     }
-    return trimFloat(stats.total ?? stats.placement_points ?? "");
+    return trimFloat(
+      outingDisplayScore(stats, !!eventInfo?.config?.display_avg_scores)
+    );
   };
 
   const displayPoints = (points) => {

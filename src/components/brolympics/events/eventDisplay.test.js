@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   SCORE_FORMAT_LABEL, groupBracketNodes, groupLog, hasRules, medalTable,
-  placeLabel, stageSentence,
+  outingDisplayScore, placeLabel, stageSentence,
 } from './eventDisplay'
 
 const game = (structure, round) => ({ stage_structure: structure, round })
@@ -130,5 +130,19 @@ describe('medalTable', () => {
       ['Greece', 0, 0, 2],
     ])
     expect(rows[0].img).toBe('/chad.png')
+  })
+})
+
+describe('outingDisplayScore', () => {
+  it('shows the average when the event displays averages, else the total', () => {
+    const stats = { total: 48.1, avg: 24.05 }
+    expect(outingDisplayScore(stats, true)).toBe(24.05)
+    expect(outingDisplayScore(stats, false)).toBe(48.1)
+  })
+
+  it('falls back to total for legacy no-avg stats and placement points for heats', () => {
+    expect(outingDisplayScore({ total: 48.1 }, true)).toBe(48.1)
+    expect(outingDisplayScore({ placement_points: 12 }, false)).toBe(12)
+    expect(outingDisplayScore(null, true)).toBe('')
   })
 })

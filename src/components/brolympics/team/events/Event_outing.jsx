@@ -1,5 +1,6 @@
 import EventWrapper from "./EventWrapper";
 import { trimFloat } from "../../../Util/format";
+import { outingDisplayScore } from "../../events/eventDisplay";
 
 /** One outing, game-log style: the score up front, player breakdown after. */
 const Outing = ({ contest }) => {
@@ -46,10 +47,12 @@ const Event_outing = ({
   is_final,
   stats = {},
   contests = [],
+  display_avg_scores = false,
 }) => {
+  const shown = outingDisplayScore(stats, display_avg_scores);
   const display_score =
-    stats.total != null && stats.total !== 0
-      ? `Score: ${trimFloat(Number(stats.total))}`
+    shown != null && shown !== "" && shown !== 0
+      ? `${display_avg_scores ? "Avg" : "Score"}: ${trimFloat(Number(shown))}`
       : "";
 
   return (

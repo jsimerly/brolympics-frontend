@@ -146,3 +146,13 @@ export const medalTable = (podiums = []) => {
       String(a.team).localeCompare(String(b.team))
   );
 };
+
+/** The score a human sees for a scored (non-h2h) event row: the average when
+ * the event displays averages (per-player for ind -- "average all the way
+ * through"), the summed total otherwise. The display_avg_scores toggle once
+ * changed only the rules blurb while every surface hardcoded the total. */
+export const outingDisplayScore = (stats, displayAvg) => {
+  if (!stats) return "";
+  if (displayAvg && stats.avg != null) return stats.avg;
+  return stats.total ?? stats.placement_points ?? "";
+};
