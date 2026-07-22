@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import QueryStatsIcon from "@mui/icons-material/QueryStats";
 import { fetchEventInfo } from "../../../api/client";
 import useCachedFetch from "../../../hooks/useCachedFetch";
 import { SkeletonPage } from "../../Util/Skeleton";
@@ -9,7 +8,7 @@ import PillBar from "../../Util/PillBar";
 import EventPre from "./EventPre.jsx";
 import EventActive from "./EventActive.jsx";
 
-const Events = ({ events, default_uuid, default_type, status, is_admin, league }) => {
+const Events = ({ events, default_uuid, default_type, status, is_admin }) => {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const navigate = useNavigate();
   const { eventUuid, eventType, uuid } = useParams();
@@ -100,6 +99,8 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
         selectedId={selectedEventId}
         onSelect={handleEventSelect}
       />
+      {/* no all-time-stats exit here (ruled 2026-07-22): game day keeps
+          people in the bro; the league page is the stats front door */}
       {loading || !eventInfo ? (
         <SkeletonPage />
       ) : (
@@ -111,25 +112,6 @@ const Events = ({ events, default_uuid, default_type, status, is_admin, league }
           {renderEventComponent()}
         </div>
       )}
-      {(() => {
-        const selected = events.find((e) => e.uuid === selectedEventId);
-        const typeUuid = selected?.event_type?.uuid;
-        // the discipline's career page -- tucked under the event, out of the
-        // way of game day
-        return typeUuid && league && eventInfo ? (
-          <div className="flex justify-center pt-2 pb-6">
-            <button
-              className="flex items-center gap-1 text-xs font-semibold text-light"
-              onClick={() =>
-                navigate(`/league/${league}/event/${typeUuid}/stats`)
-              }
-            >
-              <QueryStatsIcon sx={{ fontSize: 14 }} /> All-time{" "}
-              {selected?.name} stats
-            </button>
-          </div>
-        ) : null;
-      })()}
     </div>
   );
 };
