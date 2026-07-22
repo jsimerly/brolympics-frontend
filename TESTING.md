@@ -234,6 +234,14 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - validatePhoneNumber wants 555-555-5555 and flags anything else
   - verifyPasswordsMatch catches mismatches and resetErrors clears
 
+## src/components/Util/Notification.test.jsx (3 tests)
+
+- **Notification tones**
+  - success wears the green border, never the error red
+  - warning is amber and a toneless call defaults to error red
+- **Notification timer**
+  - a newer message is never hidden by an older message's timer
+
 ## src/components/Util/pagination.test.js (1 tests)
 
 - **nextVisible**
@@ -272,4 +280,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-123 tests cataloged.
+126 tests cataloged.

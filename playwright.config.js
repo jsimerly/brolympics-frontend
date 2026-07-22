@@ -34,9 +34,12 @@ export default defineConfig({
   webServer: [
     {
       // auth emulator: leftover state between local runs is harmless
-      // (specs use unique emails), so reuse keeps the loop fast
+      // (specs use unique emails), so reuse keeps the loop fast.
+      // firebase-tools runs via pinned npx, NOT devDependencies: its native
+      // optional subtree (re2) makes Windows-written lockfiles that Linux
+      // `npm ci` rejects (broke CI + the Docker deploy build, 2026-07-22).
       command:
-        'npx firebase emulators:start --only auth --project demo-brolympics --config firebase.json',
+        'npx -y firebase-tools@15 emulators:start --only auth --project demo-brolympics --config firebase.json',
       cwd: path.join(HERE, 'e2e'),
       port: 9099,
       reuseExistingServer: true,

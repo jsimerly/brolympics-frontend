@@ -4,11 +4,7 @@ import { useNotification } from "../../Util/Notification";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  updateLeague,
-  updateLeagueImage,
-  deleteLeague,
-} from "../../../api/client";
+import { updateLeague, deleteLeague } from "../../../api/client";
 import PopupContinue from "../../Util/PopupContinue";
 import { useNavigate } from "react-router-dom";
 
@@ -47,13 +43,9 @@ const LeagueSettings = ({ leagueInfo, onSave, onDelete }) => {
 
   const setCroppedImage = async (croppedImage) => {
     try {
-      const response = await fetch(croppedImage);
-      const blob = await response.blob();
-      const file = new File([blob], "league_image.jpg", {
-        type: "image/jpeg",
-      });
-
-      await updateLeagueImage(leagueInfo.uuid, file);
+      // data-URL through the serializer like every other surface -- the
+      // backend assigns a unique filename (same-flag incident class)
+      await updateLeague(leagueInfo.uuid, { img: croppedImage });
       setImg(croppedImage);
       setImageError(false);
       setCropping(false);

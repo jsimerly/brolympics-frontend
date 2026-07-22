@@ -40,6 +40,29 @@ mobile's expense.
 - Terminology: "Games" (never contests/competitions), "Run-off games"
   (never placement/classification in copy), Semi-RR / Full-RR / Swiss.
 
+## Bugs become test classes (STANDING RULE — commissioner priority)
+
+A bug is not fixed until its whole CLASS is pinned. Every bug that reaches a
+human (prod, review on :5174, or a failing E2E run):
+
+1. **Regression test at the site**, written to fail on the old code, shipped
+   in the same commit as the fix.
+2. **Name the failure class out loud**, then SWEEP all three suites for
+   siblings — backend (pytest), frontend (vitest), E2E (playwright) — and pin
+   or fix everything the sweep finds. Never just the surface where the bug
+   happened to show.
+3. **Pin at the most general layer** (shared field/util/setting) instead of
+   N copies at call sites; call-site tests only for behavior the shared layer
+   can't see.
+4. **The docstring names the class** so TESTING.md teaches it forever.
+
+Real classes from real incidents: constant client filename + overwriting
+storage (the Summer 2023 same-flag bug — swept to teams, leagues, avatars);
+status messages styled by raw classes instead of semantic tones (success
+toasts showed red); multi-step create chains without rollback (ghost bro,
+then the StartLeague wizard); nested interactive elements stealing taps
+(preset info icon).
+
 ## Testing
 
 - `npm test` (vitest — check the EXIT CODE), `npm run test:watch`, and

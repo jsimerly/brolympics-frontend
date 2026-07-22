@@ -37,17 +37,6 @@ export const fetchLeagueDetail = async (uuid) => {
 
 export const deleteLeague = (uuid) => api.delete(`/api/leagues/${uuid}/`);
 
-/** Multipart image update (crop-tool File objects). */
-export const updateLeagueImage = (uuid, file) => {
-  const form = new FormData();
-  form.append("img", file);
-  return api
-    .patch(`/api/leagues/${uuid}/`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-    .then((r) => r.data);
-};
-
 export const fetchLeague = (uuid) =>
   api.get(`/api/leagues/${uuid}/`).then((r) => r.data);
 
