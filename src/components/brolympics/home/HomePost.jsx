@@ -78,7 +78,12 @@ const HomePost = ({ events = [] }) => {
           </div>
         ))}
         {runnersUp.length > 0 && (
-          <div className="flex border-t divide-x">
+          // side-by-side only fits the clean silver+bronze pair; ties stack
+          <div
+            className={
+              runnersUp.length > 2 ? "border-t divide-y" : "flex border-t divide-x"
+            }
+          >
             {runnersUp.map((row) => (
               <div
                 className="flex items-center flex-1 gap-2 px-3 py-2"

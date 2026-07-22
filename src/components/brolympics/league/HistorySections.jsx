@@ -487,6 +487,7 @@ const TeamHistory = ({ team }) => {
 
   const record = career?.record;
   const games = record ? record.wins + record.losses + record.ties : 0;
+  const winPct = games > 0 ? Math.round((record.wins / games) * 100) : null;
   const wins = (career?.disciplines || [])
     .filter((d) => d.event_wins > 0)
     .map((d) => ({ name: d.event_type, count: d.event_wins }));
@@ -499,13 +500,28 @@ const TeamHistory = ({ team }) => {
 
   return (
     <div className="p-2 space-y-3">
-      {games > 0 && (
+      {(games > 0 || career?.avg_finish != null) && (
         <p className="text-sm">
-          <span className="font-semibold">
-            {record.wins}-{record.losses}
-            {record.ties ? `-${record.ties}` : ""}
-          </span>{" "}
-          <span className="text-light">in head-to-head games all-time</span>
+          {games > 0 && (
+            <>
+              <span className="font-semibold">
+                {record.wins}-{record.losses}
+                {record.ties ? `-${record.ties}` : ""}
+              </span>{" "}
+              <span className="text-light">({winPct}%) in head-to-head</span>
+            </>
+          )}
+          {games > 0 && career?.avg_finish != null && (
+            <span className="text-light"> · </span>
+          )}
+          {career?.avg_finish != null && (
+            <span className="text-light">
+              avg event finish{" "}
+              <span className="font-semibold text-near-black">
+                {career.avg_finish}
+              </span>
+            </span>
+          )}
         </p>
       )}
       <div className="space-y-1.5">

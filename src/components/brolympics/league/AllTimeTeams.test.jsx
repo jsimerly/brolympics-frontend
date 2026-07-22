@@ -32,6 +32,7 @@ const discipline = (name, over = {}) => ({
 
 const CAREER = {
   name: 'El Salvador',
+  avg_finish: 2.4,
   record: { wins: 34, losses: 12, ties: 1 },
   total_points: 91.5,
   event_wins: 8,
@@ -110,6 +111,10 @@ describe('AllTimeTeams', () => {
     await waitFor(() =>
       expect(screen.getByText('34-12-1')).toBeInTheDocument()
     )
+    // 34 of 47 games = 72%, and the average finish rides the same line
+    expect(screen.getByText(/\(72%\) in head-to-head/)).toBeInTheDocument()
+    expect(screen.getByText(/avg event finish/)).toBeInTheDocument()
+    expect(screen.getByText('2.4')).toBeInTheDocument()
     expect(screen.getByText('Cornhole')).toBeInTheDocument()
   })
 

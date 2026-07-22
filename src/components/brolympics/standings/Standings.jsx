@@ -192,44 +192,40 @@ const Standings = ({ status, teams }) => {
                 {event.event}
               </h3>
               <div className="divide-y">
-                {medals.map(
-                  ([key, icon]) =>
-                    event[key]?.length > 0 && (
-                      <div
-                        className="flex items-center gap-2 px-3 py-2 text-sm"
-                        key={key}
-                      >
-                        <img src={icon} alt={key} className="h-4" />
-                        {event[key].map((row) => (
-                          <span
-                            className="flex items-center flex-grow gap-1.5 font-medium"
-                            key={row.team}
-                          >
-                            <Img
-                              src={imgOf(row.team)}
-                              alt={row.team}
-                              className="object-cover w-6 h-6 rounded"
-                            />
-                            {row.team}
-                            <span className="flex-grow font-normal text-right text-light">
-                              {row.stats?.wins != null
-                                ? `${row.stats.wins}-${row.stats.losses}` +
-                                  (row.stats.ties ? `-${row.stats.ties}` : "")
-                                : row.stats?.total != null
-                                ? row.stats.total
-                                : ""}
-                              {row.points != null && (
-                                <span className="ml-2 font-semibold text-near-black">
-                                  {Number.isInteger(row.points)
-                                    ? row.points
-                                    : row.points.toFixed(1)}
-                                </span>
-                              )}
-                            </span>
+                {/* ties stack vertically -- every tied team gets its own
+                    row wearing the shared medal */}
+                {medals.map(([key, icon]) =>
+                  (event[key] || []).map((row) => (
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 text-sm"
+                      key={`${key}_${row.team}`}
+                    >
+                      <img src={icon} alt={key} className="h-4 shrink-0" />
+                      <Img
+                        src={imgOf(row.team)}
+                        alt={row.team}
+                        className="object-cover w-6 h-6 rounded shrink-0"
+                      />
+                      <span className="min-w-0 font-medium truncate">
+                        {row.team}
+                      </span>
+                      <span className="flex-grow font-normal text-right text-light">
+                        {row.stats?.wins != null
+                          ? `${row.stats.wins}-${row.stats.losses}` +
+                            (row.stats.ties ? `-${row.stats.ties}` : "")
+                          : row.stats?.total != null
+                          ? row.stats.total
+                          : ""}
+                        {row.points != null && (
+                          <span className="ml-2 font-semibold text-near-black">
+                            {Number.isInteger(row.points)
+                              ? row.points
+                              : row.points.toFixed(1)}
                           </span>
-                        ))}
-                      </div>
-                    )
+                        )}
+                      </span>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
