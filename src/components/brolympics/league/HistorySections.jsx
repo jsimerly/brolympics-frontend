@@ -437,37 +437,37 @@ const EventTypeHistory = ({ eventTypeUuid }) => {
         </div>
       )}
       {history.years.length > 0 && (
-        <div className="pt-2 space-y-3 border-t">
-          {history.years.map((year, i) => (
-            <div key={i + "_year"}>
-              <h4 className="font-semibold">
-                {year.brolympics}
+        <div className="pt-2 space-y-2 border-t">
+          {/* the summary shows WINNERS only -- full podiums live on the
+              event's stats page */}
+          {history.years.map((year, i) => {
+            const winners = year.podium.filter((row) => row.rank === 1);
+            return (
+              <div
+                className="flex items-center gap-2 text-sm"
+                key={i + "_year"}
+              >
+                <span className="font-semibold shrink-0">
+                  {year.brolympics}
+                </span>
                 {!year.complete && (
-                  <span className="ml-2 text-[10px] text-light">
+                  <span className="text-[10px] shrink-0 text-light">
                     (in progress)
                   </span>
                 )}
-              </h4>
-              <div className="space-y-1">
-                {year.podium.map((row) => (
-                  <div
-                    className="flex items-center gap-2 text-sm"
-                    key={row.rank}
-                  >
-                    <img
-                      src={medalFor[row.rank]}
-                      alt={`#${row.rank}`}
-                      className="h-4"
-                    />
-                    <span>{row.team}</span>
-                  </div>
-                ))}
-                {year.podium.length === 0 && (
-                  <p className="text-sm text-light">No final results.</p>
+                {winners.length > 0 ? (
+                  <span className="flex items-center min-w-0 gap-1.5 ml-auto">
+                    <img src={medalFor[1]} alt="#1" className="h-4 shrink-0" />
+                    <span className="truncate">
+                      {winners.map((row) => row.team).join(", ")}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="ml-auto text-light">No final results.</span>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       <MoreStatsLink
