@@ -10,6 +10,7 @@ import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import { fetchPlayerCareer, fetchContests } from "../../../api/client";
+import { RivalryList } from "./HistorySections";
 import { ordinal, trimFloat } from "../../Util/format";
 import Gold from "../../../assets/svgs/gold.svg";
 import Silver from "../../../assets/svgs/silver.svg";
@@ -74,44 +75,14 @@ const Seasons = ({ seasons }) => {
 };
 
 /** Every h2h game tallied against the players across the table. */
-const RIVALS_PREVIEW = 8;
 const Rivalries = ({ rivalries }) => {
-  const [showAll, setShowAll] = useState(false);
   if (!rivalries?.length) return null;
-  const rows = showAll ? rivalries : rivalries.slice(0, RIVALS_PREVIEW);
   return (
     <section>
       <h2 className="mb-3 header-3">Rivalries</h2>
-      <div className="p-4 card space-y-1.5">
-        {rows.map((r) => (
-          <div className="flex items-center gap-2 text-sm" key={r.player}>
-            <span className="flex-grow min-w-0 truncate">vs {r.player}</span>
-            <span
-              className={`font-semibold shrink-0 ${
-                r.wins > r.losses
-                  ? "text-tertiary"
-                  : r.wins < r.losses
-                  ? "text-red"
-                  : ""
-              }`}
-            >
-              {r.wins}-{r.losses}
-              {r.ties ? `-${r.ties}` : ""}
-            </span>
-            <span className="w-16 text-xs text-right shrink-0 text-light">
-              {r.games} game{r.games === 1 ? "" : "s"}
-            </span>
-          </div>
-        ))}
-        {rivalries.length > RIVALS_PREVIEW && (
-          <button
-            className="pt-1 text-xs font-semibold text-primary"
-            onClick={() => setShowAll((v) => !v)}
-          >
-            {showAll ? "Show less" : `Show all ${rivalries.length}`}
-          </button>
-        )}
-      </div>
+      <RivalryList
+        rivalries={rivalries.map((r) => ({ ...r, name: r.player }))}
+      />
     </section>
   );
 };

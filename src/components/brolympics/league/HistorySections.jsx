@@ -75,6 +75,47 @@ export const MiniStat = ({ value, label }) => (
   </div>
 );
 
+/** The head-to-head ledger, shared by player and team pages: color-coded
+ * records vs everyone faced, most-played first, capped with Show all. */
+const RIVALS_PREVIEW = 8;
+export const RivalryList = ({ rivalries }) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!rivalries?.length) return null;
+  const rows = showAll ? rivalries : rivalries.slice(0, RIVALS_PREVIEW);
+  return (
+    <div className="p-4 card space-y-2">
+      {rows.map((r) => (
+        <div className="flex items-center gap-2 text-sm" key={r.name}>
+          <span className="flex-grow min-w-0 truncate">vs {r.name}</span>
+          <span
+            className={`font-semibold shrink-0 ${
+              r.wins > r.losses
+                ? "text-tertiary"
+                : r.wins < r.losses
+                ? "text-red"
+                : ""
+            }`}
+          >
+            {r.wins}-{r.losses}
+            {r.ties ? `-${r.ties}` : ""}
+          </span>
+          <span className="w-16 text-xs text-right shrink-0 text-light">
+            {r.games} game{r.games === 1 ? "" : "s"}
+          </span>
+        </div>
+      ))}
+      {rivalries.length > RIVALS_PREVIEW && (
+        <button
+          className="pt-1 text-xs font-semibold text-primary"
+          onClick={() => setShowAll((v) => !v)}
+        >
+          {showAll ? "Show less" : `Show all ${rivalries.length}`}
+        </button>
+      )}
+    </div>
+  );
+};
+
 /** Achievement chips in the same visual language as the team chips: an icon,
  * the event, and a ×count when it happened more than once. */
 export const AchievementChip = ({ icon, name, count = 1, title, className = "" }) => (

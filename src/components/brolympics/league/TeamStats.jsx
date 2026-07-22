@@ -12,8 +12,8 @@ import { fetchTeamCareer } from "../../../api/client";
 import { ordinal, trimFloat } from "../../Util/format";
 import {
   AchievementChip,
-  ChipOverflow,
   MiniStat,
+  RivalryList,
 } from "./HistorySections";
 
 const medalFor = { 1: Gold, 2: Silver, 3: Bronze };
@@ -165,10 +165,20 @@ const TeamStats = () => {
         </section>
       )}
 
+      {career.rivalries?.length > 0 && (
+        <section>
+          <h2 className="mb-3 header-3">Rivalries</h2>
+          <RivalryList
+            rivalries={career.rivalries.map((r) => ({ ...r, name: r.team }))}
+          />
+        </section>
+      )}
+
       {(wins.length > 0 || seconds.length > 0 || thirds.length > 0) && (
         <section>
           <h2 className="mb-3 header-3">Trophy Shelf</h2>
-          <ChipOverflow>
+          {/* the full page shows the WHOLE shelf -- no +N-more fold here */}
+          <div className="flex flex-wrap gap-2">
             {wins.map((it) => (
               <AchievementChip
                 icon={<img src={Gold} alt="" className="h-3.5" />}
@@ -196,7 +206,7 @@ const TeamStats = () => {
                 key={"third_" + it.name}
               />
             ))}
-          </ChipOverflow>
+          </div>
         </section>
       )}
     </div>

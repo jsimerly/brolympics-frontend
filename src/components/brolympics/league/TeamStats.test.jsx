@@ -36,6 +36,10 @@ const CAREER = {
       points: 12,
     },
   ],
+  rivalries: [
+    { team: 'Kazakhstan', wins: 5, losses: 2, ties: 0, games: 7 },
+    { team: 'Greece', wins: 3, losses: 3, ties: 1, games: 7 },
+  ],
   appearances: [
     {
       brolympics: 'Summer 2024',
@@ -84,5 +88,9 @@ describe('TeamStats', () => {
     expect(screen.getByText('Javi, Marco')).toBeInTheDocument()
     expect(screen.getByAltText('1st')).toBeInTheDocument()
     expect(screen.getByText('Cornhole')).toBeInTheDocument() // trophy shelf
+    // the name-vs-name ledger, colored by who's ahead
+    expect(screen.getByText('vs Kazakhstan')).toBeInTheDocument()
+    expect(screen.getByText('5-2')).toBeInTheDocument()
+    expect(screen.getByText('3-3-1')).toBeInTheDocument()
   })
 })
