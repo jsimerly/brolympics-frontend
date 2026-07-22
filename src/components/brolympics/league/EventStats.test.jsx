@@ -52,7 +52,6 @@ const HISTORY = {
   ],
   superlatives: {
     best: { team: 'El Salvador', avg_finish: 1.5, appearances: 2 },
-    worst: { team: 'Boland', avg_finish: 5.5, appearances: 2 },
   },
 }
 
@@ -81,9 +80,9 @@ describe('EventStats', () => {
     // most-titles falls to the first encountered (Ireland)
     expect(screen.getByText('Reigning Champion')).toBeInTheDocument()
     expect(screen.getAllByText('El Salvador').length).toBeGreaterThan(0)
-    // the event's dynasty and its cursed name
+    // the dynasty gets crowned; nobody gets named worst (defang ruling)
     expect(screen.getByText('Dynasty · avg 1.5')).toBeInTheDocument()
-    expect(screen.getByText('Cursed · avg 5.5')).toBeInTheDocument()
+    expect(screen.queryByText(/Cursed/)).toBeNull()
   })
 
   it('shows the timeline newest-first with the record books', async () => {

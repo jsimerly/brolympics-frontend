@@ -336,7 +336,7 @@ const PlayerStats = () => {
           {career.worst_event && (
             <MiniStat
               value={career.worst_event.event_type}
-              label={`Worst Event · avg ${career.worst_event.avg_finish}`}
+              label={`Toughest Event · avg ${career.worst_event.avg_finish}`}
             />
           )}
         </div>

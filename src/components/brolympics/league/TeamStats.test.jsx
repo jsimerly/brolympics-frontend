@@ -98,6 +98,6 @@ describe('TeamStats', () => {
     // best/worst event by average finish
     expect(screen.getByText('Best Event · avg 1.2')).toBeInTheDocument()
     expect(screen.getByText('Golf')).toBeInTheDocument()
-    expect(screen.getByText('Worst Event · avg 6.5')).toBeInTheDocument()
+    expect(screen.getByText('Toughest Event · avg 6.5')).toBeInTheDocument()
   })
 })

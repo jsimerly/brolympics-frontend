@@ -133,20 +133,13 @@ const EventStats = () => {
         />
       </div>
 
-      {(history.superlatives?.best || history.superlatives?.worst) && (
+      {history.superlatives?.best && (
+        // Dynasty only -- the stats page celebrates, it never names a worst
         <div className="flex gap-2">
-          {history.superlatives.best && (
-            <MiniStat
-              value={history.superlatives.best.team}
-              label={`Dynasty · avg ${history.superlatives.best.avg_finish}`}
-            />
-          )}
-          {history.superlatives.worst && (
-            <MiniStat
-              value={history.superlatives.worst.team}
-              label={`Cursed · avg ${history.superlatives.worst.avg_finish}`}
-            />
-          )}
+          <MiniStat
+            value={history.superlatives.best.team}
+            label={`Dynasty · avg ${history.superlatives.best.avg_finish}`}
+          />
         </div>
       )}
 
