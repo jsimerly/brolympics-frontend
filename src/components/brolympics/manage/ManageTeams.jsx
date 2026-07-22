@@ -1,6 +1,8 @@
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveIcon from "@mui/icons-material/Remove";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
@@ -116,123 +118,119 @@ export const TeamCard = ({ name, players = [], img, uuid, is_available }) => {
   const inviteUrl = `${import.meta.env.VITE_FRONTEND_URL}/invite/team/${uuid}`;
 
   return (
-    <div className="relative flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-      <div
-        className={`relative ${
-          editing
-            ? "min-[80px] w-[80px] h-[80px]"
-            : "min-w-[60px] w-[60px] h-[60px]"
-        } rounded-md`}
-      >
-        <Img
-          src={imageSrc}
-          className={`w-full h-full bg-white rounded-md  ${
-            editing ? "min-w-[80px] h-[80px]" : "min-w-[60px] h-[60px]"
-          } `}
-        />
-        {editing && (
-          <label htmlFor="team-photo-upload" className="cursor-pointer">
-            <CameraAltIcon
-              sx={{ fontSize: 40 }}
-              className="absolute z-20 w-full h-full transform -translate-x-1/2 -translate-y-1/2 opacity-80 text-neutral top-1/2 left-1/2"
-            />
-            <input
-              id="team-photo-upload"
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="hidden"
-            />
-          </label>
-        )}
-      </div>
-      <div className="flex items-start justify-between w-full min-h-[60px]">
-        <div>
-          <h3 className="font-bold text-[18px]">{name}</h3>
-          <div className="text-[16px]">
-            {editing ? (
-              <div className="flex flex-col gap-1 pr-6">
-                {players.map((player) => (
-                  <div key={player.uuid} className="flex items-center gap-1">
-                    <button onClick={() => onRemovePlayer(player)}>
-                      <RemoveIcon
-                        className="text-errorRed"
-                        sx={{ fontSize: 20 }}
-                      />
-                    </button>
-                    <span
-                      className={`text-[14px] ${
-                        player.is_active === false ? "text-light" : ""
-                      }`}
-                    >
-                      {player.name}
-                    </span>
-                    <button
-                      className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full border ${
-                        player.is_active === false
-                          ? "border-gray-300 text-light"
-                          : "border-tertiary text-tertiary"
-                      }`}
-                      onClick={() => toggleActive(player)}
-                    >
-                      {player.is_active === false ? "Dormant" : "Active"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-[14px] font-semibold">
-                {players.map((player, i) => (
-                  <span
-                    key={player.uuid}
-                    className={
-                      player.is_active === false ? "text-light font-normal" : ""
-                    }
-                  >
-                    {i > 0 && (
-                      <span className="text-[12px] font-normal">
-                        {" "}
-                        &{" "}
-                      </span>
-                    )}
-                    {player.name}
-                    {player.is_active === false && (
-                      <span className="text-[10px]"> (dormant)</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+    <div className="p-3 bg-white border border-gray-200 rounded-lg">
+      <div className="flex items-start gap-3">
+        <div className="relative shrink-0">
+          <Img
+            src={imageSrc}
+            alt={name}
+            kind="team"
+            className="object-cover rounded-lg w-14 h-14"
+          />
+          {editing && (
+            <label
+              htmlFor={`team-photo-${uuid}`}
+              className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer bg-black/40"
+            >
+              <CameraAltIcon sx={{ fontSize: 20 }} className="text-white" />
+              <input
+                id={`team-photo-${uuid}`}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                hidden
+              />
+            </label>
+          )}
         </div>
-        <button className="absolute flex right-2 top-2" onClick={toggleEditing}>
+
+        <div className="flex flex-col flex-grow min-w-0 gap-0.5">
+          <h3 className="font-semibold leading-tight">{name}</h3>
+          {editing ? (
+            <div className="flex flex-col gap-1 pt-1">
+              {players.map((player) => (
+                <div
+                  key={player.uuid}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <button
+                    onClick={() => onRemovePlayer(player)}
+                    title="Remove from team"
+                    className="shrink-0"
+                  >
+                    <RemoveCircleOutlineIcon
+                      sx={{ fontSize: 18 }}
+                      className="text-red"
+                    />
+                  </button>
+                  <span
+                    className={`min-w-0 truncate ${
+                      player.is_active === false ? "text-light" : ""
+                    }`}
+                  >
+                    {player.name}
+                  </span>
+                  <button
+                    className={`ml-auto text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${
+                      player.is_active === false
+                        ? "border-gray-300 text-light"
+                        : "border-tertiary text-tertiary"
+                    }`}
+                    onClick={() => toggleActive(player)}
+                  >
+                    {player.is_active === false ? "Dormant" : "Active"}
+                  </button>
+                </div>
+              ))}
+              {players.length === 0 && (
+                <span className="text-sm text-light">No players yet.</span>
+              )}
+              <button
+                className="self-start pt-1 text-xs font-semibold text-red"
+                onClick={deleteClicked}
+              >
+                Delete this team
+              </button>
+            </div>
+          ) : (
+            players.map((player) => (
+              <span className="text-sm text-light" key={player.uuid}>
+                {player.name}
+                {player.is_active === false && (
+                  <span className="text-[10px]"> (dormant)</span>
+                )}
+              </span>
+            ))
+          )}
+        </div>
+
+        <button className="shrink-0 text-light" onClick={toggleEditing}>
           {editing ? (
             <CloseIcon sx={{ fontSize: 20 }} />
           ) : (
             <EditIcon sx={{ fontSize: 20 }} />
           )}
         </button>
-        {editing && (
-          <button
-            className="p-1 px-2  rounded-md bg-errorRed text-[12px] mt-3 absolute bottom-2 right-2"
-            onClick={deleteClicked}
-          >
-            Delete Team
-          </button>
-        )}
-        {!editing && is_available !== false && (
-          <div className="absolute bottom-2 right-2 text-primary text-[12px] border-primary border p-1 rounded-md flex items-center gap-1">
-            <CopyWrapper copyString={inviteUrl} size={20}>
-              <span className="mr-1">Copy Invite Link</span>
-            </CopyWrapper>
-          </div>
-        )}
       </div>
+
+      {!editing && is_available !== false && (
+        <div className="pt-3 mt-3 border-t border-gray-100">
+          <CopyWrapper copyString={inviteUrl}>
+            <div className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer">
+              <ContentCopyIcon
+                sx={{ fontSize: 14 }}
+                className="shrink-0 text-light"
+              />
+              <span className="text-xs truncate text-light">{inviteUrl}</span>
+            </div>
+          </CopyWrapper>
+        </div>
+      )}
       <PopupContinue
         open={popupTeamOpen}
         setOpen={setPopupTeamOpen}
         header={"Delete this Team?"}
-        desc={"Doing this will perminately delete this team."}
+        desc={"This permanently deletes the team and its roster spots."}
         continueText={"Delete"}
         continueFunc={deleteTeamFunc}
       />

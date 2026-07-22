@@ -150,20 +150,15 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
           </div>
         </div>
 
-        <button
-          className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
-          onClick={save}
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-      </div>
-
-      <div className="p-3 bg-white border border-gray-200 rounded-lg">
-        <span className="form-label">Invite link</span>
-        <div className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg">
+        <div>
+          <span className="form-label">
+            Invite link{" "}
+            <span className="font-normal text-light">
+              — the only door in
+            </span>
+          </span>
           <CopyWrapper copyString={inviteLinkBrolympics(uuid)}>
-            <div className="flex items-center flex-grow min-w-0 gap-2 cursor-pointer">
+            <div className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer">
               <ContentCopyIcon
                 sx={{ fontSize: 14 }}
                 className="shrink-0 text-light"
@@ -174,22 +169,29 @@ const ManageBro = ({ name, projected_start_date, projected_end_date, img }) => {
             </div>
           </CopyWrapper>
         </div>
-        <p className="pt-1 text-[11px] text-light">
-          Only people with this link can join.
-        </p>
+
+        <button
+          className="w-full py-2.5 font-semibold text-white rounded-full bg-primary disabled:opacity-50"
+          onClick={save}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
       </div>
 
-      <div className="p-3 border rounded-lg border-red/30">
-        <h4 className="text-sm font-semibold text-red">Danger Zone</h4>
-        <p className="text-[11px] text-light">
-          Deleting removes every team, event, and result in this Brolympics.
-          There's no undo.
-        </p>
+      <div className="flex items-center justify-between gap-3 p-3 border rounded-lg border-red/30">
+        <div className="min-w-0">
+          <h4 className="text-sm font-semibold text-red">Delete Brolympics</h4>
+          <p className="text-[10px] leading-snug text-light">
+            Teams, events, and results go with it. Played history is archived
+            and recoverable by support.
+          </p>
+        </div>
         <button
-          className="w-full py-2 mt-2 text-sm font-semibold border rounded-full text-red border-red"
+          className="px-4 py-1.5 text-sm font-semibold border rounded-full shrink-0 text-red border-red"
           onClick={() => setPopupDelete(true)}
         >
-          Delete Brolympics
+          Delete
         </button>
       </div>
 

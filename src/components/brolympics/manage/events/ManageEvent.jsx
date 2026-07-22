@@ -47,13 +47,15 @@ const Gem = () => (
 );
 
 const SettingRow = ({ label, gem, hint, children }) => (
-  <div className="flex items-center justify-between gap-3 py-2">
+  <div className="flex items-center justify-between gap-3 py-1.5">
     <div className="min-w-0">
-      <h4 className="flex items-center gap-1 text-sm font-semibold">
+      <h4 className="flex items-center gap-1 text-sm font-semibold leading-tight">
         {label}
         {gem && <Gem />}
       </h4>
-      {hint && <p className="text-[10px] text-light">{hint}</p>}
+      {hint && (
+        <p className="text-[10px] leading-snug text-light">{hint}</p>
+      )}
     </div>
     {children}
   </div>
@@ -61,13 +63,13 @@ const SettingRow = ({ label, gem, hint, children }) => (
 
 /** A full-width setting: label + hint on top, the control underneath. */
 const SettingBlock = ({ label, gem, hint, children }) => (
-  <div className="py-2">
-    <h4 className="flex items-center gap-1 text-sm font-semibold">
+  <div className="py-1.5">
+    <h4 className="flex items-center gap-1 text-sm font-semibold leading-tight">
       {label}
       {gem && <Gem />}
     </h4>
-    {hint && <p className="text-[10px] text-light">{hint}</p>}
-    <div className="mt-1.5">{children}</div>
+    {hint && <p className="text-[10px] leading-snug text-light">{hint}</p>}
+    <div className="mt-1">{children}</div>
   </div>
 );
 
@@ -98,7 +100,7 @@ const Segmented = ({ value, options, onChange, disabled, disabledKeys = [] }) =>
 const Fold = ({ Icon, title, open, onToggle, children }) => (
   <div className="border-t border-gray-100">
     <button
-      className="flex items-center justify-between w-full gap-2 py-2.5"
+      className="flex items-center justify-between w-full gap-2 py-2"
       onClick={onToggle}
     >
       <span className="flex items-center gap-2 text-sm font-semibold">
@@ -111,7 +113,7 @@ const Fold = ({ Icon, title, open, onToggle, children }) => (
         <ExpandMoreIcon sx={{ fontSize: 18 }} className="text-light" />
       )}
     </button>
-    {open && <div className="pb-3">{children}</div>}
+    {open && <div className="pb-2.5">{children}</div>}
   </div>
 );
 
