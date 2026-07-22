@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import Img from "../../Util/Img";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { formatMonthYear } from "../../Util/dates";
 
 const LeagueCard = ({ name, img, founded, is_admin, uuid }) => {
   const navigate = useNavigate();
+  const est = formatMonthYear(founded);
 
   const onLeagueClick = () => {
     navigate(`/league/${uuid}`);
@@ -18,7 +20,7 @@ const LeagueCard = ({ name, img, founded, is_admin, uuid }) => {
       <Img className="object-cover w-16 h-16 rounded-lg" src={img} alt={name} kind="league" />
       <div className="flex flex-col flex-grow">
         <h2 className="header-4 text-near-black">{name}</h2>
-        <span className="text-sm text-light">Founded: {founded}</span>
+        {est && <span className="text-sm text-light">Est. {est}</span>}
       </div>
       {is_admin && (
         <div className="text-primary">

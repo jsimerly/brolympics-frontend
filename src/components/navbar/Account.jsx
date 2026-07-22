@@ -3,6 +3,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../../context/AuthContext";
+import AuthMethods from "./AuthMethods";
 import ImageCropper, { readImageFile } from "../Util/ImageCropper";
 import Img from "../Util/Img";
 import { updateUserImg, updateUserInfo } from "../../api/auth";
@@ -179,6 +180,8 @@ const Account = ({ setView }) => {
           </div>
         )}
       </div>
+
+      {user.account_complete && <AuthMethods />}
 
       {user.provider === "password" && (
         <div className="p-3 bg-white border border-gray-200 rounded-lg">

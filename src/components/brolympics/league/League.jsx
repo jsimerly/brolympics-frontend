@@ -13,16 +13,11 @@ import { fetchLeagueAllTime, fetchEventTypes } from "../../../api/client";
 import { Leaderboard, EventsThroughYears, AllTimeTeams } from "./HistorySections";
 import { SkeletonPage, SkeletonSection } from "../../Util/Skeleton";
 import useCachedFetch from "../../../hooks/useCachedFetch";
-import { daysUntil, formatDateRange } from "../../Util/dates";
-
-const formatFounded = (iso) => {
-  if (!iso) return null;
-  try {
-    return format(parseISO(iso), "MMMM yyyy");
-  } catch {
-    return null;
-  }
-};
+import {
+  daysUntil,
+  formatDateRange,
+  formatMonthYear,
+} from "../../Util/dates";
 
 /** A running Brolympics: one loud card straight into the action. */
 const LiveCard = ({ uuid, name, img }) => {
@@ -206,7 +201,7 @@ const League = ({ leagueInfo }) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
   const isAdmin = !!leagueInfo?.is_admin;
-  const founded = formatFounded(leagueInfo?.founded);
+  const founded = formatMonthYear(leagueInfo?.founded);
 
   // Show More ladder: sections reveal 10 -> 50 -> 100...; the server fetch
   // limit follows the largest request so big leagues never ship full lists.

@@ -13,6 +13,18 @@ export const daysUntil = (iso) => {
   }
 };
 
+/** "July 2025" from any ISO datetime, null when absent/unparseable. The
+ * league "founded" line once rendered the raw ISO string ("2026-07-12T11:0…")
+ * -- every date shown to a human goes through a formatter here. */
+export const formatMonthYear = (iso) => {
+  if (!iso) return null;
+  try {
+    return format(parseISO(iso), "MMMM yyyy");
+  } catch {
+    return null;
+  }
+};
+
 /** "Jul 18 – Jul 20", or the single known end when only one exists. */
 export const formatDateRange = (start, end) => {
   const fmt = (d) => format(parseISO(d), "MMM d");

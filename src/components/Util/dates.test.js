@@ -1,6 +1,16 @@
 /** Countdown/date-range helpers behind the League and pre-bro home cards. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { daysUntil, formatDateRange } from './dates'
+import { daysUntil, formatDateRange, formatMonthYear } from './dates'
+
+describe('formatMonthYear', () => {
+  it('turns any ISO datetime into "Month Year" and never leaks raw ISO', () => {
+    // the Leagues card once showed "Founded: 2026-07-12T11:0..." verbatim
+    expect(formatMonthYear('2026-07-12T11:03:22.411243-04:00')).toBe('July 2026')
+    expect(formatMonthYear('2023-06-01')).toBe('June 2023')
+    expect(formatMonthYear(null)).toBe(null)
+    expect(formatMonthYear('not-a-date')).toBe(null)
+  })
+})
 
 describe('daysUntil', () => {
   beforeEach(() => {

@@ -183,6 +183,15 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - an ind event carries its games-per-team and low-score-wins choices
   - refuses to add a nameless event
 
+## src/components/navbar/AuthMethods.test.jsx (5 tests)
+
+- **AuthMethods**
+  - shows the linked phone number and offers Link for the rest
+  - linking Google goes straight to the popup and celebrates in green
+  - linking email & password sends the entered credentials
+  - merging a previous email account proves ownership then merges
+  - a same-league identity conflict is surfaced, not swallowed
+
 ## src/components/Util/apiError.test.js (5 tests)
 
 - **apiErrorMessage**
@@ -192,8 +201,10 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - names the field for DRF field errors
   - passes a plain-string body through but never renders an HTML page
 
-## src/components/Util/dates.test.js (3 tests)
+## src/components/Util/dates.test.js (4 tests)
 
+- **formatMonthYear**
+  - turns any ISO datetime into "Month Year" and never leaks raw ISO
 - **daysUntil**
   - counts whole days up (ceil) to the start date
   - is 0-or-negative once the date arrives, null when absent or junk
@@ -280,4 +291,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-126 tests cataloged.
+132 tests cataloged.

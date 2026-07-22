@@ -30,6 +30,14 @@ export const updateUserInfo = async (userData) => {
   }
 };
 
+/** Merge a PRIOR account's history into the current one. `token` is the old
+ * account's id token (obtained via a secondary sign-in that proves
+ * ownership). Returns what moved: {players, leagues_owned, ..., conflicts}. */
+export const mergePriorAccount = async (token) => {
+  const response = await api.post("/api/auth/merge/", { token });
+  return response.data;
+};
+
 export const updateUserImg = async (imageFile) => {
   try {
     const formData = new FormData();
