@@ -226,7 +226,7 @@ const DisciplineCard = ({ d, contests, myTeamUuids, playerUuid }) => {
           <MiniStat value={detail.value} label={detail.label} />
           <MiniStat value={d.avg_finish ?? "—"} label="Avg Finish" />
         </div>
-        <div className="flex items-center gap-4 pt-2 text-xs text-light">
+        <div className="flex items-center gap-4 pt-2 pl-0.5 text-xs text-light">
           <span className="flex items-center gap-1" title="Event wins">
             <EmojiEventsOutlinedIcon sx={{ fontSize: 14 }} /> {d.event_wins}
           </span>
