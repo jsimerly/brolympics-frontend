@@ -53,13 +53,12 @@ test('commissioner signs up and builds the league through the wizard', async ({
   // step 3: two events from the preset catalog -- an h2h and an ind (no ffa:
   // heats would rightly block the start gate, that's its own spec someday)
   await page.getByRole('button', { name: 'Add an event' }).click()
-  // add each preset through its info sheet -- clicking the card itself is
-  // geometry-dependent (a nested info icon sits mid-card and steals taps)
-  await page.getByRole('button', { name: 'About Cornhole', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to lineup' }).click()
+  // tap the cards themselves -- regression: the info affordance once sat
+  // dead-center of the card and stole these exact taps (^anchors also skip
+  // the "About <name>" buttons and "Wii Sports Bowling")
+  await page.getByRole('button', { name: /^Cornhole/ }).click()
   await page.getByPlaceholder(/Search events/).fill('Bowling')
-  await page.getByRole('button', { name: 'About Bowling', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to lineup' }).click()
+  await page.getByRole('button', { name: /^Bowling/ }).click()
   await expect(page.getByText("This year's lineup (2)")).toBeVisible()
   await page.getByRole('button', { name: /Next: Review/ }).click()
 

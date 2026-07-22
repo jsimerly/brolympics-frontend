@@ -19,13 +19,19 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - build each kind from the configured frontend origin
   - never carry a hardcoded production domain
 
-## src/api/client/wizard.test.js (4 tests)
+## src/api/client/wizard.test.js (9 tests)
 
 - **createBroWithEvents**
   - creates the bro then every event and collects warnings
   - deletes the orphan bro when an event fails, then rethrows
   - surfaces the original error even when the rollback itself fails
   - never deletes anything when the bro itself failed to create
+- **createLeagueWithBro (the from-scratch StartLeague wizard)**
+  - creates league then bro (tagged with the league uuid) then events
+  - deletes the fresh league when the bro fails, then rethrows
+  - unwinds BOTH the bro and the league when an event fails
+  - surfaces the original error even when the league rollback fails
+  - never deletes anything when the league itself failed to create
 
 ## src/App.test.jsx (3 tests)
 
@@ -266,4 +272,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-118 tests cataloged.
+123 tests cataloged.

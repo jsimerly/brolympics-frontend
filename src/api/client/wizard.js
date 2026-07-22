@@ -1,5 +1,6 @@
 import { createBrolympics, deleteBrolympics } from "./brolympics";
 import { createEvent, defaultStagesFor } from "./events";
+import { createLeague, deleteLeague } from "./leagues";
 
 /** The wizard's create step, all-or-nothing: the Brolympics plus every event.
  * If an event fails after the bro was made, the orphan bro is deleted (best
@@ -32,4 +33,23 @@ export const createBroWithEvents = async (broPayload, events) => {
     throw error;
   }
   return { bro, warnings };
+};
+
+/** The from-scratch wizard's create step: league + Brolympics + events, all
+ * or nothing. createBroWithEvents already unwinds the bro on event failure;
+ * this adds the outer ring -- a failure anywhere after the league exists
+ * deletes the fresh league too (a no-history league hard-deletes, event
+ * types cascade), so retrying the wizard can't stack duplicate leagues. */
+export const createLeagueWithBro = async (leaguePayload, broPayload, events) => {
+  const league = await createLeague(leaguePayload);
+  try {
+    const { bro, warnings } = await createBroWithEvents(
+      { ...broPayload, league: league.uuid },
+      events
+    );
+    return { league, bro, warnings };
+  } catch (error) {
+    await deleteLeague(league.uuid).catch(() => {});
+    throw error;
+  }
 };

@@ -5,12 +5,20 @@
  * and warnings collected on success.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createBroWithEvents } from './wizard'
+import { createBroWithEvents, createLeagueWithBro } from './wizard'
 
-const { mockCreateBro, mockDeleteBro, mockCreateEvent } = vi.hoisted(() => ({
+const {
+  mockCreateBro,
+  mockDeleteBro,
+  mockCreateEvent,
+  mockCreateLeague,
+  mockDeleteLeague,
+} = vi.hoisted(() => ({
   mockCreateBro: vi.fn(),
   mockDeleteBro: vi.fn(),
   mockCreateEvent: vi.fn(),
+  mockCreateLeague: vi.fn(),
+  mockDeleteLeague: vi.fn(),
 }))
 
 vi.mock('./brolympics', () => ({
@@ -20,6 +28,10 @@ vi.mock('./brolympics', () => ({
 vi.mock('./events', () => ({
   createEvent: mockCreateEvent,
   defaultStagesFor: () => [{ structure: 'round_robin', config: {} }],
+}))
+vi.mock('./leagues', () => ({
+  createLeague: mockCreateLeague,
+  deleteLeague: mockDeleteLeague,
 }))
 
 const EVENTS = [
@@ -68,5 +80,65 @@ describe('createBroWithEvents', () => {
     await expect(createBroWithEvents({}, EVENTS)).rejects.toBeTruthy()
     expect(mockDeleteBro).not.toHaveBeenCalled()
     expect(mockCreateEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('createLeagueWithBro (the from-scratch StartLeague wizard)', () => {
+  beforeEach(() => {
+    mockCreateLeague.mockReset().mockResolvedValue({ uuid: 'league-1' })
+    mockDeleteLeague.mockReset().mockResolvedValue({})
+    mockCreateBro.mockReset().mockResolvedValue({ uuid: 'bro-1' })
+    mockDeleteBro.mockReset().mockResolvedValue({})
+    mockCreateEvent.mockReset().mockResolvedValue({ warnings: [] })
+  })
+
+  it('creates league then bro (tagged with the league uuid) then events', async () => {
+    const result = await createLeagueWithBro(
+      { name: 'BSU Boys' },
+      { name: 'Summer 2026' },
+      EVENTS
+    )
+    expect(result.league.uuid).toBe('league-1')
+    expect(result.bro.uuid).toBe('bro-1')
+    expect(mockCreateBro).toHaveBeenCalledWith({
+      name: 'Summer 2026',
+      league: 'league-1',
+    })
+    expect(mockDeleteLeague).not.toHaveBeenCalled()
+  })
+
+  it('deletes the fresh league when the bro fails, then rethrows', async () => {
+    const boom = { response: { status: 500 } }
+    mockCreateBro.mockRejectedValueOnce(boom)
+    await expect(
+      createLeagueWithBro({ name: 'BSU Boys' }, {}, EVENTS)
+    ).rejects.toBe(boom)
+    expect(mockDeleteLeague).toHaveBeenCalledWith('league-1')
+  })
+
+  it('unwinds BOTH the bro and the league when an event fails', async () => {
+    const boom = { response: { status: 500 } }
+    mockCreateEvent.mockRejectedValueOnce(boom)
+    await expect(
+      createLeagueWithBro({ name: 'BSU Boys' }, {}, EVENTS)
+    ).rejects.toBe(boom)
+    expect(mockDeleteBro).toHaveBeenCalledWith('bro-1')
+    expect(mockDeleteLeague).toHaveBeenCalledWith('league-1')
+  })
+
+  it('surfaces the original error even when the league rollback fails', async () => {
+    const boom = { response: { status: 500 } }
+    mockCreateEvent.mockRejectedValueOnce(boom)
+    mockDeleteLeague.mockRejectedValueOnce(new Error('rollback down too'))
+    await expect(
+      createLeagueWithBro({ name: 'BSU Boys' }, {}, EVENTS)
+    ).rejects.toBe(boom)
+  })
+
+  it('never deletes anything when the league itself failed to create', async () => {
+    mockCreateLeague.mockRejectedValueOnce({ response: { status: 400 } })
+    await expect(createLeagueWithBro({}, {}, EVENTS)).rejects.toBeTruthy()
+    expect(mockDeleteLeague).not.toHaveBeenCalled()
+    expect(mockCreateBro).not.toHaveBeenCalled()
   })
 })

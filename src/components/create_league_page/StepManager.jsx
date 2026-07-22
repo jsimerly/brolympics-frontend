@@ -4,12 +4,7 @@ import CreateBrolympics from "./CreateBrolympics.jsx";
 import AddEvent from "./AddEvent.jsx";
 import AddPlayers from "./AddPlayers.jsx";
 import ReviewStep from "./ReviewStep.jsx";
-import {
-  createLeague,
-  createBrolympics,
-  createEvent,
-  defaultStagesFor,
-} from "../../api/client";
+import { createLeagueWithBro } from "../../api/client/wizard";
 import { useNotification } from "../Util/Notification.jsx";
 import { apiErrorMessage } from "../Util/apiError";
 
@@ -28,40 +23,23 @@ const StepManager = ({ step, nextStep, prevStep, sx = "" }) => {
     if (creating) return;
     setCreating(true);
     try {
-      const newLeague = await createLeague(league);
-      const newBro = await createBrolympics({
-        ...brolympics,
-        league: newLeague.uuid,
-      });
       const events = [
         ...h2hEvents.map((e) => ({ ...e, format: "h2h" })),
         ...indEvents.map((e) => ({ ...e, format: "ind" })),
         ...teamEvents.map((e) => ({ ...e, format: "team" })),
         ...ffaEvents.map((e) => ({ ...e, format: "ffa" })),
       ];
-      const warnings = [];
-      for (const event of events) {
-        const created = await createEvent({
-          brolympics: newBro.uuid,
-          event_type_name: event.name,
-          format: event.format,
-          stages: event.stages || defaultStagesFor(event.format),
-          ...(event.event_type && { event_type: event.event_type }),
-          ...(event.is_high_score_wins != null && {
-            is_high_score_wins: event.is_high_score_wins,
-          }),
-          ...(event.location && { location: event.location }),
-          ...(event.rules && { rules: event.rules }),
-          ...(event.config && { config: event.config }),
-        });
-        if (created.warnings?.length) {
-          warnings.push(`${event.name}: ${created.warnings.join(" ")}`);
-        }
-      }
+      // all-or-nothing: a failure anywhere rolls back the league AND bro,
+      // so "try again" can't stack duplicates (the ghost-bro lesson)
+      const { bro, warnings } = await createLeagueWithBro(
+        league,
+        brolympics,
+        events
+      );
       if (warnings.length) {
         showNotification(warnings.join(" — "), "border-yellow-500");
       }
-      setLink(newBro.uuid);
+      setLink(bro.uuid);
       nextStep();
     } catch (error) {
       showNotification(

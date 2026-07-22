@@ -26,43 +26,47 @@ const AddButton = ({ added }) => (
   </span>
 );
 
+/* Two REAL side-by-side tap zones: the card body toggles, a full-height
+ * strip on the trailing edge opens the info sheet. The old inline info icon
+ * sat dead-center of the card and stole add-taps (E2E caught it). */
 const PresetGrid = ({ presets, isAdded, toggle, onInfo }) => (
   <div className="grid grid-cols-2 gap-1.5">
     {presets.map((row) => {
       const added = isAdded(row.name, row.format);
       return (
-        <button
+        <div
           key={row.name}
-          onClick={() => toggle(row)}
-          className={`flex items-center justify-between gap-1 px-2.5 py-2 text-left transition-colors border rounded-lg ${
+          className={`relative transition-colors border rounded-lg ${
             added ? "border-primary bg-primary/5" : "bg-white border-gray-200"
           }`}
         >
-          <div className="flex flex-col min-w-0">
-            <span className="flex items-center gap-1 text-sm font-medium leading-tight truncate">
-              {row.name}
-              <span
-                role="button"
-                aria-label={`About ${row.name}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onInfo(row);
-                }}
-                className="text-light hover:text-primary"
-              >
-                <InfoOutlinedIcon sx={{ fontSize: 14 }} />
-              </span>
+          <button
+            onClick={() => toggle(row)}
+            className="flex flex-col w-full py-2 pl-2.5 pr-9 text-left"
+          >
+            <span className="flex items-center w-full gap-1 text-sm font-medium leading-tight">
+              <span className="min-w-0 truncate">{row.name}</span>
+              {added ? (
+                <CheckIcon
+                  sx={{ fontSize: 15 }}
+                  className="shrink-0 text-primary"
+                />
+              ) : (
+                <AddIcon sx={{ fontSize: 15 }} className="shrink-0 text-light" />
+              )}
             </span>
             <span className="text-[10px] text-light">
               {FORMAT_LABEL[row.format] || row.format}
             </span>
-          </div>
-          {added ? (
-            <CheckIcon sx={{ fontSize: 16 }} className="shrink-0 text-primary" />
-          ) : (
-            <AddIcon sx={{ fontSize: 16 }} className="shrink-0 text-light" />
-          )}
-        </button>
+          </button>
+          <button
+            aria-label={`About ${row.name}`}
+            onClick={() => onInfo(row)}
+            className="absolute inset-y-0 right-0 flex items-center justify-center w-9 text-light hover:text-primary"
+          >
+            <InfoOutlinedIcon sx={{ fontSize: 15 }} />
+          </button>
+        </div>
       );
     })}
   </div>
