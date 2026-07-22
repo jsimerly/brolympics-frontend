@@ -14,7 +14,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22+: firebase-tools' dep tree EBADENGINEs on node 20; the lockfile
+          # is also written by npm 10 (npx npm@10) to match this runtime
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm test
