@@ -26,7 +26,9 @@ const ImageCropper = ({ img, setCroppedImage, handleCloseCropper }) => {
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-black">
-      <div className="px-4 pt-4 pb-2 text-center shrink-0">
+      {/* header + controls sit above the crop surface -- react-easy-crop's
+          absolute container otherwise swallows taps aimed at the buttons */}
+      <div className="relative z-10 px-4 pt-4 pb-2 text-center shrink-0">
         <h3 className="font-semibold text-white">Crop image</h3>
         <p className="text-xs text-white/60">
           Drag to move · pinch or slide to zoom
@@ -47,7 +49,7 @@ const ImageCropper = ({ img, setCroppedImage, handleCloseCropper }) => {
         />
       </div>
 
-      <div className="px-6 pt-4 pb-8 space-y-4 shrink-0">
+      <div className="relative z-10 px-6 pt-4 pb-8 space-y-4 shrink-0 bg-black">
         <input
           type="range"
           min={1}

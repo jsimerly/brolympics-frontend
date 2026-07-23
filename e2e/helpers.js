@@ -21,6 +21,59 @@ export async function newPersona(browser) {
 }
 
 /**
+ * Drives the StartLeague wizard end to end: league -> brolympics (structure
+ * defaults to traditional) -> no events -> create -> grab the invite link ->
+ * land on the bro home. Returns { inviteLink, broUrl }. Assumes the page is
+ * signed in and sitting on the Leagues screen.
+ */
+export async function foundLeague(page, { leagueName, broName }) {
+  await page.getByRole('button', { name: 'Create League' }).click()
+  await page.getByPlaceholder('Ex: BSU Boys').fill(leagueName)
+  await page.getByRole('button', { name: 'Create League' }).click()
+  await page.getByPlaceholder('Summer 2026').fill(broName)
+  await page.getByRole('button', { name: 'Next: Add Events' }).click()
+  await page.getByRole('button', { name: /Next: Review/ }).click()
+  await page.getByRole('button', { name: 'Create League & Brolympics' }).click()
+  const linkText = page
+    .locator('span', { hasText: '/invite/brolympics/' })
+    .first()
+  await expect(linkText).toContainText(/\/invite\/brolympics\/[0-9a-f-]{36}/, {
+    timeout: 15_000,
+  })
+  const inviteLink = (await linkText.textContent()).trim()
+  const broUrl = `/b/${inviteLink.split('/invite/brolympics/')[1]}/home`
+  await page.getByRole('button', { name: 'Done — Go to Brolympics' }).click()
+  await expect(page.getByText('Launch Checklist')).toBeVisible()
+  return { inviteLink, broUrl }
+}
+
+/** Signs up through an invite link and joins the Brolympics. */
+export async function joinViaInvite(page, inviteLink, person) {
+  await page.goto(inviteLink)
+  await expect(page.getByText("You're invited!")).toBeVisible()
+  await signUpAndCompleteAccount(page, person)
+  await page.getByRole('button', { name: 'Join Brolympics' }).click()
+  await expect(page.getByText("You're not on a team yet")).toBeVisible()
+}
+
+/** Creates a team from the pre-bro home's create card and waits for the
+ * reloaded my-team card. */
+export async function createTeamFromHome(page, name) {
+  await page.getByRole('button', { name: 'Create', exact: true }).click()
+  await page.locator('#new-team-name').fill(name)
+  await page.getByRole('button', { name: 'Create & join' }).click()
+  await expect(page.getByRole('heading', { name, level: 3 })).toBeVisible()
+}
+
+/** Opens the hamburger drawer's Account view. The menu toggle is the first
+ * child of the fixed navbar (a div wrapping the icon, not a button). */
+export async function openAccount(page) {
+  await page.locator('div.fixed > div').first().click()
+  await page.getByRole('button', { name: /View account/ }).click()
+  await expect(page.getByText('Sign-in methods')).toBeVisible()
+}
+
+/**
  * Email signup through the real form, then the forced "Almost in." account
  * onboarding (first/last/display name + Save). Ends right after Save's
  * reload kicks off -- callers assert where they land, because it differs:
