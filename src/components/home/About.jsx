@@ -17,17 +17,17 @@ const STEPS = [
   {
     Icon: AddCircleOutlineIcon,
     title: "Build your league",
-    text: "Pick your structure — teams of 2, big squads, or everyone solo — then load the slate from a catalog of 100+ events or invent your own. Cornhole to go-karting to trivia.",
+    text: "Pick a structure — teams of two, bigger squads, or everyone solo — then choose from over 100 events, or add your own.",
   },
   {
     Icon: LinkIcon,
     title: "Send one link",
-    text: "The invite link is the only door in. The crew taps it, claims their spots, and forms teams — returning players reconnect to their history automatically.",
+    text: "Share a single invite link. People tap it, pick a team, and they're in. Returning players pick up right where they left off.",
   },
   {
     Icon: SportsScoreIcon,
-    title: "Play game day live",
-    text: "Check in at a station, tap scores in from your phone, and watch the standings move in real time. No spreadsheets, no arguing about the bracket.",
+    title: "Keep score as you play",
+    text: "Record scores from your phone as games finish. Standings update on their own — no spreadsheet required.",
   },
 ];
 
@@ -35,22 +35,22 @@ const FORMATS = [
   {
     Icon: CompareArrowsIcon,
     title: "Head-to-Head",
-    text: "Round robins, swiss rounds, and playoff brackets — down to run-offs that settle every single place.",
+    text: "Round robins, swiss rounds, and playoff brackets — with run-offs for every place, if you want them.",
   },
   {
     Icon: PersonIcon,
     title: "Individual",
-    text: "Everyone posts their own score; team results roll up as totals or averages. Golf, bowling, home run derby.",
+    text: "Everyone posts a score; team results add up as totals or averages. Golf, bowling, that kind of thing.",
   },
   {
     Icon: GroupsIcon,
     title: "Team",
-    text: "One score for the whole squad — trivia night, kickball, anything you play as a unit.",
+    text: "One score for the whole team — trivia, kickball, group games.",
   },
   {
     Icon: AccountTreeOutlinedIcon,
     title: "Free-for-All",
-    text: "Heats with everyone racing at once — tap racers in the order they finish and the points sort themselves.",
+    text: "Everyone goes at once. Tap finishers in order and the points take care of themselves.",
   },
 ];
 
@@ -58,17 +58,17 @@ const HISTORY = [
   {
     Icon: LeaderboardOutlinedIcon,
     title: "All-time leaderboards",
-    text: "Career points, event wins, and podiums for every player and team, across every year.",
+    text: "Points, wins, and podiums for every player and team, year after year.",
   },
   {
     Icon: WhatshotOutlinedIcon,
     title: "Records & rivalries",
-    text: "All-time bests wear the fire chip, and head-to-head ledgers track who really owns who.",
+    text: "All-time bests get their own marker, and head-to-head history builds between players over the years.",
   },
   {
     Icon: EmojiEventsOutlinedIcon,
     title: "Names that live on",
-    text: "Teams are institutions — pass the name down and the banner keeps its history, roster after roster.",
+    text: "Team names carry their history with them — hand one down and the record book follows.",
   },
 ];
 
@@ -90,12 +90,12 @@ const About = () => {
           <img src={brologo} alt="Brolympics" className="h-16" />
           <RingStrip className="w-24 mt-4" />
           <h1 className="pt-6 text-4xl font-bold leading-tight text-near-black">
-            Your crew&apos;s own Olympics.
+            Run your own Olympics.
           </h1>
           <p className="max-w-md pt-3 text-light">
-            Brolympics turns a weekend of backyard games into a real
-            competition — live scorekeeping, honest brackets, and a history
-            your league keeps forever.
+            Brolympics turns a weekend of games with friends into a real
+            competition — live scores, proper brackets, and a history that
+            sticks around.
           </p>
           <div className="flex flex-col items-center w-full max-w-xs gap-3 pt-6">
             <button
@@ -139,8 +139,8 @@ const About = () => {
         <section className="py-6">
           <h2 className="mb-1 header-3">Every kind of game</h2>
           <p className="mb-4 text-sm text-light">
-            Four formats cover everything your crew plays — mix them freely in
-            one Brolympics.
+            Four formats cover just about everything. Mix them however you
+            like.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {FORMATS.map(({ Icon, title, text }) => (
@@ -159,7 +159,7 @@ const About = () => {
         <section className="py-6">
           <h2 className="mb-1 header-3">A history that lasts</h2>
           <p className="mb-4 text-sm text-light">
-            Every score you record becomes part of your league&apos;s story.
+            Everything you record stays with your league.
           </p>
           <div className="space-y-3">
             {HISTORY.map(({ Icon, title, text }) => (
@@ -180,7 +180,7 @@ const About = () => {
         <section className="flex flex-col items-center py-10 text-center">
           <RingStrip className="w-20" />
           <h2 className="pt-4 text-2xl font-bold text-near-black">
-            The games are waiting.
+            Ready when you are.
           </h2>
           <button
             className="w-full max-w-xs py-3 mt-5 font-semibold text-white transition-colors rounded-full bg-primary hover:bg-primary-dark"

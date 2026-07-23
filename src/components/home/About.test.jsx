@@ -24,10 +24,10 @@ const renderAbout = (firebaseUser = null) => {
 describe('About', () => {
   it('pitches the current product: steps, formats, and lasting history', () => {
     renderAbout()
-    expect(screen.getByText(/Your crew.s own Olympics/)).toBeInTheDocument()
+    expect(screen.getByText('Run your own Olympics.')).toBeInTheDocument()
     expect(screen.getByText('Build your league')).toBeInTheDocument()
     expect(screen.getByText('Send one link')).toBeInTheDocument()
-    expect(screen.getByText('Play game day live')).toBeInTheDocument()
+    expect(screen.getByText('Keep score as you play')).toBeInTheDocument()
     for (const format of ['Head-to-Head', 'Individual', 'Team', 'Free-for-All']) {
       expect(screen.getByText(format)).toBeInTheDocument()
     }
