@@ -34,18 +34,18 @@ describe('About', () => {
     expect(screen.getByText('Records & rivalries')).toBeInTheDocument()
   })
 
-  it('signed-out visitors get the signup CTA and a sign-in door', () => {
+  it('signed-out visitors get the create-league CTA and a sign-in door', () => {
     renderAbout(null)
     expect(
-      screen.getAllByRole('button', { name: 'Start your league' })
+      screen.getAllByRole('button', { name: 'Create your own league' })
     ).toHaveLength(2) // hero + footer
     expect(screen.getByText(/Sign in/)).toBeInTheDocument()
   })
 
-  it('signed-in visitors are pointed back at their leagues', () => {
+  it('signed-in visitors go straight to the league wizard', () => {
     renderAbout({ uid: 'me' })
     expect(
-      screen.getAllByRole('button', { name: 'Go to your leagues' })
+      screen.getAllByRole('button', { name: 'Create your own league' })
     ).toHaveLength(2)
     expect(screen.queryByText(/Already have an account/)).not.toBeInTheDocument()
   })

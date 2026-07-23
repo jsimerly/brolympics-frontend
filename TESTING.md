@@ -200,8 +200,8 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 - **About**
   - pitches the current product: steps, formats, and lasting history
-  - signed-out visitors get the signup CTA and a sign-in door
-  - signed-in visitors are pointed back at their leagues
+  - signed-out visitors get the create-league CTA and a sign-in door
+  - signed-in visitors go straight to the league wizard
 
 ## src/components/navbar/AuthMethods.test.jsx (5 tests)
 

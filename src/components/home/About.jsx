@@ -79,8 +79,8 @@ const About = () => {
   const { firebaseUser } = useAuth();
 
   const primaryCta = firebaseUser
-    ? { label: "Go to your leagues", to: "/" }
-    : { label: "Start your league", to: "/auth/create-account" };
+    ? { label: "Create your own league", to: "/start-league" }
+    : { label: "Create your own league", to: "/auth/create-account" };
 
   return (
     <div className="min-h-screen-minus-nav">
