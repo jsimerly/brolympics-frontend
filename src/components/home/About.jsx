@@ -1,123 +1,195 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import GroupsIcon from "@mui/icons-material/Groups";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
+import LinkIcon from "@mui/icons-material/Link";
+import PersonIcon from "@mui/icons-material/Person";
+import SportsScoreIcon from "@mui/icons-material/SportsScore";
+import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import brologo from "../../assets/imgs/brologo.webp";
+import RingStrip from "../Util/RingStrip";
+import { useAuth } from "../../context/AuthContext";
 
+const STEPS = [
+  {
+    Icon: AddCircleOutlineIcon,
+    title: "Build your league",
+    text: "Pick your structure — teams of 2, big squads, or everyone solo — then load the slate from a catalog of 100+ events or invent your own. Cornhole to go-karting to trivia.",
+  },
+  {
+    Icon: LinkIcon,
+    title: "Send one link",
+    text: "The invite link is the only door in. The crew taps it, claims their spots, and forms teams — returning players reconnect to their history automatically.",
+  },
+  {
+    Icon: SportsScoreIcon,
+    title: "Play game day live",
+    text: "Check in at a station, tap scores in from your phone, and watch the standings move in real time. No spreadsheets, no arguing about the bracket.",
+  },
+];
+
+const FORMATS = [
+  {
+    Icon: CompareArrowsIcon,
+    title: "Head-to-Head",
+    text: "Round robins, swiss rounds, and playoff brackets — down to run-offs that settle every single place.",
+  },
+  {
+    Icon: PersonIcon,
+    title: "Individual",
+    text: "Everyone posts their own score; team results roll up as totals or averages. Golf, bowling, home run derby.",
+  },
+  {
+    Icon: GroupsIcon,
+    title: "Team",
+    text: "One score for the whole squad — trivia night, kickball, anything you play as a unit.",
+  },
+  {
+    Icon: AccountTreeOutlinedIcon,
+    title: "Free-for-All",
+    text: "Heats with everyone racing at once — tap racers in the order they finish and the points sort themselves.",
+  },
+];
+
+const HISTORY = [
+  {
+    Icon: LeaderboardOutlinedIcon,
+    title: "All-time leaderboards",
+    text: "Career points, event wins, and podiums for every player and team, across every year.",
+  },
+  {
+    Icon: WhatshotOutlinedIcon,
+    title: "Records & rivalries",
+    text: "All-time bests wear the fire chip, and head-to-head ledgers track who really owns who.",
+  },
+  {
+    Icon: EmojiEventsOutlinedIcon,
+    title: "Names that live on",
+    text: "Teams are institutions — pass the name down and the banner keeps its history, roster after roster.",
+  },
+];
+
+/** The front door: what Brolympics is in 2026, in the app's own design
+ * language. Public route -- this is the pitch a curious visitor sees. */
 const About = () => {
+  const navigate = useNavigate();
+  const { firebaseUser } = useAuth();
+
+  const primaryCta = firebaseUser
+    ? { label: "Go to your leagues", to: "/" }
+    : { label: "Start your league", to: "/auth/create-account" };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="px-4 py-8 text-white bg-primary">
-        <h1 className="text-center header">Welcome to Brolympics!</h1>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-4xl mx-auto container-padding">
-        {/* Description */}
-        <section className="my-8">
-          <h2 className="header-2 text-primary">What is Brolympics?</h2>
-          <p className="text-light">
-            Brolympics is a competition where many teams of two meet in a myriad
-            of games to prove they're the best. From go-karting to beer die to
-            trivia, you'll compete to gain as many points as possible throughout
-            the weekend.
+    <div className="min-h-screen-minus-nav">
+      <div className="w-full max-w-3xl mx-auto container-padding">
+        {/* Hero */}
+        <section className="flex flex-col items-center pt-10 pb-8 text-center">
+          <img src={brologo} alt="Brolympics" className="h-16" />
+          <RingStrip className="w-24 mt-4" />
+          <h1 className="pt-6 text-4xl font-bold leading-tight text-near-black">
+            Your crew&apos;s own Olympics.
+          </h1>
+          <p className="max-w-md pt-3 text-light">
+            Brolympics turns a weekend of backyard games into a real
+            competition — live scorekeeping, honest brackets, and a history
+            your league keeps forever.
           </p>
-        </section>
-
-        {/* Rules */}
-        <section className="my-8">
-          <h2 className="header-2">Rules</h2>
-          <div className="space-y-6">
-            <div className="p-4 card">
-              <h3 className="header-3 text-primary">Team Formation</h3>
-              <ul className="list-disc list-inside text-light">
-                <li>Teams always consist of 2 players.</li>
-                <li>You choose your own partner for the competition.</li>
-              </ul>
-            </div>
-            <div className="p-4 card">
-              <h3 className="header-3 text-tertiary">Event Types</h3>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="header-4">1. Head-to-Head Events</h4>
-                  <ul className="list-disc list-inside text-light">
-                    <li>Teams compete directly against each other.</li>
-                    <li>
-                      After round-robin, top 4 teams enter a bracket tournament.
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="header-4">2. Score-Based Events</h4>
-                  <ul className="list-disc list-inside">
-                    <li>
-                      Teams compete against everyone's scores (e.g., trivia,
-                      bowling).
-                    </li>
-                    <li>
-                      Final rankings are determined by total scores or best
-                      individual scores.
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 card">
-              <h3 className="header-3 text-red">Scoring</h3>
-              <p className="mb-4 text-light">
-                Scoring in the top 3 will earn bonus points.
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="text-white bg-secondary-light">
-                      <th className="px-4 py-2 text-left">Place</th>
-                      <th className="px-4 py-2 text-left">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="bg-gray-50">
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        1st
-                      </td>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        3 + 2nd place points
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        2nd
-                      </td>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        2 + 3rd place points
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50">
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        3rd
-                      </td>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        2 + 4th place points
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        4th and below
-                      </td>
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        1 + previous place's points
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-50">
-                      <td className="px-4 py-2 border-t border-gray-200">
-                        Last Place
-                      </td>
-                      <td className="px-4 py-2 border-t border-gray-200">1</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="flex flex-col items-center w-full max-w-xs gap-3 pt-6">
+            <button
+              className="w-full py-3 font-semibold text-white transition-colors rounded-full bg-primary hover:bg-primary-dark"
+              onClick={() => navigate(primaryCta.to)}
+            >
+              {primaryCta.label}
+            </button>
+            {!firebaseUser && (
+              <button
+                className="text-sm font-semibold text-primary"
+                onClick={() => navigate("/auth/login")}
+              >
+                Already have an account? Sign in
+              </button>
+            )}
           </div>
         </section>
-      </main>
+
+        {/* How it works */}
+        <section className="py-6">
+          <h2 className="mb-4 header-3">How it works</h2>
+          <div className="space-y-3">
+            {STEPS.map(({ Icon, title, text }, i) => (
+              <div className="flex gap-3 p-4 card" key={title}>
+                <span className="flex items-center justify-center rounded-lg w-9 h-9 shrink-0 bg-primary/10">
+                  <Icon sx={{ fontSize: 20 }} className="text-primary" />
+                </span>
+                <div>
+                  <h3 className="font-semibold leading-tight">
+                    <span className="text-light">{i + 1}.</span> {title}
+                  </h3>
+                  <p className="pt-1 text-sm text-light">{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Formats */}
+        <section className="py-6">
+          <h2 className="mb-1 header-3">Every kind of game</h2>
+          <p className="mb-4 text-sm text-light">
+            Four formats cover everything your crew plays — mix them freely in
+            one Brolympics.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {FORMATS.map(({ Icon, title, text }) => (
+              <div className="p-4 card" key={title}>
+                <div className="flex items-center gap-2">
+                  <Icon sx={{ fontSize: 20 }} className="text-primary" />
+                  <h3 className="font-semibold">{title}</h3>
+                </div>
+                <p className="pt-1.5 text-sm text-light">{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* History */}
+        <section className="py-6">
+          <h2 className="mb-1 header-3">A history that lasts</h2>
+          <p className="mb-4 text-sm text-light">
+            Every score you record becomes part of your league&apos;s story.
+          </p>
+          <div className="space-y-3">
+            {HISTORY.map(({ Icon, title, text }) => (
+              <div className="flex gap-3 p-4 card" key={title}>
+                <span className="flex items-center justify-center rounded-lg w-9 h-9 shrink-0 bg-primary/10">
+                  <Icon sx={{ fontSize: 20 }} className="text-primary" />
+                </span>
+                <div>
+                  <h3 className="font-semibold leading-tight">{title}</h3>
+                  <p className="pt-1 text-sm text-light">{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Footer CTA */}
+        <section className="flex flex-col items-center py-10 text-center">
+          <RingStrip className="w-20" />
+          <h2 className="pt-4 text-2xl font-bold text-near-black">
+            The games are waiting.
+          </h2>
+          <button
+            className="w-full max-w-xs py-3 mt-5 font-semibold text-white transition-colors rounded-full bg-primary hover:bg-primary-dark"
+            onClick={() => navigate(primaryCta.to)}
+          >
+            {primaryCta.label}
+          </button>
+        </section>
+      </div>
     </div>
   );
 };

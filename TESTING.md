@@ -196,6 +196,13 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
   - an ind event carries its games-per-team and low-score-wins choices
   - refuses to add a nameless event
 
+## src/components/home/About.test.jsx (3 tests)
+
+- **About**
+  - pitches the current product: steps, formats, and lasting history
+  - signed-out visitors get the signup CTA and a sign-in door
+  - signed-in visitors are pointed back at their leagues
+
 ## src/components/navbar/AuthMethods.test.jsx (5 tests)
 
 - **AuthMethods**
@@ -304,4 +311,4 @@ Run the suite: `npm test` (check the EXIT CODE -- never pipe to tail).
 
 ---
 
-139 tests cataloged.
+142 tests cataloged.
