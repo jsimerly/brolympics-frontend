@@ -20,11 +20,17 @@ const Account = ({ setView }) => {
   const [resetPasswordStatus, setResetPasswordStatus] = useState("");
 
   useEffect(() => {
-    setUserInfo(user);
-    setImageSrc(user.img || null);
+    // never clobber in-flight edits: a background user refresh (the auth
+    // context re-fetches after sign-in) used to reset the form and eat
+    // whatever the person had already typed mid-onboarding
+    if (!isEditing) {
+      setUserInfo(user);
+      setImageSrc(user.img || null);
+    }
     if (!user.account_complete) {
       setIsEditing(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleInputChange = (e) => {

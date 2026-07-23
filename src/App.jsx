@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import {
   Routes,
   Route,
@@ -7,20 +7,30 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.jsx";
-import StartLeague from "./components/create_league_page/StartLeague.jsx";
-import Brolympics from "./components/brolympics/Brolympics.jsx";
 import Leagues from "./components/brolympics/league/Leagues.jsx";
-import Invites from "./components/invites/Invites.jsx";
 import { fetchLeagues } from "./api/client";
 import Notification, {
   useNotification,
 } from "./components/Util/Notification.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
-import LeagueRouter from "./components/brolympics/league/LeagueRouter.jsx";
 import AuthRouter from "./components/auth/AuthRouter.jsx";
 import ProtectedRoute from "./routing/ProtectedRoutes.jsx";
 import About from "./components/home/About.jsx";
+import { SkeletonPage } from "./components/Util/Skeleton.jsx";
 import "./firebase/firebaseConfig";
+
+// Route-level code splitting: the landing/auth/leagues shell loads first;
+// the heavy trees (game day, stats pages, the wizard with its event catalog,
+// the rich-text editor) arrive when navigated to. One 1.2MB bundle was the
+// whole "app feels slow" first-load (perf audit 2026-07-22).
+const Brolympics = lazy(() => import("./components/brolympics/Brolympics.jsx"));
+const LeagueRouter = lazy(() =>
+  import("./components/brolympics/league/LeagueRouter.jsx")
+);
+const StartLeague = lazy(() =>
+  import("./components/create_league_page/StartLeague.jsx")
+);
+const Invites = lazy(() => import("./components/invites/Invites.jsx"));
 
 function App() {
   const [leagues, setLeagues] = useState([]);
@@ -69,6 +79,13 @@ function App() {
           onClose={() => showNotification("")}
         />
       )}
+      <Suspense
+        fallback={
+          <div className="w-full max-w-3xl mx-auto container-padding">
+            <SkeletonPage />
+          </div>
+        }
+      >
       <Routes>
         {/* Public routes */}
         <Route
@@ -121,6 +138,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/about" replace />} />
       </Routes>
+      </Suspense>
     </div>
   );
 }
