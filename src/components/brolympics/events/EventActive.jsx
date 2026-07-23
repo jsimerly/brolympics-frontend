@@ -12,10 +12,22 @@ import HeatManager from "./HeatManager.jsx";
 import Comp_h2h from "./Competitions/Comp_h2h";
 import { EventInfo } from "./EventInfo.jsx";
 import { trimFloat } from "../../Util/format";
-import { groupLog, outingDisplayScore } from "./eventDisplay";
+import {
+  gameDisplayScore,
+  groupLog,
+  outingDisplayScore,
+} from "./eventDisplay";
 
-/** One outing line inside a team's group: total up front, players after. */
-const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
+/** One outing line inside a team's group: the game's headline number up
+ * front (per-player average when the event displays averages), players
+ * after. */
+const OutingLine = ({
+  contest,
+  gameNumber,
+  showGameNumber,
+  displayAvg = false,
+  decimalPlaces = null,
+}) => {
   const entries = contest.entries || [];
   const teamEntry = entries.find((e) => e.team && !e.player) || entries[0];
   const playerEntries = entries.filter((e) => e.player);
@@ -24,6 +36,8 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
     (playerEntries.length
       ? playerEntries.reduce((sum, e) => sum + (e.score ?? 0), 0)
       : null);
+  const scoredPlayers = playerEntries.filter((e) => e.score != null).length;
+  const shown = gameDisplayScore(total, scoredPlayers, displayAvg, decimalPlaces);
 
   return (
     <div className="flex items-start gap-2 py-1 ml-9 text-sm border-t first:border-t-0">
@@ -33,7 +47,7 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
         </span>
       )}
       <span className="w-10 font-bold shrink-0">
-        {contest.is_complete && total != null ? trimFloat(total) : "–"}
+        {contest.is_complete && shown != null ? trimFloat(shown) : "–"}
       </span>
       <span className="flex flex-col flex-grow min-w-0 text-light">
         {playerEntries.length > 0 ? (
@@ -57,7 +71,7 @@ const OutingLine = ({ contest, gameNumber, showGameNumber }) => {
 };
 
 /** Outings grouped one block per team, in standings order. */
-const TeamOutings = ({ contests, standings }) => {
+const TeamOutings = ({ contests, standings, displayAvg, decimalPlaces }) => {
   const order = new Map(
     (standings || []).map((row, i) => [String(row.team.uuid), i])
   );
@@ -91,6 +105,8 @@ const TeamOutings = ({ contests, standings }) => {
               contest={contest}
               gameNumber={i + 1}
               showGameNumber={games.length > 1}
+              displayAvg={displayAvg}
+              decimalPlaces={decimalPlaces}
               key={contest.uuid}
             />
           ))}
@@ -421,6 +437,8 @@ const EventActive = ({ eventInfo, is_admin }) => {
               <TeamOutings
                 contests={eventInfo.contests}
                 standings={eventInfo.standings}
+                displayAvg={!!eventInfo?.config?.display_avg_scores}
+                decimalPlaces={eventInfo?.config?.decimal_places ?? null}
               />
             )}
           </div>

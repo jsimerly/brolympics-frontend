@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  SCORE_FORMAT_LABEL, groupBracketNodes, groupLog, hasRules, medalTable,
-  outingDisplayScore, placeLabel, stageSentence,
+  SCORE_FORMAT_LABEL, gameDisplayScore, groupBracketNodes, groupLog,
+  hasRules, medalTable, outingDisplayScore, placeLabel, stageSentence,
 } from './eventDisplay'
 
 const game = (structure, round) => ({ stage_structure: structure, round })
@@ -144,5 +144,23 @@ describe('outingDisplayScore', () => {
     expect(outingDisplayScore({ total: 48.1 }, true)).toBe(48.1)
     expect(outingDisplayScore({ placement_points: 12 }, false)).toBe(12)
     expect(outingDisplayScore(null, true)).toBe('')
+  })
+})
+
+describe('gameDisplayScore', () => {
+  it('shows the per-player average for a game when the event displays averages', () => {
+    expect(gameDisplayScore(48.091, 2, true, 3)).toBe(24.046)
+    expect(gameDisplayScore(48.091, 2, false, 3)).toBe(48.091)
+  })
+
+  it('never invents more decimals than the score format allows', () => {
+    // 48.091 / 2 = 24.0455 -- four decimals must not leak past a 3-place format
+    expect(String(gameDisplayScore(48.091, 2, true, 3)).length).toBeLessThanOrEqual(6)
+    expect(gameDisplayScore(100, 3, true, 0)).toBe(33)
+  })
+
+  it('handles missing totals and unscored games gracefully', () => {
+    expect(gameDisplayScore(null, 2, true, 3)).toBe(null)
+    expect(gameDisplayScore(50, 0, true, null)).toBe(50) // no players scored yet
   })
 })

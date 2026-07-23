@@ -156,3 +156,19 @@ export const outingDisplayScore = (stats, displayAvg) => {
   if (displayAvg && stats.avg != null) return stats.avg;
   return stats.total ?? stats.placement_points ?? "";
 };
+
+/** Per-game display for outing rows: the game's per-player average when the
+ * event displays averages, its total otherwise -- never inventing more
+ * decimals than the event's score format allows. */
+export const gameDisplayScore = (
+  total,
+  playerCount,
+  displayAvg,
+  decimalPlaces = null
+) => {
+  if (total == null) return null;
+  let value = total;
+  if (displayAvg && playerCount > 0) value = total / playerCount;
+  const places = decimalPlaces != null ? decimalPlaces : 10;
+  return Number(value.toFixed(places));
+};
